@@ -8,7 +8,7 @@ import Navbar from '../../components/Navbar';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Comfy Surf AI',
+  title: 'SurfAI',
   description: 'Image Generation Service',
 };
 

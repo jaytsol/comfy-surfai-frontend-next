@@ -4,6 +4,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../contexts/AuthContext';
+import Link from 'next/link';
 
 export default function RegisterPage() {
   const [username, setUsername] = useState('');
@@ -25,21 +26,74 @@ export default function RegisterPage() {
   };
 
   return (
-    <div>
-      <h1>회원가입</h1>
-      <form onSubmit={handleSubmit}>
-        {/* 폼 요소들은 LoginPage와 유사하게 구성 */}
-        <div>
-          <label htmlFor="username">사용자 이름:</label>
-          <input type="text" id="username" value={username} onChange={(e) => setUsername(e.target.value)} required />
+    <div className="min-h-screen flex items-center justify-center bg-background-color">
+      <div className="w-full max-w-md p-8 space-y-6">
+        <div className="text-center">
+          <h1 className="text-3xl font-bold tracking-tight text-text-color">
+            회원가입
+          </h1>
+          <p className="mt-2 text-sm text-text-color/80">
+            SurfAI의 멤버가 되어 창의적인 경험을 시작하세요
+          </p>
         </div>
-        <div>
-          <label htmlFor="password">비밀번호:</label>
-          <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit">가입하기</button>
-      </form>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="username" className="block text-sm font-medium text-text-color">
+              사용자 이름
+            </label>
+            <div className="mt-1">
+              <input
+                type="text"
+                id="username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-color focus:border-primary-color sm:text-sm"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="password" className="block text-sm font-medium text-text-color">
+              비밀번호
+            </label>
+            <div className="mt-1">
+              <input
+                type="password"
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm placeholder-gray-400 focus:outline-none focus:ring-primary-color focus:border-primary-color sm:text-sm"
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="error text-center text-sm text-error-color">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-text-color bg-primary-color hover:bg-secondary-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-color transition duration-200"
+            >
+              가입하기
+            </button>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-text-color/80">
+              이미 계정이 있으신가요?{' '}
+              <Link href="/login" className="font-medium text-primary-color hover:text-secondary-color">
+                로그인
+              </Link>
+            </p>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

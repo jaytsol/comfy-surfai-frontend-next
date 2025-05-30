@@ -50,7 +50,7 @@ export default function LoginPage() {
             로그인
           </h1>
           <p className="mt-2 text-sm text-gray-600">
-            Comfy Surf AI에 오신 것을 환영합니다
+            SurfAI에 오신 것을 환영합니다
           </p>
         </div>
         <form onSubmit={handleSubmit} className="space-y-6">
