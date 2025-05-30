@@ -55,25 +55,67 @@ export default function GeneratePage() {
   }
 
   return (
-    <div>
-      <h1>이미지 생성 (Admin)</h1>
-      <form onSubmit={handleSubmit}>
-        {/* 폼 요소들은 이전 Pages Router 예시와 동일하게 구성 */}
-        <div>
-          <label htmlFor="workflowJson">워크플로우 JSON:</label>
-          <textarea id="workflowJson" value={workflowJson} onChange={(e) => setWorkflowJson(e.target.value)} rows={10} style={{ width: '100%' }} required />
-        </div>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        <button type="submit" disabled={isGenerating}>
-          {isGenerating ? '생성 중...' : '생성하기'}
-        </button>
-      </form>
-      {result && (
-        <div>
-          <h2>생성 결과:</h2>
-          <pre>{JSON.stringify(result, null, 2)}</pre>
-        </div>
-      )}
+    <div className="container mx-auto py-8">
+      <div className="bg-white rounded-lg shadow-md p-6">
+        <h1 className="text-3xl font-bold text-text-color mb-6">
+          이미지 생성
+        </h1>
+        
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div>
+            <label htmlFor="workflowJson" className="block text-sm font-medium text-text-color">
+              워크플로우 JSON
+            </label>
+            <div className="mt-1 relative rounded-md shadow-sm">
+              <textarea
+                id="workflowJson"
+                value={workflowJson}
+                onChange={(e) => setWorkflowJson(e.target.value)}
+                required
+                rows={10}
+                className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary-color focus:border-primary-color sm:text-sm"
+                placeholder='{\n  \"prompt\": \"A beautiful sunset over mountains\",\n  \"style\": \"photorealistic\",\n  \"resolution\": \"1024x1024\"\n}'
+              />
+            </div>
+          </div>
+
+          {error && (
+            <div className="error text-sm text-error-color">
+              {error}
+            </div>
+          )}
+
+          <div>
+            <button
+              type="submit"
+              disabled={isGenerating}
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-primary-color hover:bg-secondary-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-color ${
+                isGenerating ? 'opacity-50 cursor-not-allowed' : ''
+              }`}
+            >
+              {isGenerating ? '이미지 생성 중...' : '이미지 생성'}
+            </button>
+          </div>
+        </form>
+
+        {result && (
+          <div className="mt-8">
+            <h2 className="text-2xl font-semibold text-text-color mb-4">
+              생성된 이미지
+            </h2>
+            <div className="relative rounded-lg overflow-hidden">
+              <img
+                src={result.imageUrl}
+                alt="생성된 이미지"
+                className="w-full"
+              />
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-black p-4">
+                <p className="text-sm">생성 시간: {new Date(result.createdAt).toLocaleString()}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
