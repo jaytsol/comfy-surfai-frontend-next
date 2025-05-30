@@ -89,7 +89,7 @@ export default function GeneratePage() {
             <button
               type="submit"
               disabled={isGenerating}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-black bg-primary-color hover:bg-secondary-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-color ${
+              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-gray-600 bg-primary-color hover:bg-secondary-color focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-color ${
                 isGenerating ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
@@ -109,7 +109,7 @@ export default function GeneratePage() {
                 alt="생성된 이미지"
                 className="w-full"
               />
-              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-black p-4">
+              <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-gray-600 p-4">
                 <p className="text-sm">생성 시간: {new Date(result.createdAt).toLocaleString()}</p>
               </div>
             </div>
