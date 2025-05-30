@@ -22,12 +22,6 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="flex items-center space-x-4">
-            <Link
-              href="/"
-              className="text-gray-600 hover:text-primary-color px-3 py-2 rounded-md text-sm font-medium"
-            >
-              홈
-            </Link>
             {user ? (
               <>
                 <Link
