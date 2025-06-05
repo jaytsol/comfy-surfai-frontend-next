@@ -177,7 +177,7 @@ export default function GeneratePage() {
 
     // 관리자일 경우 WebSocket 연결 설정
     const clientId = `admin-ui-${user.id}-${Math.random().toString(36).substring(2, 9)}`;
-    const WEBSOCKET_SERVER_URL = 'ws://localhost:3000'; // NestJS WebSocket 서버 주소
+    const WEBSOCKET_SERVER_URL = 'wss://localhost:3000'; // NestJS WebSocket 서버 주소
     const WEBSOCKET_PATH = '/generate'; // EventsGateway에 설정한 path
     
     if (!ws.current) { // 중복 연결 방지
