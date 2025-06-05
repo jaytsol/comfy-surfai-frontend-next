@@ -77,6 +77,26 @@ interface ComfyUIWebSocketEvent {
   type: string; // 'status', 'progress', 'executing', 'executed', 'execution_start', 'execution_cached', 'preview' 등
   data: any; // 실제 데이터는 type에 따라 다름 (위의 Data 인터페이스들 참고)
 }
+
+interface GpuInfo {
+  gpu_utilization: number;
+  gpu_temperature: number;
+  vram_total: number;
+  vram_used: number;
+  vram_used_percent: number;
+}
+
+interface CrystoolsMonitorData {
+  cpu_utilization: number;
+  ram_total: number;
+  ram_used: number;
+  ram_used_percent: number;
+  hdd_total?: number;
+  hdd_used?: number;
+  hdd_used_percent?: number;
+  device_type: string;
+  gpus: GpuInfo[];
+}
 // --- 타입 정의 끝 ---
 
 
@@ -102,6 +122,7 @@ export default function GeneratePage() {
   const [executionStatus, setExecutionStatus] = useState<string | null>(null); // 전반적인 진행 텍스트
   const [progressValue, setProgressValue] = useState<{ value: number; max: number } | null>(null);
   const [livePreviews, setLivePreviews] = useState<string[]>([]); // 프리뷰 이미지 URL 목록
+  const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
   // --- 상태 변수 끝 ---
 
   // 접근 제어 및 초기 템플릿 목록 로드 (기존 로직 유지)
@@ -210,6 +231,15 @@ export default function GeneratePage() {
 
                 const msgData = message.data;
 
+                // ✨ 1. crystools.monitor 메시지 우선 처리 (prompt_id와 무관)
+                if (message.type === 'crystools.monitor') {
+                  const monitorData = msgData as CrystoolsMonitorData;
+                  setSystemMonitorData(monitorData);
+                  // 이 메시지는 처리했으므로 여기서 종료 (다른 로직에 영향 안 주도록)
+                  // 만약 crystools.monitor 메시지도 prompt_id를 가질 수 있다면 이 return은 제거해야 함
+                  return; 
+              }
+
                 // 현재 작업 중인 prompt_id와 관련된 메시지만 주로 처리
                 if (currentPromptId && msgData && msgData.prompt_id === currentPromptId) {
                     switch (message.type) {
@@ -262,10 +292,12 @@ export default function GeneratePage() {
                 } else if (message.type === 'status') { // prompt_id와 관계없는 일반 상태 메시지
                     const statusData = msgData as ComfyUIStatusData;
                     if (statusData.status?.exec_info?.queue_remaining !== undefined) {
-                        setExecutionStatus(`현재 대기열: ${statusData.status.exec_info.queue_remaining}개`);
-                    }
+                      // 이 상태 메시지가 작업 진행 상태(executionStatus)를 덮어쓰지 않도록 주의
+                      // 별도의 상태 변수(예: setQueueStatus)를 사용하거나, 현재 executionStatus와 병합하는 로직 고려 가능
+                      // 지금은 기존처럼 executionStatus를 사용. 사용자가 대기열 정보만 보던 부분.
+                     setExecutionStatus(`현재 대기열: ${statusData.status.exec_info.queue_remaining}개`);
+                 }
                 }
-
             } catch (e) {
                 console.error('WebSocket: Failed to parse message or handle event:', e, 'Raw data:', event.data);
             }
@@ -354,6 +386,30 @@ export default function GeneratePage() {
           이미지 생성 (Admin)
         </h1>
         <p className="text-sm mb-4">WebSocket 연결 상태: <span className={isWsConnected ? "text-green-600" : "text-red-600"}>{isWsConnected ? '연결됨' : '연결 끊김'}</span></p>
+
+        {/* --- ✨ 시스템 모니터링 UI --- */}
+        {systemMonitorData && (
+          <div className="mb-6 p-4 border border-dashed border-sky-300 rounded-md bg-sky-50">
+            <h3 className="text-md font-semibold text-sky-700 mb-3">🖥️ 시스템 리소스 현황</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-1 text-xs text-gray-700">
+              <div>CPU: <span className="font-medium text-sky-600">{systemMonitorData.cpu_utilization?.toFixed(1)}%</span></div>
+              <div>RAM: <span className="font-medium text-sky-600">{systemMonitorData.ram_used_percent?.toFixed(1)}%</span> ({ (systemMonitorData.ram_used / (1024**3)).toFixed(1) } GB / { (systemMonitorData.ram_total / (1024**3)).toFixed(1) } GB)</div>
+              
+              {systemMonitorData.gpus && systemMonitorData.gpus.length > 0 && systemMonitorData.gpus.map((gpu, index) => (
+                <React.Fragment key={index}>
+                  {systemMonitorData.gpus.length > 1 && <div className="mt-1 col-span-full text-xs font-semibold text-gray-500">GPU {index}</div>}
+                  <div>GPU 사용률: <span className="font-medium text-sky-600">{gpu.gpu_utilization?.toFixed(1)}%</span></div>
+                  <div>VRAM 사용률: <span className="font-medium text-sky-600">{gpu.vram_used_percent?.toFixed(1)}%</span> ({ (gpu.vram_used / (1024**3)).toFixed(1) } GB / { (gpu.vram_total / (1024**3)).toFixed(1) } GB)</div>
+                  <div>GPU 온도: <span className="font-medium text-sky-600">{gpu.gpu_temperature}°C</span></div>
+                </React.Fragment>
+              ))}
+              {systemMonitorData.hdd_used_percent !== undefined && systemMonitorData.hdd_used_percent > -1 && (
+                 <div>HDD: <span className="font-medium text-sky-600">{systemMonitorData.hdd_used_percent?.toFixed(1)}%</span></div>
+              )}
+            </div>
+          </div>
+        )}
+        {/* --- 시스템 모니터링 UI 끝 --- */}
         
         {/* 템플릿 선택 및 파라미터 폼 (기존과 유사) ... */}
         {isLoadingTemplates && <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>}
