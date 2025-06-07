@@ -43,26 +43,26 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 앱 시작 시 사용자 프로필 조회 시도 (세션 유효성 검사)
   useEffect(() => {
-    // Assuming token is stored in localStorage. Adjust key as necessary.
-    const token = typeof window !== 'undefined' ? localStorage.getItem('AUTH_TOKEN') : null;
-    if (token) {
-      fetchUserProfile();
-    } else {
-      // No token found, so user is likely not logged in.
-      // Set loading to false as we are not attempting to fetch user profile.
-      setUser(null);
-      setIsLoading(false);
-    }
+    // Always try to fetch user profile on initial load
+    // The server will handle authentication via the connect.sid cookie
+    fetchUserProfile();
   }, []);
 
   const login = async (credentials: LoginDTO) => {
-    // apiClient를 사용하여 /auth/login 호출
-    const response = await apiClient<{ message: string; user: User }>('/auth/login', {
-      method: 'POST',
-      body: credentials,
-    });
-    setUser(response.user); // 로그인 성공 시 사용자 정보 설정
-    // 또는 fetchUserProfile()을 다시 호출하여 최신 정보로 갱신
+    setIsLoading(true);
+    try {
+      const response = await apiClient<{ message: string; user: User }>('/auth/login', {
+        method: 'POST',
+        body: credentials,
+      });
+      setUser(response.user);
+      // No need to store token in localStorage as we're using httpOnly cookies
+    } catch (error) {
+      console.error('Login failed:', error);
+      throw error; // Let the component handle the error
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const register = async (userData: CreateUserDTO) => {
@@ -75,12 +75,17 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const logout = async () => {
+    setIsLoading(true);
     try {
       await apiClient('/auth/logout', { method: 'POST' });
-      setUser(null); // 사용자 정보 null 처리
+      setUser(null);
+      // Force a full page reload to clear any client-side state
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout failed:', error);
-      // 필요한 경우 에러 처리
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 

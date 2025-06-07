@@ -1,6 +1,6 @@
 // lib/apiClient.ts (Next.js 프론트엔드)
 "use client";
-const API_BASE_URL = 'https://localhost:3000'; // NestJS 백엔드 주소
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://localhost:3000'; // Update this to your backend URL
 
 interface FetchOptions extends RequestInit {
   body?: any; // body 타입을 좀 더 유연하게
