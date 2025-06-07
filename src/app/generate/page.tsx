@@ -192,7 +192,7 @@ export default function GeneratePage() {
                             const executedData = msgData as ComfyUIExecutedData;
                             setExecutionStatus(`노드 ${executedData.node} 실행 완료.`);
                             if (executedData.output?.images) {
-                                const comfyUIBaseUrl = 'https://comfy.surfai.org'; // <<--- 중요: 실제 ComfyUI 서버 주소로 변경!!
+                                const comfyUIBaseUrl = process.env.NEXT_PUBLIC_COMFYUI_URL || 'https://comfy.surfai.org'; // <<--- 중요: 실제 ComfyUI 서버 주소로 변경!!
                                 const previews = executedData.output.images
                                     .filter(img => img.type === 'temp') // 임시 이미지만 (preview 타입은 제외)
                                     .map(img => `${comfyUIBaseUrl}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || '')}&type=${img.type}`);
