@@ -51,10 +51,16 @@ export default function GeneratePage() {
 
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
+  const currentPromptIdRef = useRef<string | null>(currentPromptId);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null); // 전반적인 진행 텍스트
   const [progressValue, setProgressValue] = useState<{ value: number; max: number } | null>(null);
-  const [livePreviews, setLivePreviews] = useState<string[]>([]); // 프리뷰 이미지 URL 목록
+  const [livePreviews, setLivePreviews] = useState<{url: string, promptId: string}[]>([]); // 프리뷰 이미지 URL 목록
   const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
+  // Keep ref updated with the latest currentPromptId
+  useEffect(() => {
+    currentPromptIdRef.current = currentPromptId;
+  }, [currentPromptId]);
+
   // 접근 제어 및 초기 템플릿 목록 로드
   useEffect(() => {
     if (!isAuthLoading) {
@@ -118,7 +124,6 @@ export default function GeneratePage() {
   useEffect(() => {
     if (isAuthLoading || !user || user.role !== 'admin') {
       if (ws.current) {
-        console.log('WebSocket: Closing due to auth change or unmount.');
         ws.current.close();
         ws.current = null;
         setIsWsConnected(false);
@@ -167,50 +172,69 @@ export default function GeneratePage() {
                 }
 
                 // 현재 작업 중인 prompt_id와 관련된 메시지만 주로 처리
-                if (currentPromptId && msgData && msgData.prompt_id === currentPromptId) {
-                    switch (message.type) {
-                        case 'progress':
-                            const progressData = msgData as ComfyUIProgressData;
-                            setProgressValue({ value: progressData.value, max: progressData.max });
-                            setExecutionStatus(`노드 ${progressData.node} 진행: ${progressData.value}/${progressData.max}`);
-                            break;
-                        case 'executing':
-                            const executingData = msgData as ComfyUIExecutingData;
-                            if (executingData.node === null) {
-                                setExecutionStatus(`프롬프트 [${currentPromptId}]의 모든 노드 처리 완료.`);
-                            } else {
-                                setExecutionStatus(`노드 ${executingData.node} 실행 중...`);
-                            }
-                            break;
-                        case 'executed':
-                            const executedData = msgData as ComfyUIExecutedData;
-                            setExecutionStatus(`노드 ${executedData.node} 실행 완료.`);
-                            if (executedData.output?.images) {
-                                const comfyUIBaseUrl = process.env.NEXT_PUBLIC_COMFYUI_URL || 'https://comfy.surfai.org'; // <<--- 중요: 실제 ComfyUI 서버 주소로 변경!!
-                                const previews = executedData.output.images
-                                    .filter(img => img.type === 'temp') // 임시 이미지만 (preview 타입은 제외)
-                                    .map(img => `${comfyUIBaseUrl}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || '')}&type=${img.type}`);
-                                setLivePreviews(prev => [...new Set([...prev, ...previews])]); // 중복 제거하며 추가
+                const getPromptId = (data: any): string | undefined => {
+                  return data.prompt_id;
+                };
 
-                                // 만약 최종 이미지가 'executed' 메시지를 통해 온다면 여기서 generationResult 업데이트 가능
-                                // const finalImages = executedData.output.images
-                                //    .filter(img => img.type === 'output') // 최종 결과물 타입
-                                //    .map(img => `${comfyUIBaseUrl}/view?filename=${encodeURIComponent(img.filename)}...`);
-                                // if (finalImages.length > 0) {
-                                //    setGenerationResult(prev => ({
-                                //        ...prev,
-                                //        prompt_id: currentPromptId,
-                                //        image_urls: [...(prev?.image_urls || []), ...finalImages]
-                                //    }));
-                                // }
-                            }
-                            break;
-                        case 'execution_start':
-                             setExecutionStatus(`프롬프트 [${(msgData as ComfyUIExecutionStartData).prompt_id}] 실행 시작됨.`);
-                             break;
-                        case 'execution_cached':
-                             setExecutionStatus(`프롬프트 [${(msgData as ComfyUIExecutionCachedData).prompt_id}]의 노드 ${ (msgData as ComfyUIExecutionCachedData).nodes.join(',')} 결과가 캐시에서 로드됨.`);
-                 }
+                const messagePromptId = getPromptId(msgData);
+                
+                // 현재 작업 중인 prompt_id와 관련된 메시지만 처리하거나, prompt_id가 없는 시스템 메시지도 처리
+                if (messagePromptId && currentPromptIdRef.current !== messagePromptId) {
+                  // console.log(`Ignoring message for different prompt: ${messagePromptId}, current ref: ${currentPromptIdRef.current}, type: ${message.type}`);
+                  return;
+                }
+
+                // 메시지 타입에 따른 처리
+                switch (message.type) {
+                  case 'progress':
+                    const progressData = msgData as ComfyUIProgressData;
+                    setProgressValue({ value: progressData.value, max: progressData.max });
+                    setExecutionStatus(`노드 ${progressData.node} 진행: ${progressData.value}/${progressData.max}`);
+                    break;
+
+                  case 'executing':
+                    const executingData = msgData as ComfyUIExecutingData;
+                    if (executingData.node === null) {
+                      setExecutionStatus(`프롬프트 [${currentPromptIdRef.current || messagePromptId || 'unknown'}]의 모든 노드 처리 완료.`);
+                    } else {
+                      setExecutionStatus(`노드 ${executingData.node} 실행 중...`);
+                    }
+                    break;
+
+                  case 'executed':
+                    const executedData = msgData as ComfyUIExecutedData;
+                    setExecutionStatus(`노드 ${executedData.node} 실행 완료.`);
+                    if (executedData.output?.images) {
+                      const comfyUIBaseUrl = process.env.NEXT_PUBLIC_COMFYUI_URL || 'https://comfy.surfai.org';
+                      const newPreviews = executedData.output.images
+                        .filter(img => img.type === 'output')
+                        .map(img => ({
+                          url: `${comfyUIBaseUrl}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || '')}&type=${img.type}`,
+                          promptId: currentPromptIdRef.current || ''
+                        }));
+                      
+                      // Add new previews and remove duplicates
+                      setLivePreviews(prev => {
+                        const existingUrls = new Set(prev.map(p => p.url));
+                        const uniqueNewPreviews = newPreviews.filter(p => !existingUrls.has(p.url));
+                        return [...prev, ...uniqueNewPreviews];
+                      });
+                    }
+                    break;
+
+                  case 'execution_start':
+                    const startData = msgData as ComfyUIExecutionStartData;
+                    setExecutionStatus(`프롬프트 [${startData.prompt_id}] 실행 시작됨.`);
+                    break;
+
+                  case 'execution_cached':
+                    const cachedData = msgData as ComfyUIExecutionCachedData;
+                    setExecutionStatus(`프롬프트 [${cachedData.prompt_id}]의 노드 ${cachedData.nodes.join(',')} 결과가 캐시에서 로드됨.`);
+                    break;
+
+                  default:
+                    console.log('Unhandled message type:', message.type, msgData);
+                    break;
                 }
             } catch (e) {
                 console.error('WebSocket: Failed to parse message or handle event:', e, 'Raw data:', event.data);
@@ -301,6 +325,53 @@ export default function GeneratePage() {
         </h1>
         <p className="text-sm mb-4">WebSocket 연결 상태: <span className={isWsConnected ? "text-green-600" : "text-red-600"}>{isWsConnected ? '연결됨' : '연결 끊김'}</span></p>
         <SystemMonitor data={systemMonitorData} className="mb-6" />
+        
+        {/* Live Previews Section */}
+        {livePreviews.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-xl font-semibold mb-4">생성 중인 이미지 미리보기</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {livePreviews.map((preview, index) => (
+                <div key={`${preview.promptId}-${index}`} className="relative group">
+                  <img 
+                    src={preview.url} 
+                    alt={`Preview ${index + 1}`} 
+                    className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
+                  />
+                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                    <span className="text-white text-sm bg-black bg-opacity-70 px-2 py-1 rounded">
+                      {preview.promptId.substring(0, 8)}...
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+        
+        {/* Generation Status */}
+        {executionStatus && (
+          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+            <p className="text-blue-800">{executionStatus}</p>
+            {progressValue && (
+              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
+                <div 
+                  className="bg-blue-600 h-2.5 rounded-full" 
+                  style={{ width: `${(progressValue.value / progressValue.max) * 100}%` }}
+                ></div>
+              </div>
+            )}
+          </div>
+        )}
+        
+        {/* Error Message */}
+        {error && (
+          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
+            {error}
+          </div>
+        )}
+        
+        {/* Template Form */}
         <TemplateForm
           templates={templates}
           selectedTemplateId={selectedTemplateId}
