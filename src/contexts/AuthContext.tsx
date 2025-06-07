@@ -3,8 +3,8 @@
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import apiClient from '@/lib/apiClient'; // 위에서 만든 apiClient
-import { LoginDTO } from '../../common/dto/login.dto';
-import { CreateUserDTO } from '../../common/dto/create-user.dto';
+import { LoginDTO } from '@/common/dto/login.dto';
+import { CreateUserDTO } from '@/common/dto/create-user.dto';
 
 interface User {
   id: number;
