@@ -348,7 +348,7 @@ export default function GeneratePage() {
         {/* --- 시스템 모니터링 컴포넌트 끝 --- */}
         
         {/* 템플릿 선택 및 파라미터 폼 */}
-<TemplateForm
+        <TemplateForm
           templates={templates}
           selectedTemplateId={selectedTemplateId}
           onTemplateChange={(e) => setSelectedTemplateId(e.target.value)}
