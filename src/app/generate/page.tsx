@@ -5,6 +5,7 @@ import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'reac
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import GenerationStatus from '@/components/generate/GenerationStatus';
+import LivePreviews from '@/components/generate/LivePreviews';
 import apiClient from '@/lib/apiClient';
 import SystemMonitor from '@/components/system/SystemMonitor';
 import type { CrystoolsMonitorData } from '@/components/system/SystemMonitor/types';
@@ -295,9 +296,6 @@ export default function GeneratePage() {
     // 웹소켓 상태 초기화
     setCurrentPromptId(null);
     setQueueRemaining(0); // Reset queue count on new submission
-    setExecutionStatus("이미지 생성 요청 중...");
-    setProgressValue(null);
-    setLivePreviews([]);
 
     const payload: GenerateImagePayload = {
       templateId: parseInt(selectedTemplateId, 10),
@@ -348,9 +346,14 @@ export default function GeneratePage() {
           executionStatus={executionStatus}
           queueRemaining={queueRemaining}
           progressValue={progressValue}
-          livePreviews={livePreviews}
           error={error}
           isGenerating={isGenerating}
+          className="mb-6"
+        />
+        
+        <LivePreviews 
+          previews={livePreviews}
+          className="mt-6 mb-6"
         />
         
         {/* Template Form */}
