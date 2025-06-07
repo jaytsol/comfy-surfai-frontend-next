@@ -31,11 +31,29 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchUserProfile = async () => {
     setIsLoading(true);
     try {
-      const response = await apiClient<{ message: string; user: User }>('/auth/profile');
-      setUser(response.user);
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/profile`, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          // User is not authenticated, which is fine
+          setUser(null);
+          return;
+        }
+        // For other errors, throw to be caught by the catch block
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to fetch profile');
+      }
+
+      const data = await response.json();
+      setUser(data.user);
     } catch (error) {
-      // console.error('Failed to fetch profile, user might not be logged in:', error);
-      setUser(null); // 프로필 조회 실패 시 사용자 null 처리
+      console.error('Failed to fetch profile:', error);
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
