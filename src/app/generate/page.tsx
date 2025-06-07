@@ -9,6 +9,16 @@ import SystemMonitor from '@/components/system/SystemMonitor';
 import type { CrystoolsMonitorData } from '@/components/system/SystemMonitor/types';
 import { TemplateForm } from '@/components/template/TemplateForm';
 import type { WorkflowTemplate, WorkflowParameterMappingItem } from '@/types/workflow';
+import type {
+  ComfyUIStatusData,
+  ComfyUIProgressData,
+  ComfyUIExecutedData,
+  ComfyUIExecutingData,
+  ComfyUIExecutionStartData,
+  ComfyUIExecutionCachedData,
+  ComfyUIWebSocketEvent,
+  WebSocketEventType
+} from '@/types/websocket';
 interface GenerateImagePayload {
   templateId: number;
   parameters?: Record<string, any>;
@@ -17,60 +27,14 @@ interface ImageGenerationData {
   image_urls?: string[];
   prompt_id?: string;
 }
+
 interface ImageGenerationResponse {
   success: boolean;
   message: string;
   data?: ImageGenerationData;
 }
 
-// --- WebSocket 메시지 타입 (예시) ---
-// 실제 ComfyUI 메시지 구조에 맞게 더 상세하게 정의하는 것이 좋습니다.
-interface ComfyUIExecutionInfo {
-  queue_remaining?: number;
-}
-interface ComfyUIStatusData {
-  status?: { exec_info: ComfyUIExecutionInfo };
-  sid?: string; // 세션 ID (필요시)
-}
-interface ComfyUIProgressData {
-  value: number;
-  max: number;
-  prompt_id: string;
-  node: string; // 현재 진행 중인 노드 ID
-}
-interface ComfyUIExecutingData {
-  node: string | null; // null이면 해당 프롬프트의 노드 실행 완료 의미 가능성
-  prompt_id: string;
-}
-interface ComfyUIImageOutput {
-  filename: string;
-  subfolder?: string;
-  type: 'output' | 'temp' | 'input'; // ComfyUI의 이미지 타입
-}
-interface ComfyUIExecutedData {
-  node: string;
-  output: {
-    images?: ComfyUIImageOutput[];
-    // 다른 아웃풋 타입 (text 등)
-  };
-  prompt_id: string;
-}
-interface ComfyUIExecutionStartData {
-  prompt_id: string;
-}
-interface ComfyUIExecutionCachedData {
-  nodes: string[]; // 캐시된 노드 ID 목록
-  prompt_id: string;
-}
-
-interface ComfyUIWebSocketEvent {
-  type: string; // 'status', 'progress', 'executing', 'executed', 'execution_start', 'execution_cached', 'preview' 등
-  data: any; // 실제 데이터는 type에 따라 다름 (위의 Data 인터페이스들 참고)
-}
-
-// Moved to @/components/system/SystemMonitor/types.ts
-// --- 타입 정의 끝 ---
-
+// --- 타입 정의 ---
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
