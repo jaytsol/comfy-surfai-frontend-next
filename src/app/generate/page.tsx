@@ -107,13 +107,8 @@ export default function GeneratePage() {
         }
       }
       setParameterValues(initialParams);
-      setError(null);
-      setGenerationResult(null);
-      // 웹소켓 관련 상태도 초기화
-      setCurrentPromptId(null);
-      setExecutionStatus(null);
-      setProgressValue(null);
-      setLivePreviews([]);
+      setError(null); // 이전 오류는 지웁니다.
+      setGenerationResult(null); // 이전 생성 결과는 지웁니다.
     } else {
       setSelectedTemplate(null);
       setParameterValues({});
