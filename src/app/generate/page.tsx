@@ -227,7 +227,6 @@ export default function GeneratePage() {
         socket.onmessage = (event) => {
             try {
                 const message = JSON.parse(event.data as string) as ComfyUIWebSocketEvent;
-                console.log('WebSocket: Message received:', message);
 
                 const msgData = message.data;
 
