@@ -3,12 +3,13 @@
 
 import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
-import { useAuth } from '../../../contexts/AuthContext';
-import apiClient from '../../../lib/apiClient';
+import { useAuth } from '@/contexts/AuthContext';
+import GenerationStatus from '@/components/generate/GenerationStatus';
+import apiClient from '@/lib/apiClient';
 import SystemMonitor from '@/components/system/SystemMonitor';
 import type { CrystoolsMonitorData } from '@/components/system/SystemMonitor/types';
 import { TemplateForm } from '@/components/template/TemplateForm';
-import type { WorkflowTemplate, WorkflowParameterMappingItem } from '@/types/workflow';
+import type { WorkflowTemplate } from '@/types/workflow';
 import type {
   ComfyUIStatusData,
   ComfyUIProgressData,
@@ -332,54 +333,15 @@ export default function GeneratePage() {
         </h1>
         <p className="text-sm mb-4">WebSocket 연결 상태: <span className={isWsConnected ? "text-green-600" : "text-red-600"}>{isWsConnected ? '연결됨' : '연결 끊김'}</span></p>
         <SystemMonitor data={systemMonitorData} className="mb-6" />
-        
-        {/* Live Previews Section */}
-        {livePreviews.length > 0 && (
-          <div className="mb-8">
-            <h2 className="text-xl font-semibold mb-4">생성 중인 이미지 미리보기</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              {livePreviews.map((preview, index) => (
-                <div key={`${preview.promptId}-${index}`} className="relative group">
-                  <img 
-                    src={preview.url} 
-                    alt={`Preview ${index + 1}`} 
-                    className="w-full h-48 object-cover rounded-lg shadow-md hover:shadow-lg transition-shadow duration-300"
-                  />
-                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
-                    <span className="text-white text-sm bg-black bg-opacity-70 px-2 py-1 rounded">
-                      {preview.promptId.substring(0, 8)}...
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-        
-        {/* Generation Status */}
-        {(executionStatus || queueRemaining > 0) && (
-          <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-            {executionStatus && <p className="text-blue-800">{executionStatus}</p>}
-            {queueRemaining > 0 && (
-              <p className="text-blue-700 mt-1">대기열: {queueRemaining}개 작업 남음</p>
-            )}
-            {progressValue && (
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-                <div 
-                  className="bg-blue-600 h-2.5 rounded-full" 
-                  style={{ width: `${(progressValue.value / progressValue.max) * 100}%` }}
-                ></div>
-              </div>
-            )}
-          </div>
-        )}
-        
-        {/* Error Message */}
-        {error && (
-          <div className="mb-6 p-4 bg-red-50 text-red-700 rounded-lg">
-            {error}
-          </div>
-        )}
+
+        <GenerationStatus 
+          executionStatus={executionStatus}
+          queueRemaining={queueRemaining}
+          progressValue={progressValue}
+          livePreviews={livePreviews}
+          error={error}
+          isGenerating={isGenerating}
+        />
         
         {/* Template Form */}
         <TemplateForm

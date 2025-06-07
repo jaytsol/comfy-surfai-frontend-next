@@ -2,8 +2,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css'; // src/app/globals.css 또는 app/globals.css
-import { AuthProvider } from '../../contexts/AuthContext';
-import Navbar from '../../components/Navbar';
+import { AuthProvider } from '@/contexts/AuthContext';
+import Navbar from '@/components/nav/Navbar';
 
 const inter = Inter({ subsets: ['latin'] });
 
