@@ -426,21 +426,6 @@ export default function GeneratePage() {
         {/* --- 진행 상태 표시 끝 --- */}
 
         {error && <p className="mt-4 text-sm text-red-600">오류: {error}</p>}
-
-        {/* 최종 생성 결과 (기존 로직 유지) */}
-        {generationResult && generationResult.image_urls && generationResult.image_urls.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-2xl font-semibold text-gray-800 mb-4">생성된 이미지 (최종)</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {generationResult.image_urls.map((url, index) => (
-                <div key={index} className="rounded-lg overflow-hidden shadow-lg">
-                  <img src={url} alt={`생성된 이미지 ${index + 1}`} className="w-full h-auto object-cover" />
-                </div>
-              ))}
-            </div>
-            {generationResult.prompt_id && <p className="mt-2 text-xs text-gray-500">Prompt ID: {generationResult.prompt_id}</p>}
-          </div>
-        )}
       </div>
     </div>
   );
