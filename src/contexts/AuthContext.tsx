@@ -2,9 +2,9 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import apiClient from '../lib/apiClient'; // 위에서 만든 apiClient
-import { LoginDTO } from '../common/dto/login.dto';
-import { CreateUserDTO } from '../common/dto/create-user.dto';
+import apiClient from '@/lib/apiClient'; // 위에서 만든 apiClient
+import { LoginDTO } from '../../common/dto/login.dto';
+import { CreateUserDTO } from '../../common/dto/create-user.dto';
 
 interface User {
   id: number;
@@ -43,7 +43,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   // 앱 시작 시 사용자 프로필 조회 시도 (세션 유효성 검사)
   useEffect(() => {
-    fetchUserProfile();
+    // Assuming token is stored in localStorage. Adjust key as necessary.
+    const token = typeof window !== 'undefined' ? localStorage.getItem('AUTH_TOKEN') : null;
+    if (token) {
+      fetchUserProfile();
+    } else {
+      // No token found, so user is likely not logged in.
+      // Set loading to false as we are not attempting to fetch user profile.
+      setUser(null);
+      setIsLoading(false);
+    }
   }, []);
 
   const login = async (credentials: LoginDTO) => {
