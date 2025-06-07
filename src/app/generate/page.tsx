@@ -56,6 +56,7 @@ export default function GeneratePage() {
   const [progressValue, setProgressValue] = useState<{ value: number; max: number } | null>(null);
   const [livePreviews, setLivePreviews] = useState<{url: string, promptId: string}[]>([]); // 프리뷰 이미지 URL 목록
   const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
+  const [queueRemaining, setQueueRemaining] = useState<number>(0);
   // Keep ref updated with the latest currentPromptId
   useEffect(() => {
     currentPromptIdRef.current = currentPromptId;
@@ -201,6 +202,16 @@ export default function GeneratePage() {
                     }
                     break;
 
+                  case 'status':
+                    const statusData = msgData as ComfyUIStatusData;
+                    if (statusData?.status?.exec_info?.queue_remaining !== undefined) {
+                      setQueueRemaining(statusData.status.exec_info.queue_remaining);
+                    } else if (statusData?.exec_info?.queue_remaining !== undefined) {
+                      // Fallback for slightly different structure if needed
+                      setQueueRemaining(statusData.exec_info.queue_remaining);
+                    }
+                    break;
+
                   case 'executed':
                     const executedData = msgData as ComfyUIExecutedData;
                     setExecutionStatus(`노드 ${executedData.node} 실행 완료.`);
@@ -277,6 +288,7 @@ export default function GeneratePage() {
 
     // 웹소켓 상태 초기화
     setCurrentPromptId(null);
+    setQueueRemaining(0); // Reset queue count on new submission
     setExecutionStatus("이미지 생성 요청 중...");
     setProgressValue(null);
     setLivePreviews([]);
@@ -350,9 +362,12 @@ export default function GeneratePage() {
         )}
         
         {/* Generation Status */}
-        {executionStatus && (
+        {(executionStatus || queueRemaining > 0) && (
           <div className="mb-6 p-4 bg-blue-50 rounded-lg">
-            <p className="text-blue-800">{executionStatus}</p>
+            {executionStatus && <p className="text-blue-800">{executionStatus}</p>}
+            {queueRemaining > 0 && (
+              <p className="text-blue-700 mt-1">대기열: {queueRemaining}개 작업 남음</p>
+            )}
             {progressValue && (
               <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
                 <div 
