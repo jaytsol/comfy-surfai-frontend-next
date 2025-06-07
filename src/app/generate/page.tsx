@@ -34,14 +34,11 @@ interface ImageGenerationResponse {
   data?: ImageGenerationData;
 }
 
-// --- 타입 정의 ---
-
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
   const ws = useRef<WebSocket | null>(null); // WebSocket 인스턴스 ref
 
-  // --- 기존 상태 변수들 ---
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
   const [selectedTemplate, setSelectedTemplate] = useState<WorkflowTemplate | null>(null);
@@ -52,16 +49,13 @@ export default function GeneratePage() {
   const [error, setError] = useState<string | null>(null);
   const [generationResult, setGenerationResult] = useState<ImageGenerationData | null>(null);
 
-  // --- WebSocket 및 진행 상태 관련 새 상태 변수들 ---
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null); // 전반적인 진행 텍스트
   const [progressValue, setProgressValue] = useState<{ value: number; max: number } | null>(null);
   const [livePreviews, setLivePreviews] = useState<string[]>([]); // 프리뷰 이미지 URL 목록
   const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
-  // --- 상태 변수 끝 ---
-
-  // 접근 제어 및 초기 템플릿 목록 로드 (기존 로직 유지)
+  // 접근 제어 및 초기 템플릿 목록 로드
   useEffect(() => {
     if (!isAuthLoading) {
       if (!user) {
@@ -87,7 +81,7 @@ export default function GeneratePage() {
     }
   }, [user, isAuthLoading, router]);
 
-  // 선택된 템플릿 ID 변경 시 (기존 로직 유지, 상태 초기화 추가)
+  // 선택된 템플릿 ID 변경 시
   useEffect(() => {
     if (selectedTemplateId) {
       const foundTemplate = templates.find(t => t.id === parseInt(selectedTemplateId, 10));
@@ -120,7 +114,7 @@ export default function GeneratePage() {
   }, [selectedTemplateId, templates]);
 
 
-  // --- WebSocket 연결 관리 useEffect ---
+
   useEffect(() => {
     if (isAuthLoading || !user || user.role !== 'admin') {
       if (ws.current) {
@@ -239,7 +233,7 @@ export default function GeneratePage() {
 
 
   const handleParameterChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    // (기존 로직 유지)
+  
     const { name, value, type } = e.target;
     let parsedValue: string | number | boolean = value;
     if (type === 'number') parsedValue = parseFloat(value) || 0;
@@ -293,12 +287,12 @@ export default function GeneratePage() {
     }
   };
 
-  // 인증 로딩 중 렌더링 (기존 유지)
+  // 인증 로딩 중 렌더링
   if (isAuthLoading || (!isAuthLoading && (!user || user.role !== 'admin'))) {
     return <p className="text-center py-10">권한 확인 중 또는 리디렉션 중...</p>;
   }
 
-  // --- UI 렌더링 ---
+
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="bg-white rounded-lg shadow-xl p-6 md:p-8">
@@ -306,12 +300,7 @@ export default function GeneratePage() {
           이미지 생성 (Admin)
         </h1>
         <p className="text-sm mb-4">WebSocket 연결 상태: <span className={isWsConnected ? "text-green-600" : "text-red-600"}>{isWsConnected ? '연결됨' : '연결 끊김'}</span></p>
-
-        {/* --- 시스템 모니터링 컴포넌트 --- */}
         <SystemMonitor data={systemMonitorData} className="mb-6" />
-        {/* --- 시스템 모니터링 컴포넌트 끝 --- */}
-        
-        {/* 템플릿 선택 및 파라미터 폼 */}
         <TemplateForm
           templates={templates}
           selectedTemplateId={selectedTemplateId}
