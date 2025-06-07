@@ -183,16 +183,15 @@ export default function GeneratePage() {
               }
               break;
             case 'executing':
-              const executingData = msgData as ComfyUIExecutingData;
-              if (executingData.node === null && executingData.prompt_id) {
-                setExecutionStatus(`프롬프트 [${executingData.prompt_id.substring(0,8)}...] 처리 완료.`);
-              } else if (executingData.node) {
-                setExecutionStatus(`노드 ${executingData.node} 실행 중...`);
-              }
-              break;
+            const executingData = msgData as ComfyUIExecutingData;
+            if (executingData.node === null && executingData.prompt_id) {
+              setExecutionStatus(`프롬프트 [${executingData.prompt_id.substring(0,8)}...] 처리 완료.`);
+            } else if (executingData.node) {
+              setExecutionStatus(`노드 ${executingData.node} 실행 중...`);
+            }
+            break;
             case 'executed':
               const executedData = msgData as ComfyUIExecutedData;
-              setExecutionStatus(`노드 ${executedData.node} 실행 완료.`);
               if (executedData.output?.images) {
                 const comfyUIBaseUrl = process.env.NEXT_PUBLIC_COMFYUI_URL || 'https://comfy.surfai.org';
                 const newPreviews = executedData.output.images
@@ -211,9 +210,6 @@ export default function GeneratePage() {
             case 'execution_start':
               const startData = msgData as ComfyUIExecutionStartData;
               setCurrentPromptId(startData.prompt_id);
-              setExecutionStatus(`프롬프트 [${startData.prompt_id.substring(0,8)}...] 실행 시작.`);
-              setLivePreviews([]); 
-              setProgressValue(null);
               break;
             case 'execution_cached':
               const cachedData = msgData as ComfyUIExecutionCachedData;
@@ -265,7 +261,6 @@ export default function GeneratePage() {
       }
       setParameterValues(initialParams);
       setError(null); // 이전 오류는 지웁니다.
-      setGenerationResult(null); // 이전 생성 결과는 지웁니다.
     } else {
       setSelectedTemplate(null);
       setParameterValues({});
@@ -290,12 +285,11 @@ export default function GeneratePage() {
       return;
     }
     setError(null);
-    setGenerationResult(null);
     setIsGenerating(true);
 
     // 웹소켓 상태 초기화
-    setCurrentPromptId(null);
-    setQueueRemaining(0); // Reset queue count on new submission
+    // setCurrentPromptId(null);
+    // setQueueRemaining(0); // Reset queue count on new submission
 
     const payload: GenerateImagePayload = {
       templateId: parseInt(selectedTemplateId, 10),
@@ -308,10 +302,8 @@ export default function GeneratePage() {
         body: payload,
       });
       if (response.success && response.data) {
-        setGenerationResult(response.data); // HTTP 응답으로 최종 결과 우선 설정
         if (response.data.prompt_id) {
           setCurrentPromptId(response.data.prompt_id); // WebSocket 메시지 필터링을 위해 prompt_id 저장
-          setExecutionStatus(`생성 작업 시작됨 (ID: ${response.data.prompt_id}). WebSocket으로 진행 상태 업데이트됩니다.`);
         } else {
           setExecutionStatus("생성 작업은 시작되었으나 Prompt ID를 받지 못했습니다.");
         }
