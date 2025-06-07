@@ -1,26 +1,14 @@
 // app/generate/page.tsx
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, FormEvent, useRef } from 'react'; // useRef 추가
+import React, { useState, useEffect, useRef, ChangeEvent, FormEvent } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../contexts/AuthContext';
 import apiClient from '../../../lib/apiClient';
 import SystemMonitor from '@/components/system/SystemMonitor';
 import type { CrystoolsMonitorData } from '@/components/system/SystemMonitor/types';
-
-interface WorkflowParameterMappingItem {
-  node_id: string;
-  input_name: string;
-}
-interface WorkflowTemplate {
-  id: number;
-  name: string;
-  description?: string;
-  definition: object;
-  parameter_map?: Record<string, WorkflowParameterMappingItem>;
-  previewImageUrl?: string;
-  tags?: string[];
-}
+import { TemplateForm } from '@/components/template/TemplateForm';
+import type { WorkflowTemplate, WorkflowParameterMappingItem } from '@/types/workflow';
 interface GenerateImagePayload {
   templateId: number;
   parameters?: Record<string, any>;
@@ -359,73 +347,18 @@ export default function GeneratePage() {
         <SystemMonitor data={systemMonitorData} className="mb-6" />
         {/* --- 시스템 모니터링 컴포넌트 끝 --- */}
         
-        {/* 템플릿 선택 및 파라미터 폼 (기존과 유사) ... */}
-        {isLoadingTemplates && <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>}
-        {!isLoadingTemplates && templates.length === 0 && (
-          <p className="text-orange-600">사용 가능한 워크플로우 템플릿이 없습니다. 먼저 템플릿을 생성해주세요.</p>
-        )}
-        {!isLoadingTemplates && templates.length > 0 && (
-          <div className="mb-6">
-            <label htmlFor="template-select" className="block text-sm font-medium text-gray-700 mb-1">워크플로우 템플릿 선택:</label>
-            <select id="template-select" value={selectedTemplateId} onChange={(e) => setSelectedTemplateId(e.target.value)}
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm">
-              <option value="">-- 템플릿을 선택하세요 --</option>
-              {templates.map(template => (<option key={template.id} value={template.id.toString()}>{template.name}</option>))}
-            </select>
-          </div>
-        )}
-        {selectedTemplate && selectedTemplate.parameter_map && Object.keys(selectedTemplate.parameter_map).length > 0 && (
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <h2 className="text-xl font-semibold text-gray-700">{selectedTemplate.name} - 파라미터 수정</h2>
-            {selectedTemplate.description && <p className="text-sm text-gray-600 mb-4">{selectedTemplate.description}</p>}
-            {Object.entries(selectedTemplate.parameter_map).map(([paramKey, mappingInfo]) => (
-              <div key={paramKey}>
-                <label htmlFor={paramKey} className="block text-sm font-medium text-gray-700 capitalize">{paramKey.replace(/_/g, ' ')}</label>
-                <input type="text" id={paramKey} name={paramKey}
-                  value={parameterValues[paramKey] ?? ((selectedTemplate.definition as any)[mappingInfo.node_id]?.inputs?.[mappingInfo.input_name] ?? '')}
-                  onChange={handleParameterChange}
-                  className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" />
-              </div>
-            ))}
-            <button type="submit" disabled={isGenerating || !selectedTemplateId}
-              className={`w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ${ (isGenerating || !selectedTemplateId) ? 'opacity-50 cursor-not-allowed' : ''}`}>
-              {isGenerating ? '이미지 생성 요청 중...' : '이미지 생성'}
-            </button>
-          </form>
-        )}
-        {/* ... 파라미터 폼 끝 ... */}
-
-
-        {/* --- WebSocket 진행 상태 표시 --- */}
-        {currentPromptId && ( // 프롬프트 ID가 있을 때만 (생성 시작 후) 표시
-          <div className="mt-6 p-4 border border-gray-200 rounded-md bg-gray-50">
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">실시간 진행 상태 (ID: {currentPromptId})</h3>
-            {executionStatus && <p className="text-sm text-gray-600 mb-2">상태: {executionStatus}</p>}
-            {progressValue && (
-              <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
-                <div 
-                  className="bg-blue-600 h-2.5 rounded-full" 
-                  style={{ width: `${(progressValue.value / progressValue.max) * 100}%` }}>
-                </div>
-              </div>
-            )}
-            {livePreviews.length > 0 && (
-              <div className="mt-4">
-                <h4 className="text-md font-semibold text-gray-700 mb-2">실시간 프리뷰:</h4>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {livePreviews.map((url, index) => (
-                    <div key={index} className="rounded overflow-hidden border">
-                      <img src={url} alt={`Live preview ${index + 1}`} className="w-full h-auto object-cover" />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        {/* --- 진행 상태 표시 끝 --- */}
-
-        {error && <p className="mt-4 text-sm text-red-600">오류: {error}</p>}
+        {/* 템플릿 선택 및 파라미터 폼 */}
+<TemplateForm
+          templates={templates}
+          selectedTemplateId={selectedTemplateId}
+          onTemplateChange={(e) => setSelectedTemplateId(e.target.value)}
+          onParameterChange={handleParameterChange}
+          onSubmit={handleSubmit}
+          parameterValues={parameterValues}
+          isGenerating={isGenerating}
+          selectedTemplate={selectedTemplate}
+          isLoadingTemplates={isLoadingTemplates}
+        />
       </div>
     </div>
   );
