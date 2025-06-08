@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { SidebarToggleButton } from './SidebarToggleButton';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { sidebarNavItems } from '@/constants/sidebarNavItems';
-import { Separator } from '../Separator';
+import { Separator } from '../separator';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
@@ -35,23 +35,31 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
       return []; // Or return a loading state
     }
 
-    // When user is logged out, show only Home and Documents
-    if (!user) {
-      return sidebarNavItems.filter(
-        (item) => item.href === '/' || item.href === '/documents'
-      );
-    }
-
-    // When user is logged in, show all items
-    return sidebarNavItems.map(item => {
-      if (item.isLogout) {
-        return { ...item, onClick: handleLogout };
+    // Filter items based on login state
+    return sidebarNavItems.filter(item => {
+      // Always show dividers if they have the right visibility flag
+      if (item.isDivider) {
+        return user ? item.showWhenLoggedIn : item.showWhenLoggedOut;
       }
-      return item;
+      
+      // Show items based on login state and their visibility flags
+      if (user) {
+        return item.showWhenLoggedIn !== false; // Show if not explicitly hidden
+      } else {
+        return item.showWhenLoggedOut === true; // Only show if explicitly allowed
+      }
     });
   };
+  
+  // Add click handlers to interactive items
+  const processedSidebarItems = getFilteredSidebarItems().map(item => {
+    if (item.isLogout) {
+      return { ...item, onClick: handleLogout };
+    }
+    return item;
+  });
 
-  const filteredSidebarItems = getFilteredSidebarItems();
+  const filteredSidebarItems = processedSidebarItems;
 
   return (
     <aside
