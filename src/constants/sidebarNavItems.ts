@@ -1,9 +1,12 @@
-import { Home, LayoutDashboard, Settings, FileText, Users, User, Sparkles } from "lucide-react";
+import { Home, LayoutDashboard, Settings, FileText, Users, User, Sparkles, LogOut } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type
   label: string;
-  href: string;
+  href?: string;
+  onClick?: () => void;
+  isLogout?: boolean;
+  isDivider?: boolean;
 }
 
 export const sidebarNavItems: NavItem[] = [
@@ -41,5 +44,21 @@ export const sidebarNavItems: NavItem[] = [
     icon: Settings,
     label: "Settings",
     href: "/settings",
+  },
+  // Divider before logout button
+  {
+    icon: null,
+    label: "divider",
+    isDivider: true,
+  },
+  {
+    icon: LogOut,
+    label: "Logout",
+    onClick: () => {
+      // Handle logout logic here
+      console.log('Logging out...');
+      // Example: router.push('/login');
+    },
+    isLogout: true,
   },
 ];

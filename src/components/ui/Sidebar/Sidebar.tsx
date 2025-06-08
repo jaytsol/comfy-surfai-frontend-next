@@ -1,10 +1,12 @@
 'use client';
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { SidebarToggleButton } from './SidebarToggleButton';
 import { SidebarMenuItem } from './SidebarMenuItem';
 import { sidebarNavItems } from '@/constants/sidebarNavItems';
+import { Separator } from '../Separator';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -13,15 +15,36 @@ interface SidebarProps {
 
 export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const pathname = usePathname();
+  const router = useRouter();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      router.push('/login');
+      router.refresh(); // Ensure the page refreshes to reflect auth state changes
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Optionally show an error message to the user
+    }
+  };
+
+  // Update the logout button's onClick handler in the sidebar items
+  const updatedSidebarItems = sidebarNavItems.map(item => {
+    if (item.isLogout) {
+      return { ...item, onClick: handleLogout };
+    }
+    return item;
+  });
 
   return (
     <aside
       className={cn(
-        'fixed left-0 top-0 z-40 h-screen border-r bg-background transition-all duration-300 ease-in-out',
+        'fixed left-0 top-0 z-40 flex h-screen flex-col border-r bg-background transition-all duration-300 ease-in-out',
         isExpanded ? 'w-64' : 'w-20'
       )}
     >
-      <div className="flex h-full flex-col">
+      <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header with toggle button */}
         <div className="flex h-16 items-center justify-between border-b px-4">
           {isExpanded && (
@@ -35,18 +58,30 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         </div>
 
         {/* Navigation items */}
-        <nav className="flex-1 overflow-y-auto overflow-x-hidden p-2">
-          <ul className="space-y-1">
-            {sidebarNavItems.map((item) => (
-              <SidebarMenuItem
-                key={item.href}
-                icon={item.icon}
-                label={item.label}
-                href={item.href}
-                isExpanded={isExpanded}
-                isActive={pathname === item.href}
-              />
-            ))}
+        <nav className="flex flex-1 flex-col overflow-hidden">
+          <ul className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2">
+            {updatedSidebarItems.map((item, index) => {
+              if (item.isDivider) {
+                return (
+                  <li key={`divider-${index}`} className="my-2">
+                    <Separator className="bg-gray-200 dark:bg-gray-700" />
+                  </li>
+                );
+              }
+              
+              return (
+                <SidebarMenuItem
+                  key={item.href || `item-${index}`}
+                  icon={item.icon}
+                  label={item.label}
+                  href={item.href}
+                  isExpanded={isExpanded}
+                  isActive={item.href ? pathname === item.href : false}
+                  onClick={item.onClick}
+                  isLogout={item.isLogout}
+                />
+              );
+            })}
           </ul>
         </nav>
       </div>
