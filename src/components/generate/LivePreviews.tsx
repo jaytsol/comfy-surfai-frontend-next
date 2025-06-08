@@ -24,6 +24,7 @@ const LivePreviews: React.FC<LivePreviewsProps> = ({
               alt={`Live preview ${index + 1} for prompt ${preview.promptId}`}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
               onError={(e) => (e.currentTarget.style.display = 'none')}
+              onClick={() => window.open(preview.url, '_blank')}
             />
             <div className="absolute bottom-0 left-0 right-0 bg-black bg-opacity-50 text-white text-xs p-1 truncate">
               Prompt ID: {preview.promptId.substring(0, 8)}...
