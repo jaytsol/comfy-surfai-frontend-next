@@ -7,6 +7,7 @@ import { SidebarMenuItem } from './SidebarMenuItem';
 import { sidebarNavItems } from '@/constants/sidebarNavItems';
 import { Separator } from '../separator';
 import { useAuth } from '@/contexts/AuthContext';
+import { Home } from 'lucide-react';
 
 interface SidebarProps {
   isExpanded: boolean;
@@ -69,11 +70,22 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
       )}
     >
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header with toggle button */}
+        {/* Header with logo and toggle button */}
         <div className="flex h-16 items-center justify-between border-b px-4">
-          {isExpanded && (
-            <h2 className="text-lg font-semibold">SurfAI</h2>
-          )}
+          <button 
+            onClick={() => router.push('/')}
+            className="flex items-center focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 rounded-md p-1 -ml-1"
+          >
+            {isExpanded ? (
+              <h2 className="text-lg font-semibold hover:text-primary transition-colors">
+                SurfAI
+              </h2>
+            ) : (
+              <div className="h-8 w-8 flex items-center justify-center rounded-md hover:bg-accent">
+                <Home className="h-5 w-5" />
+              </div>
+            )}
+          </button>
           <SidebarToggleButton
             isExpanded={isExpanded}
             onClick={onToggle}

@@ -14,13 +14,6 @@ export interface NavItem {
 
 export const sidebarNavItems: NavItem[] = [
   {
-    icon: Home,
-    label: "Home",
-    href: "/",
-    showWhenLoggedIn: true,
-    showWhenLoggedOut: true
-  },
-  {
     icon: User,
     label: "Profile",
     href: "/profile",
