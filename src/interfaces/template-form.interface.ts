@@ -1,10 +1,14 @@
-import type { WorkflowTemplate } from '@/types/workflow';
+import type { WorkflowTemplate } from "@/interfaces/workflow.interface";
 
 export interface TemplateFormProps {
   templates: WorkflowTemplate[];
   selectedTemplateId: string;
   onTemplateChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  onParameterChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onParameterChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => void;
   onSubmit: (e: React.FormEvent) => void;
   parameterValues: Record<string, any>;
   isGenerating: boolean;
@@ -15,7 +19,11 @@ export interface TemplateFormProps {
 export interface ParameterFieldProps {
   paramName: string;
   paramValue: any;
-  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => void;
+  onChange: (
+    e: React.ChangeEvent<
+      HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
+    >
+  ) => void;
   inputType?: string;
   label?: string;
   options?: string[];
