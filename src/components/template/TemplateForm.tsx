@@ -1,5 +1,5 @@
 import React from "react";
-import { TemplateFormProps } from "../../../interfaces/template-form.interface";
+import { TemplateFormProps } from "../../interfaces/template-form.interface";
 import ParameterField from "./ParameterField";
 
 const TemplateForm: React.FC<TemplateFormProps> = ({
@@ -100,6 +100,6 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
 };
 
 export { TemplateForm };
-export type { TemplateFormProps } from "../../../interfaces/template-form.interface";
+export type { TemplateFormProps } from "../../interfaces/template-form.interface";
 
 export default TemplateForm;

@@ -1,5 +1,5 @@
 import React from "react";
-import { ParameterFieldProps } from "../../../interfaces/template-form.interface";
+import { ParameterFieldProps } from "../../interfaces/template-form.interface";
 
 const ParameterField: React.FC<ParameterFieldProps> = ({
   paramName,

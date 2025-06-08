@@ -2,7 +2,7 @@ import React from "react";
 import {
   CrystoolsMonitorData,
   SystemMonitorProps,
-} from "../../../interfaces/system-monitor.interface";
+} from "@/interfaces/system-monitor.interface";
 
 /**
  * 시스템 리소스 사용량을 표시하는 컴포넌트
