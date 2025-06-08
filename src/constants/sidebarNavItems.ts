@@ -14,18 +14,6 @@ export interface NavItem {
 
 export const sidebarNavItems: NavItem[] = [
   {
-    icon: User,
-    label: "Profile",
-    href: "/profile",
-    showWhenLoggedIn: true
-  },
-  {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    href: "/dashboard",
-    showWhenLoggedIn: true
-  },
-  {
     icon: Sparkles,
     label: "Generate",
     href: "/generate",
@@ -38,9 +26,9 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: true
   },
   {
-    icon: Users,
-    label: "Team",
-    href: "/team",
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    href: "/dashboard",
     showWhenLoggedIn: true
   },
   {
@@ -49,6 +37,18 @@ export const sidebarNavItems: NavItem[] = [
     href: "/documents",
     showWhenLoggedIn: true,
     showWhenLoggedOut: true
+  },
+  {
+    icon: Users,
+    label: "Team",
+    href: "/team",
+    showWhenLoggedIn: true
+  },
+  {
+    icon: User,
+    label: "Profile",
+    href: "/profile",
+    showWhenLoggedIn: true
   },
   {
     icon: Settings,
