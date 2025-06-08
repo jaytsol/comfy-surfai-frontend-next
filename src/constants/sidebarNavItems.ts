@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Settings, FileText, Users, User, Sparkles, LogOut, LogIn } from "lucide-react";
+import { Home, LayoutDashboard, Settings, FileText, Users, User, Sparkles, LogOut, LogIn, History as HistoryIcon } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type
@@ -34,6 +34,12 @@ export const sidebarNavItems: NavItem[] = [
     icon: Sparkles,
     label: "Generate",
     href: "/generate",
+    showWhenLoggedIn: true
+  },
+  {
+    icon: HistoryIcon,
+    label: "History",
+    href: "/history",
     showWhenLoggedIn: true
   },
   {
