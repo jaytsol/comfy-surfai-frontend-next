@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Settings, FileText, Users } from "lucide-react";
+import { Home, LayoutDashboard, Settings, FileText, Users, User, Sparkles } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type
@@ -11,6 +11,11 @@ export const sidebarNavItems: NavItem[] = [
     icon: Home,
     label: "Home",
     href: "/",
+  },
+  {
+    icon: Sparkles,
+    label: "Generate",
+    href: "/generate",
   },
   {
     icon: LayoutDashboard,
@@ -26,6 +31,11 @@ export const sidebarNavItems: NavItem[] = [
     icon: Users,
     label: "Team",
     href: "/team",
+  },
+  {
+    icon: User,
+    label: "Profile",
+    href: "/profile",
   },
   {
     icon: Settings,
