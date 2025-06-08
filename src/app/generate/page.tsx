@@ -82,14 +82,14 @@ export default function GeneratePage() {
   }, [currentPromptId]);
 
   // 접근 제어 및 초기 템플릿 목록 로드
+  // 접근 제어 (인증 여부는 미들웨어에서 처리, 역할 기반 제어는 여기서 수행)
   useEffect(() => {
-    if (!isAuthLoading) {
-      if (!user) {
-        router.replace("/login");
-      } else if (user.role !== "admin") {
+    if (!isAuthLoading && user) { // 사용자가 로드되었고, 인증된 상태일 때
+      if (user.role !== "admin") {
         alert("관리자만 접근 가능합니다.");
         router.replace("/");
       } else {
+        // 관리자일 경우 템플릿 목록 로드
         const fetchTemplates = async () => {
           setIsLoadingTemplates(true);
           try {
@@ -108,6 +108,12 @@ export default function GeneratePage() {
         };
         fetchTemplates();
       }
+    } else if (!isAuthLoading && !user) {
+      // 미들웨어에서 /login으로 리디렉션하지만, 만약 이 페이지에 도달했는데 user가 없다면
+      // (예: 토큰이 유효하지 않아 AuthContext에서 user를 null로 설정한 경우)
+      // 명시적으로 /login으로 보낼 수 있습니다. 또는 에러 메시지를 표시합니다.
+      // router.replace("/login?error=session_expired_client");
+      // console.log("User not found on client-side after auth check, middleware should have redirected.");
     }
   }, [user, isAuthLoading, router]);
 
@@ -408,8 +414,9 @@ export default function GeneratePage() {
     }
   };
 
-  // 인증 로딩 중 렌더링
-  if (isAuthLoading || (!isAuthLoading && (!user || user.role !== "admin"))) {
+  // 인증 로딩 중이거나, (로딩 완료 후) 사용자가 없거나, 사용자는 있지만 admin이 아닌 경우
+  if (isAuthLoading || (!isAuthLoading && !user) || (user && user.role !== "admin")) {
+    // !user의 경우는 미들웨어에서 처리되므로 여기서는 주로 isAuthLoading 또는 역할 불일치 시 보임
     return (
       <p className="text-center py-10">권한 확인 중 또는 리디렉션 중...</p>
     );
