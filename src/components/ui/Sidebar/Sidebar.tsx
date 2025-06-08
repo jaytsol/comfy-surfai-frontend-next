@@ -16,7 +16,7 @@ interface SidebarProps {
 export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
-  const { logout } = useAuth();
+  const { logout, user, isLoading } = useAuth();
 
   const handleLogout = async () => {
     try {
@@ -29,13 +29,29 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
     }
   };
 
-  // Update the logout button's onClick handler in the sidebar items
-  const updatedSidebarItems = sidebarNavItems.map(item => {
-    if (item.isLogout) {
-      return { ...item, onClick: handleLogout };
+  // Filter sidebar items based on authentication status
+  const getFilteredSidebarItems = () => {
+    if (isLoading) {
+      return []; // Or return a loading state
     }
-    return item;
-  });
+
+    // When user is logged out, show only Home and Documents
+    if (!user) {
+      return sidebarNavItems.filter(
+        (item) => item.href === '/' || item.href === '/documents'
+      );
+    }
+
+    // When user is logged in, show all items
+    return sidebarNavItems.map(item => {
+      if (item.isLogout) {
+        return { ...item, onClick: handleLogout };
+      }
+      return item;
+    });
+  };
+
+  const filteredSidebarItems = getFilteredSidebarItems();
 
   return (
     <aside
@@ -60,7 +76,7 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
         {/* Navigation items */}
         <nav className="flex flex-1 flex-col overflow-hidden">
           <ul className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2">
-            {updatedSidebarItems.map((item, index) => {
+            {filteredSidebarItems.map((item, index: number) => {
               if (item.isDivider) {
                 return (
                   <li key={`divider-${index}`} className="my-2">
