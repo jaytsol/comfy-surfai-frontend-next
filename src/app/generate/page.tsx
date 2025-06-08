@@ -7,9 +7,9 @@ import { useAuth } from '@/contexts/AuthContext';
 import GenerationStatus from '@/components/generate/GenerationStatus';
 import LivePreviews from '@/components/generate/LivePreviews';
 import apiClient from '@/lib/apiClient';
-import SystemMonitor from '@/components/system/SystemMonitor';
+import SystemMonitor from '@/components/system/SystemMonitor/SystemMonitor';
 import type { CrystoolsMonitorData } from '@/components/system/SystemMonitor/types';
-import { TemplateForm } from '@/components/template/TemplateForm';
+import { TemplateForm } from '@/components/template/TemplateForm/TemplateForm';
 import type { WorkflowTemplate } from '@/types/workflow';
 import type {
   ComfyUIStatusData,
