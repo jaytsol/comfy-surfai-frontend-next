@@ -1,4 +1,6 @@
 import React from 'react';
+import QueueStatus from './QueueStatus';
+import ProgressStatus from './ProgressStatus';
 
 interface GenerationStatusProps {
   executionStatus: string | null;
@@ -23,37 +25,29 @@ const GenerationStatus: React.FC<GenerationStatusProps> = ({
   }
 
   return (
-    <div className={`mb-6 ${className}`}>
+    <div className={`space-y-4 mb-6 ${className}`}>
       {/* Error Display */}
       {error && (
-        <div className="p-4 mb-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
+        <div className="p-4 bg-red-100 text-red-700 border border-red-400 rounded-lg">
           <p className="font-semibold">Error:</p>
           <p>{error}</p>
         </div>
       )}
 
-      {/* Generation Status & Progress */}
-      {(executionStatus || queueRemaining > 0 || progressValue || isGenerating) && (
-        <div className="p-4 bg-blue-50 rounded-lg">
-          {isGenerating && !executionStatus && queueRemaining === 0 && (
-            <p className="text-blue-800">이미지 생성 요청 중...</p>
-          )}
-          {executionStatus && <p className="text-blue-800">{executionStatus}</p>}
-          {queueRemaining > 0 && (
-            <p className="text-blue-700 mt-1">
-              대기열: {queueRemaining}개 작업 남음
-            </p>
-          )}
-          {progressValue && (
-            <div className="w-full bg-gray-200 rounded-full h-2.5 mt-2">
-              <div
-                className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
-                style={{ width: `${(progressValue.value / progressValue.max) * 100}%` }}
-              />
-            </div>
-          )}
-        </div>
-      )}
+      {/* Queue Status - Shows only queue information */}
+      <QueueStatus 
+        queueRemaining={queueRemaining} 
+        className="p-4 bg-blue-50 rounded-lg"
+      />
+
+      {/* Progress Status - Shows execution status and progress bar */}
+      <ProgressStatus
+        executionStatus={isGenerating && !executionStatus && queueRemaining === 0 
+          ? '이미지 생성 요청 중...' 
+          : executionStatus}
+        progressValue={progressValue}
+        className="p-4 bg-blue-50 rounded-lg"
+      />
     </div>
   );
 };
