@@ -13,7 +13,6 @@ export interface NavItem {
 }
 
 export const sidebarNavItems: NavItem[] = [
-  // Always visible items
   {
     icon: Home,
     label: "Home",
@@ -22,14 +21,17 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedOut: true
   },
   {
-    icon: FileText,
-    label: "Documents",
-    href: "/documents",
-    showWhenLoggedIn: true,
-    showWhenLoggedOut: true
+    icon: User,
+    label: "Profile",
+    href: "/profile",
+    showWhenLoggedIn: true
   },
-  
-  // Logged-in only items
+  {
+    icon: LayoutDashboard,
+    label: "Dashboard",
+    href: "/dashboard",
+    showWhenLoggedIn: true
+  },
   {
     icon: Sparkles,
     label: "Generate",
@@ -43,22 +45,17 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: true
   },
   {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    href: "/dashboard",
-    showWhenLoggedIn: true
-  },
-  {
     icon: Users,
     label: "Team",
     href: "/team",
     showWhenLoggedIn: true
   },
   {
-    icon: User,
-    label: "Profile",
-    href: "/profile",
-    showWhenLoggedIn: true
+    icon: FileText,
+    label: "Documents",
+    href: "/documents",
+    showWhenLoggedIn: true,
+    showWhenLoggedOut: true
   },
   {
     icon: Settings,
@@ -66,7 +63,6 @@ export const sidebarNavItems: NavItem[] = [
     href: "/settings",
     showWhenLoggedIn: true
   },
-  // Divider before logout button
   {
     icon: null,
     label: "divider",
@@ -74,8 +70,6 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: true,
     showWhenLoggedOut: true,
   },
-
-  // Login button (shown when logged out)
   {
     icon: LogIn,
     label: "Login",
@@ -84,8 +78,6 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: false,
     showWhenLoggedOut: true
   },
-
-  // Logout button
   {
     icon: LogOut,
     label: "Logout",
