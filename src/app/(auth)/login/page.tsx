@@ -17,7 +17,7 @@ export default function LoginPage() {
   useEffect(() => {
     // 로딩이 끝났고 사용자가 이미 있다면 프로필 페이지로 이동
     if (!isLoading && user) {
-      router.replace("/profile");
+      router.replace("/dashboard");
     }
   }, [user, isLoading, router]);
 
