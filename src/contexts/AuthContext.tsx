@@ -6,10 +6,13 @@ import apiClient from '@/lib/apiClient'; // 위에서 만든 apiClient
 import { LoginDTO } from '@/dto/login.dto';
 import { CreateUserDTO } from '@/dto/create-user.dto';
 
-interface User {
+export interface User {
   id: number;
   username: string;
+  email?: string;
   role: string;
+  avatar?: string;
+  createdAt?: string | Date;
   // 필요한 다른 사용자 정보 필드들
 }
 
