@@ -64,6 +64,7 @@ export default function GeneratePage() {
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [currentPromptId, setCurrentPromptId] = useState<string | null>(null);
   const currentPromptIdRef = useRef<string | null>(currentPromptId);
+  const activePromptIdsRef = useRef<Set<string>>(new Set());
   const [executionStatus, setExecutionStatus] = useState<string | null>(null); // 전반적인 진행 텍스트
   const [progressValue, setProgressValue] = useState<{
     value: number;
@@ -150,6 +151,8 @@ export default function GeneratePage() {
         console.log(`WebSocket: Connected to ${WEBSOCKET_PATH}`);
         setIsWsConnected(true);
         setExecutionStatus("WebSocket에 연결되었습니다.");
+        // Clear active prompts on new connection
+        activePromptIdsRef.current.clear();
       };
 
       socket.onclose = (event) => {
@@ -198,12 +201,14 @@ export default function GeneratePage() {
 
           const messagePromptId = getPromptId(msgData);
 
-          if (
-            messagePromptId &&
-            currentPromptIdRef.current &&
-            currentPromptIdRef.current !== messagePromptId
-          ) {
-            return;
+          if (messagePromptId) {
+            // Add to active prompts if it's a new prompt
+            if (!activePromptIdsRef.current.has(messagePromptId)) {
+              activePromptIdsRef.current.add(messagePromptId);
+            }
+            
+            // Set as current prompt ID for backward compatibility
+            currentPromptIdRef.current = messagePromptId;
           }
 
           switch (message.type) {
@@ -257,11 +262,18 @@ export default function GeneratePage() {
                     promptId: executedData.prompt_id,
                   }));
                 setLivePreviews((prev) => {
-                  const existingUrls = new Set(prev.map((p) => p.url));
+                  // Keep previews from other prompt IDs
+                  const otherPreviews = prev.filter(p => p.promptId !== executedData.prompt_id);
+                  
+                  // Filter out duplicates within the new previews
+                  const existingUrls = new Set(otherPreviews.map(p => p.url));
                   const uniqueNewPreviews = newPreviews.filter(
-                    (p) => !existingUrls.has(p.url)
+                    (p, index, self) => 
+                      !existingUrls.has(p.url) && 
+                      self.findIndex(prev => prev.url === p.url) === index
                   );
-                  return [...prev, ...uniqueNewPreviews];
+                  
+                  return [...otherPreviews, ...uniqueNewPreviews];
                 });
               }
               break;
