@@ -1,5 +1,7 @@
-import React, { ChangeEvent, FormEvent } from "react";
-import { TemplateFormProps } from "../../interfaces/template-form.interface";
+"use client";
+
+import React from "react";
+import type { TemplateFormProps } from "../../interfaces/template-form.interface"; // 경로 확인
 import ParameterField from "./ParameterField";
 
 const TemplateForm: React.FC<TemplateFormProps> = ({
@@ -57,28 +59,31 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           {selectedTemplate.description && <p className="text-sm text-gray-600 mb-4">{selectedTemplate.description}</p>}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Object.entries(selectedTemplate.parameter_map).map(
-            ([paramName, paramConfig]) => {
-              const label = paramConfig.ui?.label ?? paramName.replace(/_/g, ' ');
-              const inputType = paramConfig.ui?.type ?? 'text';
-              const description = paramConfig.ui?.description;
-              const options = paramConfig.ui?.options;
+            {Object.entries(selectedTemplate.parameter_map).map(
+              ([paramName, paramConfig]) => {
+                // paramConfig에서 UI 렌더링에 필요한 메타데이터 추출
+                // 백엔드 데이터에 'ui' 객체가 없다면, description을 직접 사용합니다.
+                const description = paramConfig.ui?.description || paramConfig.description;
+                const label = paramConfig.ui?.label || paramName.replace(/_/g, ' ');
+                const inputType = paramConfig.ui?.type || 'text';
+                const options = paramConfig.ui?.options;
 
-              return (
-                <ParameterField
-                  key={paramName}
-                  paramName={paramName}
-                  label={label}
-                  paramValue={parameterValues[paramName] ?? ''}
-                  onChange={onParameterChange}
-                  inputType={inputType}
-                  description={description}
-                  options={options}
-                  className={inputType === 'textarea' ? 'md:col-span-2' : 'col-span-1'}
-                />
-              );
-            }
-          )}
+                return (
+                  <ParameterField
+                    key={paramName}
+                    paramName={paramName}
+                    label={label}
+                    paramValue={parameterValues[paramName] ?? ''}
+                    onChange={onParameterChange}
+                    inputType={inputType}
+                    description={description}
+                    options={options}
+                    // textarea일 경우 폼에서 더 넓은 공간을 차지하도록 설정
+                    className={inputType === 'textarea' ? 'md:col-span-2' : 'col-span-1'}
+                  />
+                );
+              }
+            )}
           </div>
           <div className="flex justify-end pt-4">
             <button
