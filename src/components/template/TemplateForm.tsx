@@ -9,7 +9,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
   onParameterChange,
   onSubmit,
   parameterValues,
-  isGenerating,
+  isSubmitting,
   selectedTemplate,
   isLoadingTemplates,
 }) => {
@@ -83,14 +83,14 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
             <div className="flex justify-end">
               <button
                 type="submit"
-                disabled={isGenerating}
+                disabled={isSubmitting}
                 className={`px-4 py-2 rounded-md text-white ${
-                  isGenerating
+                  isSubmitting
                     ? "bg-gray-400 cursor-not-allowed"
                     : "bg-indigo-600 hover:bg-indigo-700"
                 } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
               >
-                {isGenerating ? "생성 중..." : "이미지 생성"}
+                {isSubmitting ? "생성 중..." : "이미지 생성"}
               </button>
             </div>
           </form>

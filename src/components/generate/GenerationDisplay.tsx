@@ -1,26 +1,26 @@
 import React from 'react';
-import QueueStatus from './QueueStatus';
-import ProgressStatus from './ProgressStatus';
+import QueueDisplay from './QueueDisplay';
+import ProgressDisplay from './ProgressDisplay';
 
-interface GenerationStatusProps {
+interface GenerationDisplayProps {
   executionStatus: string | null;
   queueRemaining: number;
   progressValue: { value: number; max: number } | null;
   error: string | null;
-  isGenerating: boolean;
+  isSubmitting: boolean;
   className?: string;
 }
 
-const GenerationStatus: React.FC<GenerationStatusProps> = ({
+const GenerationDisplay: React.FC<GenerationDisplayProps> = ({
   executionStatus,
   queueRemaining,
   progressValue,
   error,
-  isGenerating,
+  isSubmitting,
   className = '',
 }) => {
   // Show nothing if not generating and no persistent status/error to show
-  if (!isGenerating && !executionStatus && queueRemaining === 0 && !error) {
+  if (!isSubmitting && !executionStatus && queueRemaining === 0 && !error) {
     return null; 
   }
 
@@ -35,14 +35,15 @@ const GenerationStatus: React.FC<GenerationStatusProps> = ({
       )}
 
       {/* Queue Status - Shows only queue information */}
-      <QueueStatus 
+      <QueueDisplay 
         queueRemaining={queueRemaining} 
         className="p-4 bg-blue-50 rounded-lg"
       />
 
       {/* Progress Status - Shows execution status and progress bar */}
-      <ProgressStatus
-        executionStatus={isGenerating && !executionStatus && queueRemaining === 0 
+      <ProgressDisplay
+        isSubmitting={isSubmitting}
+        executionStatus={isSubmitting && !executionStatus && queueRemaining === 0 
           ? '이미지 생성 요청 중...' 
           : executionStatus}
         progressValue={progressValue}
@@ -52,4 +53,4 @@ const GenerationStatus: React.FC<GenerationStatusProps> = ({
   );
 };
 
-export default GenerationStatus;
+export default GenerationDisplay;

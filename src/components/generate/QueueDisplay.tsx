@@ -1,11 +1,11 @@
 import React from 'react';
 
-interface QueueStatusProps {
+interface QueueDisplayProps {
   queueRemaining: number;
   className?: string;
 }
 
-const QueueStatus: React.FC<QueueStatusProps> = ({
+const QueueDisplay: React.FC<QueueDisplayProps> = ({
   queueRemaining,
   className = '',
 }) => {
@@ -18,4 +18,4 @@ const QueueStatus: React.FC<QueueStatusProps> = ({
   );
 };
 
-export default QueueStatus;
+export default QueueDisplay;

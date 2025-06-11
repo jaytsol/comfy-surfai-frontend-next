@@ -11,7 +11,7 @@ export interface TemplateFormProps {
   ) => void;
   onSubmit: (e: React.FormEvent) => void;
   parameterValues: Record<string, any>;
-  isGenerating: boolean;
+  isSubmitting: boolean;
   selectedTemplate: WorkflowTemplate | null;
   isLoadingTemplates: boolean;
 }

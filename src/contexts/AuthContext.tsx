@@ -5,16 +5,7 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 import apiClient from '@/lib/apiClient'; // 위에서 만든 apiClient
 import { LoginDTO } from '@/dto/login.dto';
 import { CreateUserDTO } from '@/dto/create-user.dto';
-
-export interface User {
-  id: number;
-  username: string;
-  email?: string;
-  role: string;
-  avatar?: string;
-  createdAt?: string | Date;
-  // 필요한 다른 사용자 정보 필드들
-}
+import { User } from '@/interfaces/user.interface';
 
 interface AuthContextType {
   user: User | null;
