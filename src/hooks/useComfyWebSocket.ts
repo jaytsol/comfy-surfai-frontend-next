@@ -25,6 +25,7 @@ export interface ComfyWebSocketHook {
 
 export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): ComfyWebSocketHook => {
   const ws = useRef<WebSocket | null>(null);
+  const activePromptIdRef = useRef<string | null>(null);
   
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
@@ -82,8 +83,11 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
         const promptId = msgData?.prompt_id;
         if (!promptId) return;
 
+        const currentActivePromptId = activePromptIdRef.current;
+
         switch (message.type) {
           case 'execution_start':
+            activePromptIdRef.current = promptId;
             setActivePromptId(promptId);
             setLivePreviews([]); // 새 작업 시작 시 프리뷰 초기화
             setFinalGenerationResult(null);
@@ -95,7 +99,7 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
             setQueueRemaining(statusData?.status?.exec_info?.queue_remaining ?? 0);
             break;
           case 'progress':
-            if (promptId === activePromptId) {
+            if (promptId === currentActivePromptId) {
               const progressData = msgData as ComfyUIProgressData;
               setProgressValue({ value: progressData.value, max: progressData.max });
               setExecutionStatus(`생성 중... (${progressData.value}/${progressData.max})`);
@@ -114,7 +118,7 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
             }
             break;
           case 'executing':
-             if (promptId === activePromptId && msgData.node === null) {
+             if (promptId === currentActivePromptId && msgData.node === null) {
                 setExecutionStatus(`마무리 중...`);
              }
              break;
