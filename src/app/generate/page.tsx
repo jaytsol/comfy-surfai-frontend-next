@@ -10,7 +10,7 @@ import apiClient from '@/lib/apiClient';
 import { useComfyWebSocket } from '@/hooks/useComfyWebSocket';
 import SystemMonitor from '@/components/generate/SystemMonitor';
 import LivePreviews from '@/components/generate/LivePreviews';
-import { TemplateForm } from '@/components/template/TemplateForm';
+import TemplateForm from '@/components/template/TemplateForm';
 import type { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import GenerationDisplay from '@/components/generate/GenerationDisplay';
 import { GenerateImagePayload, ImageGenerationResponse } from '@/interfaces/api.interface';
@@ -169,7 +169,7 @@ export default function GeneratePage() {
         <TemplateForm
           templates={templates}
           selectedTemplateId={selectedTemplateId}
-          onTemplateChange={(e) => setSelectedTemplateId(e.target.value)}
+          onTemplateChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedTemplateId(e.target.value)}
           onParameterChange={handleParameterChange}
           onSubmit={handleSubmit}
           parameterValues={parameterValues}
