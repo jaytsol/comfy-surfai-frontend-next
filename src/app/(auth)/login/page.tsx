@@ -12,7 +12,6 @@ export default function LoginPage() {
   const [error, setError] = useState("");
   const { login, user, isLoading } = useAuth();
   const router = useRouter();
-  console.log("isLoading", isLoading);
 
   useEffect(() => {
     // 로딩이 끝났고 사용자가 이미 있다면 프로필 페이지로 이동
