@@ -82,13 +82,21 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
         try {
           const message = JSON.parse(event.data as string) as ComfyUIWebSocketEvent;
           const msgData = message.data;
+          console.log('message.type', message.type);
   
           // 시스템 모니터링 메시지 처리
           if (message.type === 'crystools.monitor') {
             setSystemMonitorData(msgData);
             return;
           }
-  
+
+          if (message.type === 'status') {
+            const statusData = msgData as ComfyUIStatusData;
+            console.log('statusData', statusData);
+            setQueueRemaining(statusData?.status?.exec_info?.queue_remaining ?? 0);
+            return;
+          }
+
           // 백엔드에서 보낸 최종 결과 메시지 처리
           if (message.type === 'generation_result') {
             const finalData = msgData as ImageGenerationData;
@@ -114,10 +122,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
               setFinalGenerationResult(null);
               setProgressValue(null);
               setExecutionStatus(`작업 시작됨 (ID: ${promptId.substring(0, 8)})...`);
-              break;
-            case 'status':
-              const statusData = msgData as ComfyUIStatusData;
-              setQueueRemaining(statusData?.status?.exec_info?.queue_remaining ?? 0);
               break;
             case 'progress':
               if (promptId === currentActivePromptId) {
