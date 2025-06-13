@@ -140,8 +140,8 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
                   }));
                 if (newPreviews.length > 0) {
                   setLivePreviews(prev => {
-                    const existingUrls = new Set(prev.map(p => p.url));
-                    const uniqueNewPreviews = newPreviews.filter(p => !existingUrls.has(p.url));
+                    const existingUrls = new Set(prev.map((p: any) => p.url));
+                    const uniqueNewPreviews = newPreviews.filter((p: any) => !existingUrls.has(p.url));
                     return [...prev, ...uniqueNewPreviews];
                   });
                 }
