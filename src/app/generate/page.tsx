@@ -29,7 +29,7 @@ export default function GeneratePage() {
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
+  const [viewingOutputId, setViewingOutputId] = useState<number | null>(null);
 
   // ✨ --- WebSocket 관련 상태는 모두 커스텀 훅에서 가져옵니다 --- ✨
   const {
@@ -96,12 +96,12 @@ export default function GeneratePage() {
     setApiError(null); // 템플릿 변경 시 에러 초기화
   }, [selectedTemplateId, templates]);
 
-  const handleImageClick = (imageUrl: string) => {
-    setViewingImageUrl(imageUrl);
+  const handleImageClick = (outputId: number) => {
+    setViewingOutputId(outputId);
   };
 
   const handleCloseLightbox = () => {
-    setViewingImageUrl(null);
+    setViewingOutputId(null);
   };
 
   const handleParameterChange = (
@@ -198,7 +198,7 @@ export default function GeneratePage() {
 
         <SessionGallery outputs={sessionOutputs} onImageClick={handleImageClick} />
       </div>
-      <ImageLightbox imageUrl={viewingImageUrl} onClose={handleCloseLightbox} />
+      <ImageLightbox outputId={viewingOutputId} onClose={handleCloseLightbox} />
     </div>
   );
 }

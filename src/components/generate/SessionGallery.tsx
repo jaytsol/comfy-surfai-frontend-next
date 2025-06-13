@@ -2,6 +2,7 @@
 
 import React from 'react';
 import apiClient from '@/lib/apiClient';
+import GalleryImage from './GalleryImage';
 
 interface GenerationOutput {
   id: number;
@@ -10,7 +11,7 @@ interface GenerationOutput {
 
 interface SessionGalleryProps {
   outputs: GenerationOutput[];
-  onImageClick: (imageUrl: string) => void; // ✨ 이미지 클릭 핸들러를 prop으로 받음
+  onImageClick: (outputId: number) => void; // ✨ 이미지 클릭 핸들러를 prop으로 받음
   className?: string;
 }
 
@@ -48,14 +49,10 @@ const SessionGallery: React.FC<SessionGalleryProps> = ({ outputs, onImageClick, 
             <div 
               key={output.id} 
               // ✨ 이미지 카드 전체에 클릭 핸들러 추가
-              onClick={() => onImageClick(output.r2Url)} 
+              onClick={() => onImageClick(output.id)} 
               className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-lg overflow-hidden bg-gray-100 cursor-pointer"
             >
-              <img
-                src={output.r2Url}
-                alt={`Generated image ${output.id}`}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
+              <GalleryImage output={output} />
               <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center">
                 <button
                   // ✨ 다운로드 버튼의 onClick 핸들러 수정
