@@ -70,7 +70,10 @@ export interface ImageGenerationData {
    * 한 번의 요청으로 여러 파일이 생성될 수 있으므로 배열 타입입니다.
    * @example ["https://your-r2-bucket.pub/outputs/101/prompt-id-123/image_01.png"]
    */
-  image_urls: string[];
+  outputs: {
+    id: number;
+    r2Url: string;
+  }[];
 
   // --- 필요에 따라 추가할 수 있는 선택적 필드들 ---
 
