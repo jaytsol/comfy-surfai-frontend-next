@@ -18,7 +18,7 @@ const FinalResult: React.FC<FinalResultProps> = ({ result, className = '' }) => 
   const handleDownloadClick = async (outputId: number) => {
     try {
       // 1. 백엔드에 미리 서명된 다운로드 URL 요청
-      const response = await apiClient<{ downloadUrl: string }>(`/my-history/${outputId}/download-url`);
+      const response = await apiClient<{ downloadUrl: string }>(`/my-outputs/${outputId}/download-url`);
       const signedUrl = response.downloadUrl;
 
       // 2. 백엔드로부터 받은 URL로 다운로드 시작
