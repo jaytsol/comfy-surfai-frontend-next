@@ -3,6 +3,7 @@
 import React from 'react';
 import apiClient from '@/lib/apiClient'; // apiClient 임포트
 import type { ImageGenerationData } from '@/interfaces/websocket.interface';
+import ResultImage from './ResultImage';
 
 interface FinalResultProps {
   result: (ImageGenerationData & { type: 'final' }) | null;
@@ -41,17 +42,16 @@ const FinalResult: React.FC<FinalResultProps> = ({ result, className = '' }) => 
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         {result.outputs.map((output) => (
-          <div key={output.id} className="group relative rounded-lg overflow-hidden shadow-lg cursor-pointer">
-            <img
-              src={output.r2Url}
-              alt={`Generated Image ${output.id}`}
-              className="w-full h-auto object-cover"
-            />
+          // ✨ --- 각 결과물에 대해 ResultImage 컴포넌트 렌더링 --- ✨
+          <div key={output.id} className="group relative rounded-lg overflow-hidden shadow-lg">
+            <ResultImage outputId={output.id} />
+
+            {/* 다운로드 버튼 오버레이 */}
             <div 
-              onClick={() => handleDownloadClick(output.id)} // 이미지 클릭 시 다운로드
-              className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center"
+              onClick={() => handleDownloadClick(output.id)}
+              className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-50 transition-all duration-300 flex items-center justify-center cursor-pointer"
             >
-              <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4 py-2 bg-white text-black rounded-md text-sm font-semibold">
+              <span className="opacity-0 group-hover:opacity-100 ...">
                 다운로드
               </span>
             </div>
