@@ -13,7 +13,6 @@ import TemplateForm from '@/components/template/TemplateForm';
 import type { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import GenerationDisplay from '@/components/generate/GenerationDisplay';
 import { GenerateImagePayload, ImageGenerationResponse } from '@/interfaces/api.interface';
-import FinalResult from '@/components/generate/FinalResult';
 import SessionGallery from '@/components/generate/SessionGallery';
 import ImageLightbox from '@/components/common/ImageLightbox';
 
