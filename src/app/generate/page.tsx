@@ -15,6 +15,7 @@ import GenerationDisplay from '@/components/generate/GenerationDisplay';
 import { GenerateImagePayload, ImageGenerationResponse } from '@/interfaces/api.interface';
 import FinalResult from '@/components/generate/FinalResult';
 import SessionGallery from '@/components/generate/SessionGallery';
+import ImageLightbox from '@/components/common/ImageLightbox';
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -28,6 +29,7 @@ export default function GeneratePage() {
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
 
   // ✨ --- WebSocket 관련 상태는 모두 커스텀 훅에서 가져옵니다 --- ✨
   const {
@@ -93,6 +95,14 @@ export default function GeneratePage() {
     }
     setApiError(null); // 템플릿 변경 시 에러 초기화
   }, [selectedTemplateId, templates]);
+
+  const handleImageClick = (imageUrl: string) => {
+    setViewingImageUrl(imageUrl);
+  };
+
+  const handleCloseLightbox = () => {
+    setViewingImageUrl(null);
+  };
 
   const handleParameterChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -186,8 +196,9 @@ export default function GeneratePage() {
           className="mt-6"
         />
 
-        <SessionGallery outputs={sessionOutputs} />
+        <SessionGallery outputs={sessionOutputs} onImageClick={handleImageClick} />
       </div>
+      <ImageLightbox imageUrl={viewingImageUrl} onClose={handleCloseLightbox} />
     </div>
   );
 }
