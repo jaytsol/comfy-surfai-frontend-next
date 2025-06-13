@@ -11,6 +11,7 @@ import type {
   ImageGenerationData,
   ComfyUIStatusData,
   ComfyUIExecutionStartData,
+  GenerationResultOutput,
 } from '@/interfaces/websocket.interface';
 
 // 이 훅이 반환할 값들의 타입을 정의합니다.
@@ -20,8 +21,8 @@ export interface ComfyWebSocketHook {
   progressValue: { value: number; max: number } | null;
   systemMonitorData: CrystoolsMonitorData | null;
   queueRemaining: number;
-  finalGenerationResult: (ImageGenerationData & { type: 'final' }) | null;
   activePromptId: string | null;
+  sessionOutputs: GenerationResultOutput[];
 }
 
 /**
@@ -36,8 +37,8 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
   const [progressValue, setProgressValue] = useState<{ value: number; max: number } | null>(null);
   const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
   const [queueRemaining, setQueueRemaining] = useState<number>(0);
-  const [finalGenerationResult, setFinalGenerationResult] = useState<(ImageGenerationData & { type: 'final' }) | null>(null);
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
+  const [sessionOutputs, setSessionOutputs] = useState<GenerationResultOutput[]>([]);
 
   // activePromptId state가 변경될 때마다 ref 값도 동기화
   useEffect(() => {
@@ -100,7 +101,15 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
           // 백엔드에서 보낸 최종 결과 메시지 처리
           if (message.type === 'generation_result') {
             const finalData = msgData as ImageGenerationData;
-            setFinalGenerationResult({ ...finalData, type: 'final' });
+
+            if (finalData.outputs) {
+              console.log(`Final results received for prompt #${finalData.prompt_id}. Adding to session gallery.`);
+              
+              // 새로 받은 최종 결과물을 기존 목록에 추가합니다.
+              // (DB ID는 고유하므로 key로 사용하기에 적합합니다)
+              setSessionOutputs(prevOutputs => [...prevOutputs, ...finalData.outputs]);
+            }
+
             setExecutionStatus('최종 결과 수신 완료!');
             if (finalData.prompt_id === activePromptIdRef.current) {
               activePromptIdRef.current = null;
@@ -119,7 +128,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
             case 'execution_start':
               activePromptIdRef.current = promptId;
               setActivePromptId(promptId);
-              setFinalGenerationResult(null);
               setProgressValue(null);
               setExecutionStatus(`작업 시작됨 (ID: ${promptId.substring(0, 8)})...`);
               break;
@@ -195,7 +203,7 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
     progressValue, 
     systemMonitorData, 
     queueRemaining, 
-    finalGenerationResult, 
-    activePromptId 
+    activePromptId,
+    sessionOutputs,
   };
 };

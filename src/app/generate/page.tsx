@@ -14,6 +14,7 @@ import type { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import GenerationDisplay from '@/components/generate/GenerationDisplay';
 import { GenerateImagePayload, ImageGenerationResponse } from '@/interfaces/api.interface';
 import FinalResult from '@/components/generate/FinalResult';
+import SessionGallery from '@/components/generate/SessionGallery';
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -35,8 +36,8 @@ export default function GeneratePage() {
     progressValue,
     systemMonitorData,
     queueRemaining,
-    finalGenerationResult,
-    activePromptId
+    activePromptId,
+    sessionOutputs
   } = useComfyWebSocket(user, isAuthLoading);
 
   // 접근 제어 및 템플릿 목록 로드
@@ -185,7 +186,7 @@ export default function GeneratePage() {
           className="mt-6"
         />
 
-        <FinalResult result={finalGenerationResult} />
+        <SessionGallery outputs={sessionOutputs} />
       </div>
     </div>
   );

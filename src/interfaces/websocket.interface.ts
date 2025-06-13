@@ -52,6 +52,28 @@ export interface ComfyUIWebSocketEvent {
 }
 
 /**
+ * 백엔드가 R2 업로드 완료 후 WebSocket으로 보내주는
+ * 개별 생성 결과물 하나의 데이터 타입을 정의합니다.
+ */
+export interface GenerationResultOutput {
+  /**
+   * 데이터베이스에 저장된 생성물의 고유 ID입니다.
+   * 이 ID는 다운로드 URL 요청 등 특정 결과물을 식별하는 데 사용됩니다.
+   */
+  id: number;
+
+  /**
+   * Cloudflare R2에 최종 저장된 파일의 URL입니다.
+   * 프론트엔드 갤러리에서 이미지를 표시하는 데 사용됩니다.
+   */
+  r2Url: string;
+
+  // 필요하다면, 갤러리 카드에 추가 정보를 표시하기 위해 다른 필드를 포함할 수 있습니다.
+  // originalFilename?: string;
+  // createdAt?: string;
+}
+
+/**
  * 이미지 생성이 최종적으로 완료되고 결과물이 R2와 같은 영구 스토리지에
  * 업로드된 후, 백엔드가 WebSocket을 통해 프론트엔드로 보내는 최종 결과 데이터의
  * 타입을 정의합니다.
@@ -70,10 +92,7 @@ export interface ImageGenerationData {
    * 한 번의 요청으로 여러 파일이 생성될 수 있으므로 배열 타입입니다.
    * @example ["https://your-r2-bucket.pub/outputs/101/prompt-id-123/image_01.png"]
    */
-  outputs: {
-    id: number;
-    r2Url: string;
-  }[];
+  outputs: GenerationResultOutput[];
 
   // --- 필요에 따라 추가할 수 있는 선택적 필드들 ---
 
