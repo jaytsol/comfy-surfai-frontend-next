@@ -18,7 +18,6 @@ export interface ComfyWebSocketHook {
   isWsConnected: boolean;
   executionStatus: string | null;
   progressValue: { value: number; max: number } | null;
-  livePreviews: { url: string; promptId: string }[];
   systemMonitorData: CrystoolsMonitorData | null;
   queueRemaining: number;
   finalGenerationResult: (ImageGenerationData & { type: 'final' }) | null;
@@ -35,7 +34,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
   const [progressValue, setProgressValue] = useState<{ value: number; max: number } | null>(null);
-  const [livePreviews, setLivePreviews] = useState<{ url: string; promptId: string }[]>([]);
   const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
   const [queueRemaining, setQueueRemaining] = useState<number>(0);
   const [finalGenerationResult, setFinalGenerationResult] = useState<(ImageGenerationData & { type: 'final' }) | null>(null);
@@ -113,7 +111,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
             case 'execution_start':
               activePromptIdRef.current = promptId;
               setActivePromptId(promptId);
-              setLivePreviews([]);
               setFinalGenerationResult(null);
               setProgressValue(null);
               setExecutionStatus(`작업 시작됨 (ID: ${promptId.substring(0, 8)})...`);
@@ -127,24 +124,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
                 const progressData = msgData as ComfyUIProgressData;
                 setProgressValue({ value: progressData.value, max: progressData.max });
                 setExecutionStatus(`생성 중... (${progressData.value}/${progressData.max})`);
-              }
-              break;
-            case 'executed':
-              if (msgData.output?.images) {
-                const comfyUIBaseUrl = process.env.NEXT_PUBLIC_COMFYUI_URL || "https://comfy.surfai.org";
-                const newPreviews = msgData.output.images
-                  .filter((img: any) => img.type === 'temp')
-                  .map((img: any) => ({
-                    url: `${comfyUIBaseUrl}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || '')}&type=${img.type}`,
-                    promptId,
-                  }));
-                if (newPreviews.length > 0) {
-                  setLivePreviews(prev => {
-                    const existingUrls = new Set(prev.map((p: any) => p.url));
-                    const uniqueNewPreviews = newPreviews.filter((p: any) => !existingUrls.has(p.url));
-                    return [...prev, ...uniqueNewPreviews];
-                  });
-                }
               }
               break;
             case 'executing':
@@ -210,7 +189,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
     isWsConnected, 
     executionStatus, 
     progressValue, 
-    livePreviews, 
     systemMonitorData, 
     queueRemaining, 
     finalGenerationResult, 

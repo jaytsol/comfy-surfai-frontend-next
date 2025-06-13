@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/apiClient';
 import { useComfyWebSocket } from '@/hooks/useComfyWebSocket';
 import SystemMonitor from '@/components/generate/SystemMonitor';
-import LivePreviews from '@/components/generate/LivePreviews';
 import TemplateForm from '@/components/template/TemplateForm';
 import type { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import GenerationDisplay from '@/components/generate/GenerationDisplay';
@@ -34,7 +33,6 @@ export default function GeneratePage() {
     isWsConnected,
     executionStatus,
     progressValue,
-    livePreviews,
     systemMonitorData,
     queueRemaining,
     finalGenerationResult,
@@ -186,8 +184,6 @@ export default function GeneratePage() {
           error={apiError}
           className="mt-6"
         />
-
-        <LivePreviews previews={livePreviews} className="mt-6" />
 
         <FinalResult result={finalGenerationResult} />
       </div>
