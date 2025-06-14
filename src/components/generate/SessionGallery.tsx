@@ -2,9 +2,9 @@
 
 import React from 'react';
 import ImageItem from './ImageItem';
-import type { GenerationResultOutput } from '@/interfaces/websocket.interface';
+import { HistoryItemData } from '@/interfaces/history.interface';
 interface SessionGalleryProps {
-  outputs: GenerationResultOutput[];
+  outputs: HistoryItemData[];
   handleImageClick: (outputId: number) => void; // ✨ 이미지 클릭 핸들러를 prop으로 받음
   className?: string;
 }

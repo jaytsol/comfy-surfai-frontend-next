@@ -8,8 +8,8 @@ import type {
   ComfyUIWebSocketEvent,
   ImageGenerationData,
   ComfyUIStatusData,
-  GenerationResultOutput,
 } from '@/interfaces/websocket.interface';
+import { HistoryItemData } from '@/interfaces/history.interface';
 
 export interface ComfyWebSocketHook {
   isWsConnected: boolean;
@@ -18,7 +18,7 @@ export interface ComfyWebSocketHook {
   systemMonitorData: CrystoolsMonitorData | null;
   queueRemaining: number;
   activePromptId: string | null;
-  sessionOutputs: GenerationResultOutput[];
+  sessionOutputs: HistoryItemData[];
 }
 
 /**
@@ -36,7 +36,7 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
   const [systemMonitorData, setSystemMonitorData] = useState<CrystoolsMonitorData | null>(null);
   const [queueRemaining, setQueueRemaining] = useState<number>(0);
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
-  const [sessionOutputs, setSessionOutputs] = useState<GenerationResultOutput[]>([]);
+  const [sessionOutputs, setSessionOutputs] = useState<HistoryItemData[]>([]);
 
   // activePromptId state가 변경될 때마다 ref 값도 동기화
   useEffect(() => {

@@ -1,22 +1,23 @@
 /**
  * 히스토리 목록 API의 응답 데이터 중, 개별 생성물 하나의 타입을 정의합니다.
  */
+/**
+ * 생성 기록 아이템 하나의 데이터 타입 (이제 유일한 표준)
+ */
 export interface HistoryItemData {
     id: number;
-    viewUrl: string; // 표시용으로 생성된 미리 서명된 URL
+    viewUrl: string;
     originalFilename: string;
-    createdAt: string; // ISO 8601 형식의 문자열
+    createdAt: string;
     usedParameters?: Record<string, any>;
-    // 필요하다면 다른 메타데이터 추가
-  }
+}
   
-  /**
-   * 히스토리 목록 API(/my-outputs)의 전체 응답 타입을 정의합니다.
-   */
-  export interface PaginatedHistoryResponse {
+/**
+ * 히스토리 목록 API(/my-outputs)의 전체 응답 타입을 정의합니다.
+*/
+export interface PaginatedHistoryResponse {
     data: HistoryItemData[];
     total: number;
     page: number;
     lastPage: number;
-  }
-  
+}
