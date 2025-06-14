@@ -177,19 +177,29 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
     // 최초 연결 시도
     connect();
 
-    // 컴포넌트가 사라질 때 실행되는 cleanup 함수
     return () => {
-      console.log("WebSocket: Cleanup function called.");
-      // 예약된 재연결 시도가 있다면 취소
+      console.log("WebSocket: Cleanup function called for component unmount.");
+      
+      // 1. 예약된 재연결 시도가 있다면 취소합니다.
       if (reconnectTimeoutId) {
         clearTimeout(reconnectTimeoutId);
       }
-      // WebSocket 연결이 있다면 깨끗하게 닫아줍니다.
-      if (ws.current) {
-        // cleanup 시에는 onclose 핸들러가 재연결 로직을 실행하지 않도록 먼저 핸들러를 제거합니다.
-        ws.current.onclose = null;
-        ws.current.close(1000, "Component unmounting"); // 정상 종료 코드(1000)와 함께 닫기
-        ws.current = null;
+
+      const socketToClose = ws.current;
+      if (socketToClose) {
+        // 2. 참조를 즉시 null로 만들어 새로운 연결 시도에 영향을 주지 않도록 합니다.
+        ws.current = null; 
+
+        // 3. 모든 이벤트 핸들러를 제거하여 메모리 누수 및 의도치 않은 동작을 방지합니다.
+        socketToClose.onopen = null;
+        socketToClose.onmessage = null;
+        socketToClose.onerror = null;
+        socketToClose.onclose = null; // 재연결 로직이 포함된 onclose도 확실히 제거합니다.
+
+        // 4. 소켓이 열려있는 상태일 때만 정상적으로 닫습니다.
+        if (socketToClose.readyState === WebSocket.OPEN) {
+          socketToClose.close(1000, "Component unmounting");
+        }
       }
     };
   }, [user, isAuthLoading]); // user 또는 인증 상태가 변경될 때만 이 effect를 재실행하여 연결을 관리
