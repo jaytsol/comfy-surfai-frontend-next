@@ -32,10 +32,10 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ item, onClose }) => {
       <button onClick={onClose} className="absolute top-4 right-5 text-white text-4xl font-bold ...">&times;</button>
       
       {/* ✨ --- 라이트박스 레이아웃을 이미지와 정보 패널로 분리 --- ✨ */}
-      <div className="flex flex-col md:flex-row gap-4 max-w-6xl w-full max-h-[90vh]">
+      <div onClick={handleBackdropClick} className="flex flex-col md:flex-row gap-4 max-w-6xl w-full max-h-[90vh]">
         
         {/* 1. 이미지 표시 영역 */}
-        <div className="flex-grow flex items-center justify-center">
+        <div onClick={handleBackdropClick} className="flex-grow flex items-center justify-center">
           <img
             src={item.viewUrl}
             alt={`Enlarged view for output ${item.id}`}
