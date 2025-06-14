@@ -54,13 +54,23 @@ export default function HistoryPage() {
     if (!confirm(`ID: ${id} 생성물을 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
       return;
     }
+
+    // ✨ 삭제하려는 아이템을 임시 저장 (실패 시 복구용)
+    const itemToDelete = items.find(item => item.id === id);
+    if (!itemToDelete) return;
+
+    // ✨ "낙관적 업데이트": UI에서 먼저 아이템을 제거하여 빠른 사용자 경험 제공
+    setItems(prevItems => prevItems.filter(item => item.id !== id));
+
     try {
-      // TODO: 백엔드에 DELETE /my-outputs/:id API 구현 필요
-      // await apiClient(`/my-outputs/${id}`, { method: 'DELETE' });
-      setItems(prevItems => prevItems.filter(item => item.id !== id));
-      alert("성공적으로 삭제되었습니다.");
+      // ✨ 백엔드에 DELETE API 호출
+      await apiClient(`/my-outputs/${id}`, { method: 'DELETE' });
+      // 성공 로그 (선택 사항)
+      console.log(`Item #${id} deleted successfully.`);
     } catch (err: any) {
+      // ✨ API 호출 실패 시, UI를 원래 상태로 복구
       alert("삭제에 실패했습니다: " + err.message);
+      setItems(prevItems => [...prevItems, itemToDelete].sort((a, b) => b.id - a.id)); // 다시 추가하고 정렬
     }
   };
 
