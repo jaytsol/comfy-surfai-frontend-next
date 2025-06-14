@@ -83,7 +83,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
         try {
           const message = JSON.parse(event.data as string) as ComfyUIWebSocketEvent;
           const msgData = message.data;
-          console.log('message.type', message.type);
   
           // 시스템 모니터링 메시지 처리
           if (message.type === 'crystools.monitor') {
@@ -93,7 +92,6 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
 
           if (message.type === 'status') {
             const statusData = msgData as ComfyUIStatusData;
-            console.log('statusData', statusData);
             setQueueRemaining(statusData?.status?.exec_info?.queue_remaining ?? 0);
             return;
           }
