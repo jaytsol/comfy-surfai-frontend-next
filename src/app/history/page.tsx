@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/apiClient';
 import HistoryGallery from '@/components/history/HistoryGallery';
@@ -12,7 +11,6 @@ import { Button } from '@/components/ui/button';
 
 export default function HistoryPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
-  const router = useRouter();
 
   const [items, setItems] = useState<HistoryItemData[]>([]);
   const [isLoading, setIsLoading] = useState(true);
