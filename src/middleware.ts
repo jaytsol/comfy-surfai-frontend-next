@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // 로그아웃 상태에서도 접근 가능한 경로 목록
-const PUBLIC_PATHS = ['/', '/documents', '/login', '/api/auth/callback', '/api/auth/signout']; // '/api/auth/...' 등 인증 관련 API 경로도 필요시 추가
+const PUBLIC_PATHS = ['/', '/documents', '/login', '/register', '/api/auth/callback', '/api/auth/signout']; // '/api/auth/...' 등 인증 관련 API 경로도 필요시 추가
 
 // 인증이 필요한 경로의 기본 접두사 (이 외 모든 경로는 기본적으로 보호)
 // 혹은 명시적으로 보호할 경로 목록을 만들 수도 있습니다.
