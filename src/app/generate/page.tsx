@@ -40,7 +40,9 @@ export default function GeneratePage() {
     systemMonitorData,
     queueRemaining,
     activePromptId,
-    sessionOutputs
+    sessionOutputs,
+    removeSessionOutput,
+    addSessionOutput,
   } = useComfyWebSocket(user, isAuthLoading);
 
   // 접근 제어 및 템플릿 목록 로드
@@ -174,22 +176,25 @@ export default function GeneratePage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm(`ID: #${id} 생성물을 정말로 삭제하시겠습니까? (DB에서도 삭제됩니다)`)) {
+    if (!confirm(`ID: #${id} 생성물을 정말로 삭제하시겠습니까?`)) {
       return;
     }
-    // 낙관적 업데이트: UI에서 먼저 아이템 제거
-    // ✨ useComfyWebSocket 훅에서 sessionOutputs를 직접 수정할 수 있는 함수를 반환받아야 함
-    // 예: removeSessionOutput(id)
-    // 지금은 GeneratePage에서 상태를 관리하지 않으므로, 이 로직은 훅으로 이동해야 합니다.
-    // 하지만 우선은 API 호출만 구현합니다.
+
+    const itemToDelete = sessionOutputs.find(item => item.id === id);
+    if (!itemToDelete) return;
+
+    // 1. 낙관적 업데이트: UI에서 즉시 제거
+    removeSessionOutput(id);
+
     try {
-      // ✨ TODO: 백엔드에 DELETE /my-outputs/:id API 구현 필요
+      // 2. 백엔드에 실제 삭제 API 호출
       await apiClient(`/my-outputs/${id}`, { method: 'DELETE' });
-      alert("성공적으로 삭제되었습니다. (DB에서 삭제됨)");
-      // TODO: 삭제 성공 시 useComfyWebSocket 훅의 상태를 업데이트하는 함수 호출
+      // 성공!
     } catch (err: any) {
+      // 3. API 호출 실패 시 롤백
       alert("삭제에 실패했습니다: " + err.message);
-      // 실패 시 UI 롤백 로직 필요
+      // 훅에서 받은 함수를 사용하여 UI 상태를 원래대로 복구
+      addSessionOutput(itemToDelete); 
     }
   };
 

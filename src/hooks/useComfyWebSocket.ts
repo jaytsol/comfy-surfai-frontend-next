@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import type { User } from '@/interfaces/user.interface';
 import type { CrystoolsMonitorData } from '@/interfaces/system-monitor.interface';
 import type {
@@ -19,6 +19,8 @@ export interface ComfyWebSocketHook {
   queueRemaining: number;
   activePromptId: string | null;
   sessionOutputs: HistoryItemData[];
+  removeSessionOutput: (id: number) => void;
+  addSessionOutput: (item: HistoryItemData) => void; // ✨ 롤백용 함수 타입 (낙관적 업데이트)
 }
 
 /**
@@ -37,6 +39,20 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
   const [queueRemaining, setQueueRemaining] = useState<number>(0);
   const [activePromptId, setActivePromptId] = useState<string | null>(null);
   const [sessionOutputs, setSessionOutputs] = useState<HistoryItemData[]>([]);
+
+  const removeSessionOutput = useCallback((idToRemove: number) => {
+    setSessionOutputs(prev => prev.filter(item => item.id !== idToRemove));
+  }, []);
+
+  // ✨ --- 롤백을 위한 함수 추가 --- ✨
+  const addSessionOutput = useCallback((itemToAdd: HistoryItemData) => {
+    // 실패했던 아이템을 다시 목록에 추가하고, 최신순으로 정렬합니다.
+    setSessionOutputs(prev => 
+      [...prev, itemToAdd].sort((a, b) => 
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      )
+    );
+  }, []);
 
   // activePromptId state가 변경될 때마다 ref 값도 동기화
   useEffect(() => {
@@ -213,5 +229,7 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
     queueRemaining, 
     activePromptId,
     sessionOutputs,
+    removeSessionOutput,
+    addSessionOutput,
   };
 };
