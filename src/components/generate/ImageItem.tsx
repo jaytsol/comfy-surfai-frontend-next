@@ -1,67 +1,89 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import apiClient from '@/lib/apiClient';
+import { Download, Maximize, Trash2 } from 'lucide-react';
+import type { HistoryItemData } from '@/interfaces/history.interface';
 
 interface ImageItemProps {
-  output: { id: number };
-  onImageClick: (outputId: number) => void; // 확대할 URL을 부모에게 전달
+  item: HistoryItemData;
+  onImageClick: (item: HistoryItemData) => void;
+  onDelete: (id: number) => void;
 }
 
-const ImageItem: React.FC<ImageItemProps> = ({ output, onImageClick }) => {
-  const [viewUrl, setViewUrl] = useState<string | null>(null); // 썸네일 표시용 URL
-  const [isLoading, setIsLoading] = useState(true);
-
-  // 컴포넌트 마운트 시 표시용 URL을 한 번만 가져옵니다.
-  useEffect(() => {
-    const fetchViewUrl = async () => {
-      setIsLoading(true);
-      try {
-        const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${output.id}/view-url`);
-        setViewUrl(response.viewUrl);
-      } catch (error) {
-        console.error(`Failed to fetch view URL for output ${output.id}`, error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchViewUrl();
-  }, [output.id]);
-
+const ImageItem: React.FC<ImageItemProps> = ({ item, onImageClick, onDelete }) => {
+  
   // 다운로드 버튼 클릭 핸들러
   const handleDownloadClick = async (e: React.MouseEvent) => {
-    e.stopPropagation(); // 이미지 확대 클릭이 실행되는 것을 막음
+    e.stopPropagation(); // 부모 div의 onImageClick 이벤트가 실행되는 것을 방지
     try {
-      const response = await apiClient<{ downloadUrl: string }>(`/my-outputs/${output.id}/download-url`);
+      const response = await apiClient<{ downloadUrl: string }>(`/my-outputs/${item.id}/download-url`);
       const link = document.createElement('a');
       link.href = response.downloadUrl;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } catch (error) {
+      console.error(`다운로드 URL 생성에 실패했습니다 (ID: ${item.id}):`, error);
       alert("파일을 다운로드하는 중 오류가 발생했습니다.");
     }
   };
 
-  if (isLoading) {
-    return <div className="w-full h-full bg-gray-200 rounded-lg animate-pulse" />;
-  }
-
+  // 삭제 버튼 클릭 핸들러
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onDelete(item.id);
+  };
+  
   return (
-    <div onClick={() => onImageClick(output.id)} className="w-full h-full cursor-pointer">
+    // group 클래스를 사용하여 자식 요소들이 마우스오버 상태에 반응하도록 함
+    <div className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-200">
       <img
-        src={viewUrl || ''} // ✨ 받아온 viewUrl로 이미지 표시
-        alt={`Generated image ${output.id}`}
+        src={item.viewUrl}
+        alt={item.originalFilename}
         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
       />
-      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex items-center justify-center">
+      
+      {/* 마우스를 올렸을 때 나타나는 반투명 오버레이와 버튼들 */}
+      <div 
+        className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex flex-col items-center justify-center p-4 space-y-2"
+      >
+        {/* 확대보기 버튼 */}
+        <button
+          onClick={() => onImageClick(item)}
+          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-white/90 text-black rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-white"
+          aria-label="Enlarge Image"
+        >
+          <Maximize className="w-4 h-4" />
+          <span>확대보기</span>
+        </button>
+
+        {/* 다운로드 버튼 */}
         <button
           onClick={handleDownloadClick}
-          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 px-4 py-2 bg-white text-black rounded-md text-sm font-semibold"
+          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-white/90 text-black rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-white"
+          aria-label="Download Image"
         >
-          다운로드
+          <Download className="w-4 h-4" />
+          <span>다운로드</span>
+        </button>
+        
+        {/* 삭제 버튼 */}
+        <button
+          onClick={handleDeleteClick}
+          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-red-600/90 text-white rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-red-700"
+          aria-label="Delete Image"
+        >
+          <Trash2 className="w-4 h-4" />
+          <span>삭제</span>
         </button>
       </div>
+
+       {/* 하단 정보 표시 */}
+       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 pointer-events-none">
+          <p className="text-white text-xs font-medium truncate" title={item.originalFilename}>{item.originalFilename}</p>
+          <p className="text-gray-300 text-xs">{new Date(item.createdAt).toLocaleDateString()}</p>
+       </div>
     </div>
   );
 };

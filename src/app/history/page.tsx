@@ -17,7 +17,8 @@ export default function HistoryPage() {
   const [error, setError] = useState<string | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [viewingImageUrl, setViewingImageUrl] = useState<string | null>(null);
+  const [viewingItem, setViewingItem] = useState<HistoryItemData | null>(null);
+  const [lightboxUrlCache, setLightboxUrlCache] = useState<Record<number, string>>({});
 
   useEffect(() => {
     if (!isAuthLoading && user) {
@@ -47,8 +48,27 @@ export default function HistoryPage() {
     }
   };
 
-  const handleImageClick = (imageUrl: string) => setViewingImageUrl(imageUrl);
-  const handleCloseLightbox = () => setViewingImageUrl(null);
+  // ✨ --- 캐싱 로직이 포함된 이미지 클릭 핸들러 --- ✨
+  const handleImageClick = async (item: HistoryItemData) => {
+    // 캐시에 이미 확대용 URL이 있는지 확인합니다.
+    if (lightboxUrlCache[item.id]) {
+      setViewingItem(item); // 캐시된 URL을 사용할 것이므로 라이트박스만 엽니다.
+      return;
+    }
+
+    // 캐시에 없다면, 백엔드에 확대용 URL을 새로 요청합니다.
+    try {
+      const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${item.id}/view-url`);
+      const newUrl = response.viewUrl;
+      // 받아온 URL을 캐시에 저장합니다.
+      setLightboxUrlCache(prevCache => ({ ...prevCache, [item.id]: newUrl }));
+      // 라이트박스를 엽니다.
+      setViewingItem(item);
+    } catch (err) {
+      alert("이미지를 확대하는 데 오류가 발생했습니다.");
+    }
+  };
+  const handleCloseLightbox = () => setViewingItem(null);
 
   const handleDelete = async (id: number) => {
     if (!confirm(`ID: ${id} 생성물을 정말로 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.`)) {
@@ -110,7 +130,10 @@ export default function HistoryPage() {
         {error && <p className="mt-4 text-center text-red-600">오류: {error}</p>}
       </div>
       
-      <ImageLightbox imageUrl={viewingImageUrl} onClose={handleCloseLightbox} />
+      <ImageLightbox
+        onClose={handleCloseLightbox}
+        item={viewingItem} // 메타데이터 표시를 위해 item 객체도 전달
+      />
     </div>
   );
 }

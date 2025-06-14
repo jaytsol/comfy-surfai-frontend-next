@@ -6,7 +6,7 @@ import type { HistoryItemData } from '@/interfaces/history.interface';
 
 interface HistoryGalleryProps {
   items: HistoryItemData[];
-  onImageClick: (imageUrl: string) => void;
+  onImageClick: (item: HistoryItemData) => void;
   onDelete: (id: number) => void;
   className?: string;
 }

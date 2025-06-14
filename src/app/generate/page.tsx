@@ -15,6 +15,7 @@ import GenerationDisplay from '@/components/generate/GenerationDisplay';
 import { GenerateImagePayload, ImageGenerationResponse } from '@/interfaces/api.interface';
 import SessionGallery from '@/components/generate/SessionGallery';
 import ImageLightbox from '@/components/common/ImageLightbox';
+import type { HistoryItemData } from '@/interfaces/history.interface';
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -28,7 +29,7 @@ export default function GeneratePage() {
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
-  const [viewingOutputId, setViewingOutputId] = useState<number | null>(null);
+  const [viewingItem, setViewingItem] = useState<HistoryItemData | null>(null);
   const [urlCache, setUrlCache] = useState<Record<number, string>>({});
 
   // ✨ --- WebSocket 관련 상태는 모두 커스텀 훅에서 가져옵니다 --- ✨
@@ -96,36 +97,35 @@ export default function GeneratePage() {
     setApiError(null); // 템플릿 변경 시 에러 초기화
   }, [selectedTemplateId, templates]);
 
-  const handleImageClick = async (outputId: number) => {
+  // ✨ --- 캐싱 로직이 포함된 이미지 클릭 핸들러 --- ✨
+  const handleImageClick = async (item: HistoryItemData) => {
     // 1. 캐시에 이미 URL이 있는지 확인합니다.
-    if (urlCache[outputId]) {
-      console.log(`[Cache Hit] Using cached URL for output #${outputId}`);
-      setViewingOutputId(outputId); // 캐시된 URL로 라이트박스를 즉시 엽니다.
+    if (urlCache[item.id]) {
+      setViewingItem(item); // 캐시된 URL로 라이트박스를 즉시 엽니다.
       return;
     }
 
-    // 2. 캐시에 URL이 없다면 (Cache Miss), 백엔드에 새로 요청합니다.
-    console.log(`[Cache Miss] Fetching new URL for output #${outputId}`);
+    // 2. 캐시에 URL이 없다면, 백엔드에 새로 요청합니다.
     try {
-      const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${outputId}/view-url`);
+      const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${item.id}/view-url`);
       const newUrl = response.viewUrl;
 
       // 3. 받아온 URL을 캐시에 저장합니다.
       setUrlCache(prevCache => ({
         ...prevCache,
-        [outputId]: newUrl,
+        [item.id]: newUrl,
       }));
 
       // 4. 라이트박스를 엽니다.
-      setViewingOutputId(outputId);
+      setViewingItem(item);
     } catch (error) {
-      console.error(`Failed to get view URL for output ${outputId}`, error);
+      console.error(`Failed to get view URL for output ${item.id}`, error);
       setApiError("이미지를 확대하는 중 오류가 발생했습니다.");
     }
   };
 
   const handleCloseLightbox = () => {
-    setViewingOutputId(null);
+    setViewingItem(null);
   };
 
   const handleParameterChange = (
@@ -170,6 +170,26 @@ export default function GeneratePage() {
       setApiError(err.message || '이미지 생성 요청 중 오류가 발생했습니다.');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm(`ID: #${id} 생성물을 정말로 삭제하시겠습니까? (DB에서도 삭제됩니다)`)) {
+      return;
+    }
+    // 낙관적 업데이트: UI에서 먼저 아이템 제거
+    // ✨ useComfyWebSocket 훅에서 sessionOutputs를 직접 수정할 수 있는 함수를 반환받아야 함
+    // 예: removeSessionOutput(id)
+    // 지금은 GeneratePage에서 상태를 관리하지 않으므로, 이 로직은 훅으로 이동해야 합니다.
+    // 하지만 우선은 API 호출만 구현합니다.
+    try {
+      // ✨ TODO: 백엔드에 DELETE /my-outputs/:id API 구현 필요
+      await apiClient(`/my-outputs/${id}`, { method: 'DELETE' });
+      alert("성공적으로 삭제되었습니다. (DB에서 삭제됨)");
+      // TODO: 삭제 성공 시 useComfyWebSocket 훅의 상태를 업데이트하는 함수 호출
+    } catch (err: any) {
+      alert("삭제에 실패했습니다: " + err.message);
+      // 실패 시 UI 롤백 로직 필요
     }
   };
 
@@ -220,9 +240,12 @@ export default function GeneratePage() {
           className="mt-6"
         />
 
-        <SessionGallery outputs={sessionOutputs} handleImageClick={handleImageClick} />
+        <SessionGallery outputs={sessionOutputs} onImageClick={handleImageClick} onDelete={handleDelete} />
       </div>
-      <ImageLightbox imageUrl={viewingOutputId ? urlCache[viewingOutputId] : null} onClose={handleCloseLightbox} />
+      <ImageLightbox
+        onClose={handleCloseLightbox}
+        item={viewingItem}
+      />
     </div>
   );
 }

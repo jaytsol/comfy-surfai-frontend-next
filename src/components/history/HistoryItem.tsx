@@ -7,7 +7,7 @@ import { HistoryItemData } from '@/interfaces/history.interface';
 
 interface HistoryItemProps {
   item: HistoryItemData;
-  onImageClick: (imageUrl: string) => void;
+  onImageClick: (item: HistoryItemData) => void;
   onDelete: (id: number, e: React.MouseEvent) => void;
 }
 
@@ -30,7 +30,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({ item, onImageClick, onDelete 
   return (
     <div 
       className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-100 cursor-pointer"
-      onClick={() => onImageClick(item.viewUrl)}
+      onClick={() => onImageClick(item)}
     >
       <img
         src={item.viewUrl}
@@ -39,7 +39,7 @@ const HistoryItem: React.FC<HistoryItemProps> = ({ item, onImageClick, onDelete 
       />
       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex flex-col items-center justify-center p-4 space-y-2">
         <button
-          onClick={(e) => { e.stopPropagation(); onImageClick(item.viewUrl); }}
+          onClick={(e) => { e.stopPropagation(); onImageClick(item); }}
           className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-white/80 text-black rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-white"
           aria-label="Enlarge Image"
         >
