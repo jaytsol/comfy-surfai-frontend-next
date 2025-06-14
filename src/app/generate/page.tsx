@@ -29,6 +29,7 @@ export default function GeneratePage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
   const [viewingOutputId, setViewingOutputId] = useState<number | null>(null);
+  const [urlCache, setUrlCache] = useState<Record<number, string>>({});
 
   // ✨ --- WebSocket 관련 상태는 모두 커스텀 훅에서 가져옵니다 --- ✨
   const {
@@ -95,8 +96,32 @@ export default function GeneratePage() {
     setApiError(null); // 템플릿 변경 시 에러 초기화
   }, [selectedTemplateId, templates]);
 
-  const handleImageClick = (outputId: number) => {
-    setViewingOutputId(outputId);
+  const handleImageClick = async (outputId: number) => {
+    // 1. 캐시에 이미 URL이 있는지 확인합니다.
+    if (urlCache[outputId]) {
+      console.log(`[Cache Hit] Using cached URL for output #${outputId}`);
+      setViewingOutputId(outputId); // 캐시된 URL로 라이트박스를 즉시 엽니다.
+      return;
+    }
+
+    // 2. 캐시에 URL이 없다면 (Cache Miss), 백엔드에 새로 요청합니다.
+    console.log(`[Cache Miss] Fetching new URL for output #${outputId}`);
+    try {
+      const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${outputId}/view-url`);
+      const newUrl = response.viewUrl;
+
+      // 3. 받아온 URL을 캐시에 저장합니다.
+      setUrlCache(prevCache => ({
+        ...prevCache,
+        [outputId]: newUrl,
+      }));
+
+      // 4. 라이트박스를 엽니다.
+      setViewingOutputId(outputId);
+    } catch (error) {
+      console.error(`Failed to get view URL for output ${outputId}`, error);
+      setApiError("이미지를 확대하는 중 오류가 발생했습니다.");
+    }
   };
 
   const handleCloseLightbox = () => {
@@ -195,9 +220,9 @@ export default function GeneratePage() {
           className="mt-6"
         />
 
-        <SessionGallery outputs={sessionOutputs} onImageClick={handleImageClick} />
+        <SessionGallery outputs={sessionOutputs} handleImageClick={handleImageClick} />
       </div>
-      <ImageLightbox outputId={viewingOutputId} onClose={handleCloseLightbox} />
+      <ImageLightbox imageUrl={viewingOutputId ? urlCache[viewingOutputId] : null} onClose={handleCloseLightbox} />
     </div>
   );
 }

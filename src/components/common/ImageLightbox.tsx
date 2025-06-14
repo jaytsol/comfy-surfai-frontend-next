@@ -1,38 +1,21 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
-import apiClient from '@/lib/apiClient';
+import React from 'react';
 
+// Props 타입: 이제 URL을 직접 받습니다.
 interface ImageLightboxProps {
-  outputId: number | null; // ✨ URL 대신 ID를 받습니다.
+  imageUrl: string | null;
   onClose: () => void;
 }
 
-const ImageLightbox: React.FC<ImageLightboxProps> = ({ outputId, onClose }) => {
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+const ImageLightbox: React.FC<ImageLightboxProps> = ({ imageUrl, onClose }) => {
+  // ✨ useEffect와 상태 관리 로직을 모두 제거합니다.
 
-  useEffect(() => {
-    if (outputId === null) return;
+  // imageUrl이 없으면 아무것도 렌더링하지 않습니다.
+  if (!imageUrl) {
+    return null;
+  }
 
-    const fetchUrl = async () => {
-      setIsLoading(true);
-      try {
-        const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${outputId}/view-url`);
-        setImageUrl(response.viewUrl);
-      } catch (error) {
-        console.error(`Failed to fetch view URL for output ${outputId}`, error);
-        setImageUrl(null); // 에러 시 URL 초기화
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchUrl();
-  }, [outputId]);
-
-  if (outputId === null) return null;
-
-  // 뒷 배경 클릭 시 닫기
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -44,17 +27,20 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ outputId, onClose }) => {
       onClick={handleBackdropClick}
       className="fixed inset-0 bg-black bg-opacity-80 z-50 flex items-center justify-center p-4 animate-fade-in"
     >
-      <button onClick={onClose} className="absolute top-4 right-5 text-white text-4xl ...">&times;</button>
-      
-      <div className="relative max-w-4xl max-h-[90vh] flex items-center justify-center">
-        {isLoading && <span className="text-white">이미지 로딩 중...</span>}
-        {!isLoading && imageUrl && (
-          <img
-            src={imageUrl}
-            alt={`Enlarged view for output ${outputId}`}
-            className="max-w-full max-h-[90vh] object-contain rounded-lg"
-          />
-        )}
+      <button
+        onClick={onClose}
+        className="absolute top-4 right-5 text-white text-4xl font-bold hover:text-gray-300"
+        aria-label="Close"
+      >
+        &times;
+      </button>
+      <div className="relative max-w-4xl max-h-[90vh]">
+        {/* ✨ prop으로 받은 imageUrl을 직접 사용합니다. */}
+        <img
+          src={imageUrl}
+          alt="Enlarged view"
+          className="max-w-full max-h-[90vh] object-contain rounded-lg"
+        />
       </div>
     </div>
   );
