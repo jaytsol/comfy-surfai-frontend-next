@@ -9,7 +9,6 @@ export interface WorkflowParameterUIConfig {
   label?: string; // 사용자 친화적인 레이블 텍스트
   description?: string; // 툴팁으로 보여줄 설명
   options?: string[]; // type이 'select'일 경우의 선택지 배열
-  placeholder?: string; // 입력 필드의 플레이스홀더
 }
 
 /**

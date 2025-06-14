@@ -61,11 +61,9 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(selectedTemplate.parameter_map).map(
               ([paramName, paramConfig]) => {
-                // paramConfig에서 UI 렌더링에 필요한 메타데이터 추출
-                // 백엔드 데이터에 'ui' 객체가 없다면, description을 직접 사용합니다.
-                const description = paramConfig.ui?.description || paramConfig.description;
-                const label = paramConfig.ui?.label || paramName.replace(/_/g, ' ');
-                const inputType = paramConfig.ui?.type || 'text';
+                const label = paramConfig.ui?.label ?? paramName.replace(/_/g, ' ');
+                const inputType = paramConfig.ui?.type ?? 'text';
+                const description = paramConfig.ui?.description;
                 const options = paramConfig.ui?.options;
 
                 return (
