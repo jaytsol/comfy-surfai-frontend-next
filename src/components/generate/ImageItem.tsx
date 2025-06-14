@@ -37,7 +37,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ item, onImageClick, onDelete }) =
   
   return (
     // group 클래스를 사용하여 자식 요소들이 마우스오버 상태에 반응하도록 함
-    <div className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-200">
+    <div className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-200" onClick={() => onImageClick(item)}>
       <img
         src={item.viewUrl}
         alt={item.originalFilename}
@@ -50,7 +50,7 @@ const ImageItem: React.FC<ImageItemProps> = ({ item, onImageClick, onDelete }) =
       >
         {/* 확대보기 버튼 */}
         <button
-          onClick={() => onImageClick(item)}
+          onClick={(e) => { e.stopPropagation(); onImageClick(item); }}
           className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-white/90 text-black rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-white"
           aria-label="Enlarge Image"
         >
