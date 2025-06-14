@@ -1,20 +1,16 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-// 실제 프로젝트 구조에 맞게 타입 임포트 경로를 수정해주세요.
 import type { User } from '@/interfaces/user.interface';
 import type { CrystoolsMonitorData } from '@/interfaces/system-monitor.interface';
 import type {
   ComfyUIProgressData,
-  ComfyUIExecutedData,
   ComfyUIWebSocketEvent,
   ImageGenerationData,
   ComfyUIStatusData,
-  ComfyUIExecutionStartData,
   GenerationResultOutput,
 } from '@/interfaces/websocket.interface';
 
-// 이 훅이 반환할 값들의 타입을 정의합니다.
 export interface ComfyWebSocketHook {
   isWsConnected: boolean;
   executionStatus: string | null;
@@ -31,6 +27,8 @@ export interface ComfyWebSocketHook {
 export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): ComfyWebSocketHook => {
   const ws = useRef<WebSocket | null>(null);
   const activePromptIdRef = useRef<string | null>(null);
+
+  const MAX_SESSION_GALLERY_ITEMS = 20;
   
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [executionStatus, setExecutionStatus] = useState<string | null>(null);
@@ -100,12 +98,14 @@ export const useComfyWebSocket = (user: User | null, isAuthLoading: boolean): Co
           if (message.type === 'generation_result') {
             const finalData = msgData as ImageGenerationData;
 
-            if (finalData.outputs) {
-              console.log(`Final results received for prompt #${finalData.prompt_id}. Adding to session gallery.`);
-              
-              // 새로 받은 최종 결과물을 기존 목록에 추가합니다.
-              // (DB ID는 고유하므로 key로 사용하기에 적합합니다)
-              setSessionOutputs(prevOutputs => [...prevOutputs, ...finalData.outputs]);
+            if (finalData.outputs && finalData.outputs.length > 0) {
+              setSessionOutputs(prevOutputs => {
+                const combinedOutputs = [...prevOutputs, ...finalData.outputs];
+                if (combinedOutputs.length > MAX_SESSION_GALLERY_ITEMS) {
+                  return combinedOutputs.slice(combinedOutputs.length - MAX_SESSION_GALLERY_ITEMS);
+                }
+                return combinedOutputs;
+              });
             }
 
             setExecutionStatus('최종 결과 수신 완료!');
