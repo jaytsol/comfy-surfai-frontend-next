@@ -92,7 +92,7 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDel
           <>
             <button
               onClick={(e) => { e.stopPropagation(); onImageClick(item); }}
-              className="opacity-0 group-hover:opacity-100 ... (스타일)"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-white/90 text-black rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-white"
               aria-label="Enlarge"
             >
               <Maximize className="w-4 h-4" />
@@ -100,7 +100,7 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDel
             </button>
             <button
               onClick={handleDownloadClick}
-              className="opacity-0 group-hover:opacity-100 ... (스타일)"
+              className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-white/90 text-black rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-white"
               aria-label="Download"
             >
               <Download className="w-4 h-4" />
@@ -110,7 +110,7 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDel
         )}
         <button
           onClick={handleDeleteClick}
-          className="opacity-0 group-hover:opacity-100 ... (스타일)"
+          className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center gap-2 px-4 py-2 bg-red-600/90 text-white rounded-md text-sm font-semibold backdrop-blur-sm hover:bg-red-700"
           aria-label="Delete"
         >
           <Trash2 className="w-4 h-4" />
