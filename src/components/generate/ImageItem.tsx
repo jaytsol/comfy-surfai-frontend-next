@@ -4,6 +4,7 @@ import React from 'react';
 import apiClient from '@/lib/apiClient';
 import { Download, Maximize, Trash2 } from 'lucide-react';
 import type { HistoryItemData } from '@/interfaces/history.interface';
+import { Video as VideoIcon, ImageIcon } from 'lucide-react';
 
 interface ImageItemProps {
   item: HistoryItemData;
@@ -34,15 +35,30 @@ const ImageItem: React.FC<ImageItemProps> = ({ item, onImageClick, onDelete }) =
     e.stopPropagation();
     onDelete(item.id);
   };
+
+  const isVideo = item.mimeType?.startsWith('video/') ?? false;
   
   return (
-    // group 클래스를 사용하여 자식 요소들이 마우스오버 상태에 반응하도록 함
-    <div className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-200" onClick={() => onImageClick(item)}>
-      <img
-        src={item.viewUrl}
-        alt={item.originalFilename}
-        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-      />
+    <div
+      onClick={() => onImageClick(item)}
+      className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-900 text-white"
+    >
+      {isVideo ? (
+        // ✨ 비디오일 경우 <video> 태그를 사용하여 썸네일(첫 프레임)을 표시
+        <video
+          src={item.viewUrl}
+          className="w-full h-full object-cover"
+          muted
+          playsInline
+        />
+      ) : (
+        // 이미지는 기존과 동일
+        <img
+          src={item.viewUrl}
+          alt={item.originalFilename}
+          className="w-full h-full object-cover"
+        />
+      )}
       
       {/* 마우스를 올렸을 때 나타나는 반투명 오버레이와 버튼들 */}
       <div 
@@ -80,9 +96,15 @@ const ImageItem: React.FC<ImageItemProps> = ({ item, onImageClick, onDelete }) =
       </div>
 
        {/* 하단 정보 표시 */}
-       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 pointer-events-none">
-          <p className="text-white text-xs font-medium truncate" title={item.originalFilename}>{item.originalFilename}</p>
-          <p className="text-gray-300 text-xs">{new Date(item.createdAt).toLocaleDateString()}</p>
+       <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pointer-events-none">
+          <div className="flex items-center gap-2">
+             {/* ✨ 파일 타입에 따라 아이콘 표시 */}
+             {isVideo ? <VideoIcon className="w-4 h-4 text-white" /> : <ImageIcon className="w-4 h-4 text-white" />}
+             <p className="text-white text-xs font-medium truncate" title={item.originalFilename}>
+               {item.originalFilename}
+             </p>
+          </div>
+          <p className="text-gray-300 text-xs mt-1">{new Date(item.createdAt).toLocaleString()}</p>
        </div>
     </div>
   );

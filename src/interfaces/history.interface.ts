@@ -8,6 +8,7 @@ export interface HistoryItemData {
     id: number;
     viewUrl: string;
     originalFilename: string;
+    mimeType: string; // ✨ MIME 타입 추가 (예: 'image/png', 'video/mp4')
     createdAt: string;
     usedParameters?: Record<string, any>;
 }

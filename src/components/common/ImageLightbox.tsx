@@ -18,6 +18,8 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ item, onClose }) => {
     return null;
   }
 
+  const isVideo = item.mimeType?.startsWith('video/') ?? false;
+
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -35,12 +37,23 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ item, onClose }) => {
       <div onClick={handleBackdropClick} className="flex flex-col md:flex-row gap-4 max-w-6xl w-full max-h-[90vh]">
         
         {/* 1. 이미지 표시 영역 */}
-        <div onClick={handleBackdropClick} className="flex-grow flex items-center justify-center">
-          <img
-            src={item.viewUrl}
-            alt={`Enlarged view for output ${item.id}`}
-            className="max-w-full max-h-full object-contain"
-          />
+        <div className="flex-grow flex items-center justify-center">
+          {isVideo ? (
+            // ✨ 비디오일 경우, controls를 활성화하여 재생/정지 가능하게 함
+            <video
+              src={item.viewUrl}
+              controls
+              autoPlay
+              loop
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : (
+            <img
+              src={item.viewUrl}
+              alt={`Enlarged view for output ${item.id}`}
+              className="max-w-full max-h-full object-contain"
+            />
+          )}
         </div>
 
         {/* 2. 메타데이터 표시 영역 */}
