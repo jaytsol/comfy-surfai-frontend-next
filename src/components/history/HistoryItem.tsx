@@ -2,7 +2,7 @@
 
 import React from 'react';
 import apiClient from '@/lib/apiClient';
-import { Download, Maximize, Trash2 } from 'lucide-react';
+import { Download, ImageIcon, Maximize, Trash2, VideoIcon } from 'lucide-react';
 import { HistoryItemData } from '@/interfaces/history.interface';
 
 interface HistoryItemProps {
@@ -27,16 +27,29 @@ const HistoryItem: React.FC<HistoryItemProps> = ({ item, onImageClick, onDelete 
     }
   };
 
+  const isVideo = item.mimeType?.startsWith('video/') ?? false;
+
   return (
     <div 
       className="flex-shrink-0 relative group w-64 h-64 rounded-lg shadow-md overflow-hidden bg-gray-100 cursor-pointer"
       onClick={() => onImageClick(item)}
     >
-      <img
-        src={item.viewUrl}
-        alt={`Generated image ${item.id}`}
-        className="w-full h-full object-cover"
-      />
+      {isVideo ? (
+        // ✨ 비디오일 경우 <video> 태그를 사용하여 썸네일(첫 프레임)을 표시
+        <video
+          src={item.viewUrl}
+          className="w-full h-full object-cover"
+          muted
+          playsInline
+        />
+      ) : (
+        // 이미지는 기존과 동일
+        <img
+          src={item.viewUrl}
+          alt={item.originalFilename}
+          className="w-full h-full object-cover"
+        />
+      )}
       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex flex-col items-center justify-center p-4 space-y-2">
         <button
           onClick={(e) => { e.stopPropagation(); onImageClick(item); }}
@@ -64,7 +77,10 @@ const HistoryItem: React.FC<HistoryItemProps> = ({ item, onImageClick, onDelete 
         </button>
       </div>
        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-2 pointer-events-none">
-          <p className="text-white text-xs font-medium truncate" title={item.originalFilename}>{item.originalFilename}</p>
+          <div className="flex items-center gap-2">
+            {isVideo ? <VideoIcon className="w-4 h-4 text-white" /> : <ImageIcon className="w-4 h-4 text-white" />}
+            <p className="text-white text-xs font-medium truncate" title={item.originalFilename}>{item.originalFilename}</p>
+          </div>
           <p className="text-gray-300 text-xs">{new Date(item.createdAt).toLocaleString()}</p>
        </div>
     </div>
