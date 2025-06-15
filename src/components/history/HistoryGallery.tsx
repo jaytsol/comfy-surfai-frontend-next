@@ -28,7 +28,7 @@ const HistoryGallery: React.FC<HistoryGalleryProps> = ({ items, onImageClick, on
           key={item.id} 
           item={item} 
           onImageClick={onImageClick} 
-          onDelete={(id, e) => { e.stopPropagation(); onDelete(id); }}
+          onDelete={onDelete}
         />
       ))}
     </div>
