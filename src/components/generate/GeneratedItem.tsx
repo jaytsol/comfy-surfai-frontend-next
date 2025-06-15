@@ -2,7 +2,7 @@
 
 import React from "react";
 import apiClient from "@/lib/apiClient";
-import { Download, Maximize, Trash2 } from "lucide-react";
+import { Clock, Download, Maximize, Trash2 } from "lucide-react";
 import type { HistoryItemData } from "@/interfaces/history.interface";
 import { Video as VideoIcon, ImageIcon } from "lucide-react";
 
@@ -45,6 +45,28 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({
   };
 
   const isVideo = item.mimeType?.startsWith("video/") ?? false;
+
+  // ✨ --- 비디오 길이 계산 및 포맷팅 로직 --- ✨
+  const calculateDuration = (): string | null => {
+    // 1. 비디오가 아니거나, 파라미터 정보가 없으면 null 반환
+    if (!isVideo || !item.usedParameters) return null;
+
+    // 2. length와 fps 값을 가져옵니다. (기본값 설정)
+    const length = item.usedParameters.length as number || 0;
+    const fps = item.usedParameters.fps as number || 24; // fps 정보가 없을 경우 기본값 24로 가정
+
+    if (length === 0 || fps === 0) return null;
+
+    // 3. 초 단위로 길이를 계산합니다.
+    const durationInSeconds = length / fps;
+
+    // 4. MM:SS 형식으로 변환합니다.
+    const minutes = Math.floor(durationInSeconds / 60);
+    const seconds = Math.floor(durationInSeconds % 60);
+    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+  };
+
+  const durationString = calculateDuration();
 
   return (
     <div
@@ -120,9 +142,16 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({
             {item.originalFilename}
           </p>
         </div>
-        <p className="text-gray-300 text-xs mt-1">
-          {new Date(item.createdAt).toLocaleString()}
-        </p>
+        <div className="flex items-center justify-between mt-1">
+          <p className="text-gray-300 text-xs">{new Date(item.createdAt).toLocaleDateString()}</p>
+          {/* ✨ 계산된 비디오 길이(durationString)를 표시합니다. */}
+          {durationString && (
+            <div className="flex items-center gap-1 px-1.5 py-0.5 bg-black/50 rounded-full">
+              <Clock className="w-2.5 h-2.5 text-white" />
+              <p className="text-white text-xs font-mono">{durationString}</p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
