@@ -16,9 +16,9 @@ import {
   GenerateImagePayload,
   ImageGenerationResponse,
 } from "@/interfaces/api.interface";
-import SessionGallery from "@/components/generate/SessionGallery";
 import ItemLightbox from "@/components/common/ItemLightbox";
 import type { HistoryItemData } from "@/interfaces/history.interface";
+import OutputGallery from "@/components/common/OutputGallery";
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -268,10 +268,14 @@ export default function GeneratePage() {
           className="mt-6"
         />
 
-        <SessionGallery
-          outputs={sessionOutputs}
+        <OutputGallery
+          items={sessionOutputs}
           onImageClick={handleImageClick}
           onDelete={handleDelete}
+          layout="scroll" // ✨ 좌우 스크롤 레이아웃 지정
+          title="이번 세션의 생성 기록"
+          sortOrder="newest-first" // ✨ 최신순으로 표시
+          emptyStateMessage={<></>} // generate 페이지에선 비어있을 때 아무것도 안보여줌
         />
       </div>
       <ItemLightbox onClose={handleCloseLightbox} item={viewingItem} />

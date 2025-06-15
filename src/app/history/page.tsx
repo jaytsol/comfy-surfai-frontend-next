@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/apiClient";
-import HistoryGallery from "@/components/history/HistoryGallery";
 import ItemLightbox from "@/components/common/ItemLightbox";
 import { History as HistoryIcon } from "lucide-react";
 import type {
@@ -11,6 +10,7 @@ import type {
   PaginatedHistoryResponse,
 } from "@/interfaces/history.interface";
 import { Button } from "@/components/ui/button";
+import OutputGallery from "@/components/common/OutputGallery";
 
 export default function HistoryPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -130,10 +130,12 @@ export default function HistoryPage() {
       </div>
 
       <div className="flex flex-col gap-6">
-        <HistoryGallery
+        <OutputGallery
           items={items}
           onImageClick={handleImageClick}
           onDelete={handleDelete}
+          layout="grid" // ✨ 그리드 레이아웃 지정
+          title="나의 생성 기록"
         />
 
         <div className="mt-8 text-center">
