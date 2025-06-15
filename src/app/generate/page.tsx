@@ -46,9 +46,9 @@ export default function GeneratePage() {
     systemMonitorData,
     queueRemaining,
     activePromptId,
-    sessionOutputs,
-    removeSessionOutput,
-    addSessionOutput,
+    items,
+    removeItem,
+    addItem,
   } = useComfyWebSocket(user, isAuthLoading);
 
   // 접근 제어 및 템플릿 목록 로드
@@ -194,11 +194,11 @@ export default function GeneratePage() {
       return;
     }
 
-    const itemToDelete = sessionOutputs.find((item) => item.id === id);
+    const itemToDelete = items.find((item) => item.id === id);
     if (!itemToDelete) return;
 
     // 1. 낙관적 업데이트: UI에서 즉시 제거
-    removeSessionOutput(id);
+    removeItem(id);
 
     try {
       // 2. 백엔드에 실제 삭제 API 호출
@@ -208,7 +208,7 @@ export default function GeneratePage() {
       // 3. API 호출 실패 시 롤백
       alert("삭제에 실패했습니다: " + err.message);
       // 훅에서 받은 함수를 사용하여 UI 상태를 원래대로 복구
-      addSessionOutput(itemToDelete);
+      addItem(itemToDelete);
     }
   };
 
@@ -269,7 +269,7 @@ export default function GeneratePage() {
         />
 
         <OutputGallery
-          items={sessionOutputs}
+          items={items}
           onImageClick={handleImageClick}
           onDelete={handleDelete}
           layout="scroll" // ✨ 좌우 스크롤 레이아웃 지정
