@@ -37,7 +37,7 @@ const ImageLightbox: React.FC<ImageLightboxProps> = ({ item, onClose }) => {
       <div onClick={handleBackdropClick} className="flex flex-col md:flex-row gap-4 max-w-6xl w-full max-h-[90vh]">
         
         {/* 1. 이미지 표시 영역 */}
-        <div className="flex-grow flex items-center justify-center">
+        <div onClick={handleBackdropClick} className="flex-grow flex items-center justify-center">
           {isVideo ? (
             // ✨ 비디오일 경우, controls를 활성화하여 재생/정지 가능하게 함
             <video
