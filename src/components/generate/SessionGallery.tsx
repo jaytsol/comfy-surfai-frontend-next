@@ -1,8 +1,8 @@
 "use client";
 
-import React from 'react';
-import ImageItem from './ImageItem';
-import type { HistoryItemData } from '@/interfaces/history.interface'; // 타입 경로 확인
+import React from "react";
+import GeneratedItem from "./GeneratedItem";
+import type { HistoryItemData } from "@/interfaces/history.interface"; // 타입 경로 확인
 
 interface SessionGalleryProps {
   outputs: HistoryItemData[];
@@ -11,7 +11,12 @@ interface SessionGalleryProps {
   className?: string;
 }
 
-const SessionGallery: React.FC<SessionGalleryProps> = ({ outputs, onImageClick, onDelete, className = '' }) => {
+const SessionGallery: React.FC<SessionGalleryProps> = ({
+  outputs,
+  onImageClick,
+  onDelete,
+  className = "",
+}) => {
   if (!outputs || outputs.length === 0) return null;
 
   return (
@@ -23,10 +28,10 @@ const SessionGallery: React.FC<SessionGalleryProps> = ({ outputs, onImageClick, 
         {[...outputs].reverse().map((output) => (
           <div key={output.id} className="flex-shrink-0">
             {/* ✨ ImageItem에 onDelete 핸들러를 그대로 전달합니다. */}
-            <ImageItem 
-              item={output} 
-              onImageClick={onImageClick} 
-              onDelete={onDelete} 
+            <GeneratedItem
+              item={output}
+              onImageClick={onImageClick}
+              onDelete={onDelete}
             />
           </div>
         ))}
