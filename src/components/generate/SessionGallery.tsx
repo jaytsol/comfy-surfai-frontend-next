@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import GeneratedItem from "./GeneratedItem";
+import GeneratedItem from "@/components/common/GeneratedItem";
 import type { HistoryItemData } from "@/interfaces/history.interface"; // 타입 경로 확인
 
 interface SessionGalleryProps {

@@ -1,7 +1,7 @@
 "use client";
 
 import React from 'react';
-import HistoryItem from './HistoryItem';
+import GeneratedItem from "@/components/common/GeneratedItem";
 import type { HistoryItemData } from '@/interfaces/history.interface';
 
 interface HistoryGalleryProps {
@@ -24,7 +24,7 @@ const HistoryGallery: React.FC<HistoryGalleryProps> = ({ items, onImageClick, on
   return (
     <div className={`grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 ${className}`}>
       {items.map((item) => (
-        <HistoryItem 
+        <GeneratedItem 
           key={item.id} 
           item={item} 
           onImageClick={onImageClick} 
