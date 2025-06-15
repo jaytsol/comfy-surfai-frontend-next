@@ -83,6 +83,10 @@ const ItemLightbox: React.FC<ItemLightboxProps> = ({ item, onClose }) => {
                 <p className="font-semibold text-gray-400">생성일</p>
                 <p>{new Date(item.createdAt).toLocaleString()}</p>
               </div>
+              <div>
+                <p className="font-semibold text-gray-400">Prompt ID</p>
+                <p className="text-gray-100 break-all text-xs">{item.promptId}</p>
+              </div>
               {item.usedParameters &&
                 Object.entries(item.usedParameters).length > 0 && (
                   <div>

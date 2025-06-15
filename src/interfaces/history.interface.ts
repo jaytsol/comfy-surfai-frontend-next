@@ -11,6 +11,7 @@ export interface HistoryItemData {
     mimeType: string; // ✨ MIME 타입 추가 (예: 'image/png', 'video/mp4')
     createdAt: string;
     usedParameters?: Record<string, any>;
+    promptId?: string;
 }
   
 /**
