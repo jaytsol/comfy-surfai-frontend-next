@@ -1,21 +1,24 @@
 // app/generate/page.tsx
 "use client";
 
-import React, { useState, useEffect, ChangeEvent, FormEvent } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 // 컴포넌트 및 훅, 타입 임포트 (경로는 실제 프로젝트 구조에 맞게 수정)
-import { useAuth } from '@/contexts/AuthContext';
-import apiClient from '@/lib/apiClient';
-import { useComfyWebSocket } from '@/hooks/useComfyWebSocket';
-import SystemMonitor from '@/components/generate/SystemMonitor';
-import TemplateForm from '@/components/template/TemplateForm';
-import type { WorkflowTemplate } from '@/interfaces/workflow.interface';
-import GenerationDisplay from '@/components/generate/GenerationDisplay';
-import { GenerateImagePayload, ImageGenerationResponse } from '@/interfaces/api.interface';
-import SessionGallery from '@/components/generate/SessionGallery';
-import ImageLightbox from '@/components/common/ImageLightbox';
-import type { HistoryItemData } from '@/interfaces/history.interface';
+import { useAuth } from "@/contexts/AuthContext";
+import apiClient from "@/lib/apiClient";
+import { useComfyWebSocket } from "@/hooks/useComfyWebSocket";
+import SystemMonitor from "@/components/generate/SystemMonitor";
+import TemplateForm from "@/components/template/TemplateForm";
+import type { WorkflowTemplate } from "@/interfaces/workflow.interface";
+import GenerationDisplay from "@/components/generate/GenerationDisplay";
+import {
+  GenerateImagePayload,
+  ImageGenerationResponse,
+} from "@/interfaces/api.interface";
+import SessionGallery from "@/components/generate/SessionGallery";
+import ItemLightbox from "@/components/common/ItemLightbox";
+import type { HistoryItemData } from "@/interfaces/history.interface";
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -23,9 +26,12 @@ export default function GeneratePage() {
 
   // --- UI 및 폼 관련 상태 ---
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
-  const [selectedTemplate, setSelectedTemplate] = useState<WorkflowTemplate | null>(null);
-  const [parameterValues, setParameterValues] = useState<Record<string, any>>({});
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<WorkflowTemplate | null>(null);
+  const [parameterValues, setParameterValues] = useState<Record<string, any>>(
+    {}
+  );
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -47,14 +53,18 @@ export default function GeneratePage() {
 
   // 접근 제어 및 템플릿 목록 로드
   useEffect(() => {
-    if (!isAuthLoading && user?.role === 'admin') {
+    if (!isAuthLoading && user?.role === "admin") {
       const fetchTemplates = async () => {
         setIsLoadingTemplates(true);
         try {
-          const fetchedTemplates = await apiClient<WorkflowTemplate[]>('/workflow-templates');
+          const fetchedTemplates = await apiClient<WorkflowTemplate[]>(
+            "/workflow-templates"
+          );
           setTemplates(fetchedTemplates || []);
         } catch (err: any) {
-          setApiError('워크플로우 템플릿을 불러오는 데 실패했습니다: ' + err.message);
+          setApiError(
+            "워크플로우 템플릿을 불러오는 데 실패했습니다: " + err.message
+          );
         } finally {
           setIsLoadingTemplates(false);
         }
@@ -66,10 +76,10 @@ export default function GeneratePage() {
   // 접근 제어 리디렉션
   useEffect(() => {
     if (!isAuthLoading) {
-      if (!user) router.replace('/login');
-      else if (user.role !== 'admin') {
-        alert('관리자만 접근 가능합니다.');
-        router.replace('/');
+      if (!user) router.replace("/login");
+      else if (user.role !== "admin") {
+        alert("관리자만 접근 가능합니다.");
+        router.replace("/");
       }
     }
   }, [user, isAuthLoading, router]);
@@ -77,7 +87,9 @@ export default function GeneratePage() {
   // 선택된 템플릿 변경 시 파라미터 초기화
   useEffect(() => {
     if (selectedTemplateId) {
-      const foundTemplate = templates.find(t => t.id === parseInt(selectedTemplateId, 10));
+      const foundTemplate = templates.find(
+        (t) => t.id === parseInt(selectedTemplateId, 10)
+      );
       setSelectedTemplate(foundTemplate || null);
       const initialParams: Record<string, any> = {};
       if (foundTemplate?.parameter_map) {
@@ -85,9 +97,9 @@ export default function GeneratePage() {
           const mappingInfo = foundTemplate.parameter_map[key];
           try {
             const node = (foundTemplate.definition as any)[mappingInfo.node_id];
-            initialParams[key] = node?.inputs?.[mappingInfo.input_name] ?? '';
+            initialParams[key] = node?.inputs?.[mappingInfo.input_name] ?? "";
           } catch {
-            initialParams[key] = '';
+            initialParams[key] = "";
           }
         }
       }
@@ -109,11 +121,13 @@ export default function GeneratePage() {
 
     // 2. 캐시에 URL이 없다면, 백엔드에 새로 요청합니다.
     try {
-      const response = await apiClient<{ viewUrl: string }>(`/my-outputs/${item.id}/view-url`);
+      const response = await apiClient<{ viewUrl: string }>(
+        `/my-outputs/${item.id}/view-url`
+      );
       const newUrl = response.viewUrl;
 
       // 3. 받아온 URL을 캐시에 저장합니다.
-      setUrlCache(prevCache => ({
+      setUrlCache((prevCache) => ({
         ...prevCache,
         [item.id]: newUrl,
       }));
@@ -135,14 +149,14 @@ export default function GeneratePage() {
   ) => {
     const { name, value, type } = e.target;
     let parsedValue: string | number | boolean = value;
-  
-    if (type === 'number') {
+
+    if (type === "number") {
       parsedValue = parseFloat(value) || 0;
-    } else if (type === 'checkbox') {
+    } else if (type === "checkbox") {
       // HTMLInputElement 타입 단언
       parsedValue = (e.target as HTMLInputElement).checked;
     }
-    
+
     setParameterValues((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
@@ -150,7 +164,7 @@ export default function GeneratePage() {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedTemplateId) {
-      setApiError('먼저 워크플로우 템플릿을 선택해주세요.');
+      setApiError("먼저 워크플로우 템플릿을 선택해주세요.");
       return;
     }
     setApiError(null);
@@ -163,13 +177,13 @@ export default function GeneratePage() {
 
     try {
       // API 호출만 하고, 결과 처리는 WebSocket 훅이 알아서 합니다.
-      await apiClient<ImageGenerationResponse>('/api/generate', {
-        method: 'POST',
+      await apiClient<ImageGenerationResponse>("/api/generate", {
+        method: "POST",
         body: payload,
       });
       // 성공 응답 후, execution_start WebSocket 메시지가 오면 훅이 상태를 업데이트합니다.
     } catch (err: any) {
-      setApiError(err.message || '이미지 생성 요청 중 오류가 발생했습니다.');
+      setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
     } finally {
       setIsSubmitting(false);
     }
@@ -180,7 +194,7 @@ export default function GeneratePage() {
       return;
     }
 
-    const itemToDelete = sessionOutputs.find(item => item.id === id);
+    const itemToDelete = sessionOutputs.find((item) => item.id === id);
     if (!itemToDelete) return;
 
     // 1. 낙관적 업데이트: UI에서 즉시 제거
@@ -188,13 +202,13 @@ export default function GeneratePage() {
 
     try {
       // 2. 백엔드에 실제 삭제 API 호출
-      await apiClient(`/my-outputs/${id}`, { method: 'DELETE' });
+      await apiClient(`/my-outputs/${id}`, { method: "DELETE" });
       // 성공!
     } catch (err: any) {
       // 3. API 호출 실패 시 롤백
       alert("삭제에 실패했습니다: " + err.message);
       // 훅에서 받은 함수를 사용하여 UI 상태를 원래대로 복구
-      addSessionOutput(itemToDelete); 
+      addSessionOutput(itemToDelete);
     }
   };
 
@@ -202,7 +216,7 @@ export default function GeneratePage() {
   if (isAuthLoading || !user) {
     return <p className="text-center py-10">권한 확인 중...</p>;
   }
-  if (user.role !== 'admin') {
+  if (user.role !== "admin") {
     return <p className="text-center py-10">접근 권한이 없습니다.</p>;
   }
 
@@ -214,20 +228,29 @@ export default function GeneratePage() {
     <div className="container mx-auto py-8 px-4">
       <div className="bg-white rounded-lg shadow-xl p-6 md:p-8 space-y-8">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">이미지 생성</h1>
-          <p className="text-sm mt-2">WebSocket: 
-            <span className={`font-semibold ${isWsConnected ? 'text-green-600' : 'text-red-600'}`}>
-              {isWsConnected ? '연결됨' : '연결 끊김'}
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+            이미지 생성
+          </h1>
+          <p className="text-sm mt-2">
+            WebSocket:
+            <span
+              className={`font-semibold ${
+                isWsConnected ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              {isWsConnected ? "연결됨" : "연결 끊김"}
             </span>
           </p>
         </div>
 
         <SystemMonitor data={systemMonitorData} />
-        
+
         <TemplateForm
           templates={templates}
           selectedTemplateId={selectedTemplateId}
-          onTemplateChange={(e: ChangeEvent<HTMLSelectElement>) => setSelectedTemplateId(e.target.value)}
+          onTemplateChange={(e: ChangeEvent<HTMLSelectElement>) =>
+            setSelectedTemplateId(e.target.value)
+          }
           onParameterChange={handleParameterChange}
           onSubmit={handleSubmit}
           parameterValues={parameterValues}
@@ -235,7 +258,7 @@ export default function GeneratePage() {
           selectedTemplate={selectedTemplate}
           isLoadingTemplates={isLoadingTemplates}
         />
-        
+
         <GenerationDisplay
           isSubmitting={isSubmitting}
           executionStatus={executionStatus}
@@ -245,12 +268,13 @@ export default function GeneratePage() {
           className="mt-6"
         />
 
-        <SessionGallery outputs={sessionOutputs} onImageClick={handleImageClick} onDelete={handleDelete} />
+        <SessionGallery
+          outputs={sessionOutputs}
+          onImageClick={handleImageClick}
+          onDelete={handleDelete}
+        />
       </div>
-      <ImageLightbox
-        onClose={handleCloseLightbox}
-        item={viewingItem}
-      />
+      <ItemLightbox onClose={handleCloseLightbox} item={viewingItem} />
     </div>
   );
 }
