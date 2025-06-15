@@ -11,6 +11,7 @@ import type {
 } from "@/interfaces/history.interface";
 import { Button } from "@/components/ui/button";
 import OutputGallery from "@/components/common/OutputGallery";
+import { storageDuration } from "@/constants/config";
 
 export default function HistoryPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -120,13 +121,15 @@ export default function HistoryPage() {
   return (
     <div className="space-y-6">
       <div className="flex flex-col space-y-2">
-        <h1 className="text-3xl font-bold flex items-center gap-2">
+        <h1 className="text-3xl font-bold flex items-center gap-2 mb-4">
           <HistoryIcon className="h-8 w-8" />
           나의 생성 기록
         </h1>
-        <p className="text-muted-foreground">
-          과거에 생성했던 이미지 및 비디오를 확인하고 관리합니다.
-        </p>
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-blue-700">
+            생성한지 {storageDuration / (24 * 60 * 60 * 1000)}일이 지난 이미지는 자동으로 삭제됩니다.
+          </p>
+        </div>
       </div>
 
       <div className="flex flex-col gap-6">

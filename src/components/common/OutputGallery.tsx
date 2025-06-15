@@ -78,7 +78,7 @@ const OutputGallery: React.FC<OutputGalleryProps> = ({
   };
 
   return (
-    <div className={`mt-8 ${className}`}>
+    <div className={`mt-2 ${className}`}>
       <h2 className="text-2xl font-semibold text-gray-800 mb-4">{title}</h2>
       <div className="relative">
         {renderLayout()}
