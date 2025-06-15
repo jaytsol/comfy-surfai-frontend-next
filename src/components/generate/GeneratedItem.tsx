@@ -13,9 +13,7 @@ interface GeneratedItemProps {
 
 const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDelete }) => {
   // --- 파일 만료 여부 확인 ---
-  const twoDaysInMs = storageDuration;
-  // 파일 생성 시각과 현재 시각을 비교하여 2일이 지났는지 확인합니다.
-  const isExpired = new Date().getTime() - new Date(item.createdAt).getTime() > twoDaysInMs;
+  const isExpired = new Date().getTime() - new Date(item.createdAt).getTime() > storageDuration;
 
   // --- 비디오 관련 정보 계산 ---
   const isVideo = item.mimeType?.startsWith('video/') ?? false;
@@ -96,7 +94,7 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDel
         <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-60 transition-all duration-300 flex flex-col items-center justify-center p-4 space-y-2">
           <button onClick={() => onImageClick(item)} /* ... */>
             <Maximize className="w-4 h-4" />
-            <span>확대보기</span>
+            <span>자세히</span>
           </button>
           <button onClick={handleDownloadClick} /* ... */>
             <Download className="w-4 h-4" />
