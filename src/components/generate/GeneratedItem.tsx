@@ -4,7 +4,7 @@ import React from 'react';
 import apiClient from '@/lib/apiClient';
 import { Download, Maximize, Trash2, Clock, Video as VideoIcon, ImageIcon, FileX } from 'lucide-react';
 import type { HistoryItemData } from '@/interfaces/history.interface';
-
+import { storageDuration } from '@/constants/config';
 interface GeneratedItemProps {
   item: HistoryItemData;
   onImageClick: (item: HistoryItemData) => void;
@@ -13,7 +13,7 @@ interface GeneratedItemProps {
 
 const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDelete }) => {
   // --- 파일 만료 여부 확인 ---
-  const twoDaysInMs = 2 * 24 * 60 * 60 * 1000;
+  const twoDaysInMs = storageDuration;
   // 파일 생성 시각과 현재 시각을 비교하여 2일이 지났는지 확인합니다.
   const isExpired = new Date().getTime() - new Date(item.createdAt).getTime() > twoDaysInMs;
 
@@ -68,7 +68,7 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDel
         // --- 만료 시 UI ---
         <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center p-4 text-center">
           <FileX className="w-12 h-12 text-gray-500" />
-          <p className="text-sm text-gray-400 mt-2">보관 기간(2일)이 만료되어 파일이 삭제되었습니다.</p>
+          <p className="text-sm text-gray-400 mt-2">보관 기간(${storageDuration / (24 * 60 * 60 * 1000)}일)이 만료되어 파일이 삭제되었습니다.</p>
         </div>
       ) : isVideo ? (
         // --- 비디오 썸네일 ---
