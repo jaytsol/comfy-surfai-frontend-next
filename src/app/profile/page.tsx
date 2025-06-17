@@ -128,13 +128,6 @@ export default function ProfilePage() {
                   <p className="text-sm font-medium">Username</p>
                   <p className="text-sm text-muted-foreground">{user.username}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Email</p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Mail className="h-4 w-4" />
-                    {user.email || 'Not provided'}
-                  </p>
-                </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
@@ -142,13 +135,6 @@ export default function ProfilePage() {
                   <p className="text-sm text-muted-foreground flex items-center gap-1">
                     <Shield className="h-4 w-4" />
                     {user.role}
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-sm font-medium">Member Since</p>
-                  <p className="text-sm text-muted-foreground flex items-center gap-1">
-                    <Calendar className="h-4 w-4" />
-                    {new Date(user.createdAt || Date.now()).toLocaleDateString()}
                   </p>
                 </div>
               </div>

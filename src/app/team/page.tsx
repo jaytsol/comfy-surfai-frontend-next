@@ -4,7 +4,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Plus, Mail, Phone, Users, UserPlus, Clock, MessageSquare, Image as ImageIcon, Video } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
 
 interface TeamMember {
   id: string;
