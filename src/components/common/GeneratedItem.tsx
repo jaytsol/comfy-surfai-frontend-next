@@ -79,6 +79,7 @@ const GeneratedItem: React.FC<GeneratedItemProps> = ({ item, onImageClick, onDel
           onMouseOut={e => { e.currentTarget.pause(); e.currentTarget.currentTime = 0; }}
         />
       ) : (
+        // eslint-disable-next-line @next/next/no-img-element
         <img
           src={item.viewUrl}
           alt={item.originalFilename}

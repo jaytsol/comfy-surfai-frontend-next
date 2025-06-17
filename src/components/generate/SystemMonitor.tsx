@@ -1,6 +1,5 @@
 import React from "react";
 import {
-  CrystoolsMonitorData,
   SystemMonitorProps,
 } from "@/interfaces/system-monitor.interface";
 

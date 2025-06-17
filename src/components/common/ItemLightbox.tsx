@@ -58,6 +58,7 @@ const ItemLightbox: React.FC<ItemLightboxProps> = ({ item, onClose }) => {
               className="max-w-full max-h-full object-contain"
             />
           ) : (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               src={item.viewUrl}
               alt={`Enlarged view for output ${item.id}`}

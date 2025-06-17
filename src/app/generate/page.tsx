@@ -45,7 +45,6 @@ export default function GeneratePage() {
     progressValue,
     systemMonitorData,
     queueRemaining,
-    activePromptId,
     items,
     removeItem,
     addItem,
@@ -219,9 +218,6 @@ export default function GeneratePage() {
   if (user.role !== "admin") {
     return <p className="text-center py-10">접근 권한이 없습니다.</p>;
   }
-
-  // isGenerating 상태는 isSubmitting(HTTP 요청 중) 또는 activePromptId(WS 처리 중)로 결정
-  const isGenerating = isSubmitting || !!activePromptId;
 
   // --- UI 렌더링 ---
   return (

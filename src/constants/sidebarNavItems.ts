@@ -1,4 +1,4 @@
-import { Home, LayoutDashboard, Settings, FileText, Users, User, Sparkles, LogOut, LogIn, History as HistoryIcon } from "lucide-react";
+import { LayoutDashboard, Settings, FileText, Users, User, Sparkles, LogOut, LogIn, History as HistoryIcon } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type

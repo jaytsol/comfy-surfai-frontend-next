@@ -30,6 +30,7 @@ export default function HistoryPage() {
     if (!isAuthLoading && user) {
       fetchHistory(1);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthLoading, user]);
 
   const fetchHistory = async (pageNum: number) => {
@@ -74,6 +75,7 @@ export default function HistoryPage() {
       setLightboxUrlCache((prevCache) => ({ ...prevCache, [item.id]: newUrl }));
       // 라이트박스를 엽니다.
       setViewingItem(item);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       alert("이미지를 확대하는 데 오류가 발생했습니다.");
     }
