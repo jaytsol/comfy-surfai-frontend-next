@@ -88,7 +88,7 @@ export const useComfyWebSocket = (
         .substring(2, 9)}`;
       // ✨ 프론트엔드 환경변수 파일(.env.local)에서 주소를 가져오는 것을 권장합니다.
       const WEBSOCKET_SERVER_URL =
-        process.env.NEXT_PUBLIC_WEBSOCKET_URL || "wss://localhost:3000/events";
+        process.env.NEXT_PUBLIC_WEBSOCKET_URL || "ws://localhost:3000/events";
 
       console.log(
         `WebSocket: Attempting to connect to ${WEBSOCKET_SERVER_URL}`
