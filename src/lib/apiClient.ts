@@ -14,13 +14,16 @@ function getCookie(name: string): string | null {
   return null;
 }
 
+// 이전에 refresh를 시도했는지 여부를 추적하는 플래그
+let isRefreshing = false;
+
 async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {},
 ): Promise<T> {
   const { body, ...customConfig } = options;
 
-  const headers: { [key: string]: string } = { // 또는 Record<string, string>
+  const headers: { [key: string]: string } = {
     ...(body && { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
@@ -37,58 +40,62 @@ async function apiClient<T>(
     method: 'GET',
     ...customConfig,
     headers,
-    credentials: 'include', 
+    credentials: 'include', // HttpOnly 쿠키를 주고받기 위해 필수
   };
 
   if (body) {
     config.body = JSON.stringify(body);
   }
 
-  try {
-    let response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  // ✨ --- 1. 첫 번째 API 요청 --- ✨
+  let response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-    if (response.status === 401) {
-      console.log('Access token expired. Attempting to refresh...');
-      try {
-        // 1. 토큰 재발급 API 호출 (이 요청은 쿠키를 사용하므로 apiClient를 직접 재사용)
-        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
-          method: 'POST',
-          credentials: 'include',
-        });
-        
-        if (!refreshResponse.ok) {
-          // 리프레시 실패 시, 로그아웃 처리
-          throw new Error('Failed to refresh token.');
-        }
+  // ✨ --- 2. 토큰 만료 시 (401 에러) 자동 재발급 로직 --- ✨
+  // 'isRefreshing' 플래그는 여러 API가 동시에 401 에러를 받았을 때,
+  // 재발급 요청이 한 번만 실행되도록 보장합니다.
+  if (response.status === 401 && !isRefreshing) {
+    isRefreshing = true;
+    console.log('Access token expired. Attempting to refresh...');
 
-        console.log('Token refreshed successfully. Retrying original request.');
-        
-        // 2. 원래 실패했던 요청을 다시 시도합니다.
-        //    (재발급 시 새로운 쿠키가 자동으로 설정되었으므로, 그냥 다시 호출하면 됩니다.)
-        response = await fetch(`${API_BASE_URL}${endpoint}`, config);
-
-      } catch (refreshError) {
-        console.error('Session expired. Logging out.', refreshError);
-        // AuthContext의 logout 함수를 호출하거나, 로그인 페이지로 리디렉션
-        // window.location.href = '/login'; 
-        throw refreshError; // 최종적으로는 에러를 던져서 호출부에서 처리
+    try {
+      // 2-1. 백엔드에 토큰 재발급 요청 (POST /auth/refresh)
+      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+        method: 'POST',
+        credentials: 'include', // refresh_token 쿠키를 보내기 위해 필수
+      });
+      
+      if (!refreshResponse.ok) {
+        // 리프레시 토큰마저 만료/무효한 경우, 로그아웃 처리
+        console.error('Failed to refresh token. Logging out.');
+        // window.location.href = '/login'; // AuthContext에서 처리하도록 유도
+        throw new Error('Session expired. Please log in again.');
       }
-    }
-    
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ message: response.statusText }));
-      throw new Error(errorData.message || `API call failed: ${response.status}`);
-    }
+      
+      console.log('Token refreshed successfully. Retrying original request.');
 
-    if (response.status === 204 || response.headers.get('content-length') === '0') {
-      return undefined as T;
-    }
+      // 2-2. 재발급이 성공하면, 원래 실패했던 요청을 다시 시도합니다.
+      // (브라우저에는 이미 새로운 access_token 쿠키가 설정된 상태)
+      response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-    return await response.json();
-  } catch (error) {
-    console.error('API Client Error:', error);
-    throw error;
+    } catch (refreshError) {
+      console.error('Token refresh failed:', refreshError);
+      throw refreshError; // 최종 실패 처리
+    } finally {
+      isRefreshing = false;
+    }
   }
+
+  // --- 3. 최종 응답 처리 ---
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+    throw new Error(errorData.message || `API call failed: ${response.status}`);
+  }
+
+  if (response.status === 204 || response.headers.get('content-length') === '0') {
+    return undefined as T;
+  }
+
+  return await response.json();
 }
 
 export default apiClient;
