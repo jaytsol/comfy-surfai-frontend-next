@@ -1,7 +1,6 @@
 "use client";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-const TOKEN_STORAGE_KEY = 'surfai_access_token'; // AuthContext와 동일한 키 사용
 
 interface FetchOptions extends RequestInit {
   body?: any;
@@ -46,14 +45,34 @@ async function apiClient<T>(
   }
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+    let response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
-    // 401 Unauthorized 에러가 발생하면, 토큰을 삭제하고 로그인 페이지로 보낼 수 있습니다.
     if (response.status === 401) {
-        if (typeof window !== 'undefined') {
-            localStorage.removeItem(TOKEN_STORAGE_KEY);
-            // window.location.href = '/login'; // 강제 리디렉션
+      console.log('Access token expired. Attempting to refresh...');
+      try {
+        // 1. 토큰 재발급 API 호출 (이 요청은 쿠키를 사용하므로 apiClient를 직접 재사용)
+        const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+        });
+        
+        if (!refreshResponse.ok) {
+          // 리프레시 실패 시, 로그아웃 처리
+          throw new Error('Failed to refresh token.');
         }
+
+        console.log('Token refreshed successfully. Retrying original request.');
+        
+        // 2. 원래 실패했던 요청을 다시 시도합니다.
+        //    (재발급 시 새로운 쿠키가 자동으로 설정되었으므로, 그냥 다시 호출하면 됩니다.)
+        response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+
+      } catch (refreshError) {
+        console.error('Session expired. Logging out.', refreshError);
+        // AuthContext의 logout 함수를 호출하거나, 로그인 페이지로 리디렉션
+        // window.location.href = '/login'; 
+        throw refreshError; // 최종적으로는 에러를 던져서 호출부에서 처리
+      }
     }
     
     if (!response.ok) {
