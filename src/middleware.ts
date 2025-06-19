@@ -1,57 +1,43 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
-// 로그아웃 상태에서도 접근 가능한 경로 목록
-const PUBLIC_PATHS = ['/', '/documents', '/login', '/register', '/api/auth/callback', '/api/auth/signout']; // '/api/auth/...' 등 인증 관련 API 경로도 필요시 추가
+// 로그인하지 않아도 접근할 수 있는 공개 경로 목록
+// '/auth/callback'은 Google 로그인 후 토큰을 받기 위해 반드시 포함되어야 합니다.
+const PUBLIC_PATHS = ['/', '/login', '/register', '/auth/callback', '/documents']; 
 
-// 인증이 필요한 경로의 기본 접두사 (이 외 모든 경로는 기본적으로 보호)
-// 혹은 명시적으로 보호할 경로 목록을 만들 수도 있습니다.
-// const PROTECTED_PATH_PREFIXES = ['/profile', '/generate', '/settings', '/team', '/dashboard'];
+// API 라우트는 별도로 처리되므로, matcher에서 제외하여 미들웨어가 실행되지 않도록 합니다.
+// API의 각 엔드포인트는 백엔드의 'JwtAuthGuard'가 보호합니다.
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // 1. 인증 토큰 확인 (실제 사용하는 쿠키 이름으로 변경해야 합니다)
-  // 예: 'auth-token', 'next-auth.session-token', 'supabase-auth-token' 등
-  const authToken = request.cookies.get('connect.sid')?.value; // 실제 사용하는 쿠키 이름으로 변경해주세요.
+  // 1. 요청에서 'surfai_access_token' 쿠키를 확인합니다.
+  // 이 쿠키는 로그인 상태를 빠르게 확인하기 위한 '힌트' 역할을 합니다.
+  // 실제 인증은 각 페이지나 API 요청 시 백엔드를 통해 이루어집니다.
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
 
-  // 2. Next.js 내부 경로, API 라우트 (일부 공개 API 제외), 정적 파일 등은 미들웨어 로직에서 제외
-  if (
-    pathname.startsWith('/_next/') ||
-    pathname.startsWith('/static/') ||
-    pathname.startsWith('/favicon.ico') ||
-    pathname.startsWith('/api/public/') // 공개 API가 있다면 '/api/public/' 등으로 구분
-  ) {
-    return NextResponse.next();
-  }
+  const isPublicPath = PUBLIC_PATHS.includes(pathname);
 
-  const isPublicPath = PUBLIC_PATHS.some(path => pathname === path || (path.endsWith('/*') && pathname.startsWith(path.slice(0, -2))));
-
-
-  // 3. 사용자가 인증되지 않았고, 접근하려는 경로가 공개 경로가 아닌 경우
-  if (!authToken && !isPublicPath) {
-    // 로그인 페이지로 리디렉션. 원래 요청했던 경로를 쿼리 파라미터로 전달하여 로그인 후 해당 경로로 이동시킬 수 있습니다.
+  // 2. 사용자가 로그인하지 않았고 (토큰 없음), 접근하려는 경로가 보호된 경로일 경우
+  if (!accessToken && !refreshToken && !isPublicPath) {
+    // 로그인 페이지로 리디렉션합니다.
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect_to', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // 4. 사용자가 인증되었고, 로그인 페이지나 회원가입 페이지에 접근하려는 경우 (선택 사항)
-  // if (authToken && (pathname === '/login' || pathname === '/signup')) {
-  //   return NextResponse.redirect(new URL('/', request.url)); // 홈으로 리디렉션
-  // }
+  // 3. 사용자가 로그인했고 (토큰 있음), 로그인/회원가입 페이지에 접근하려는 경우
+  if (accessToken && (pathname === '/login' || pathname === '/register')) {
+    // 대시보드나 히스토리 페이지 등 기본 페이지로 리디렉션합니다.
+    return NextResponse.redirect(new URL('/history', request.url));
+  }
 
-  // TODO: 향후 역할 기반 접근 제어 (예: admin, user) 로직 추가 위치
-  // if (authToken && pathname.startsWith('/admin') && !userHasAdminRole(authToken)) { // userHasAdminRole은 토큰에서 역할 정보를 파싱하는 함수
-  //   return NextResponse.redirect(new URL('/unauthorized', request.url));
-  // }
-
-
+  // 그 외의 경우는 모두 허용
   return NextResponse.next();
 }
 
 // 미들웨어가 실행될 경로를 지정합니다.
-// matcher를 사용하면 위에서 /_next/ 등을 제외하는 로직을 더 깔끔하게 관리할 수 있습니다.
 export const config = {
   matcher: [
     /*
