@@ -2,6 +2,9 @@
 # 백엔드와 동일한 안정적인 Node.js LTS 버전을 사용합니다.
 FROM node:22-alpine AS builder
 
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+
 # 작업 디렉토리 설정
 WORKDIR /app
 

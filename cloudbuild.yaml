@@ -1,0 +1,14 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      # ✨ --build-arg 플래그로 Cloud Build 변수를 Docker 빌드 인자로 전달
+      - '--build-arg'
+      - 'NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/surfai-frontend:latest'
+      - '.'
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/surfai-frontend:latest']
+images:
+  - 'gcr.io/$PROJECT_ID/surfai-frontend:latest'
