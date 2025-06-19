@@ -1,6 +1,7 @@
 "use client";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+const TOKEN_STORAGE_KEY = 'surfai_access_token'; // AuthContext와 동일한 키 사용
 
 interface FetchOptions extends RequestInit {
   body?: any;
@@ -12,18 +13,27 @@ async function apiClient<T>(
 ): Promise<T> {
   const { body, ...customConfig } = options;
 
-  const headers: HeadersInit = {
-    // ✨ body가 있을 때만 Content-Type을 설정하도록 변경
+  // ✨ --- 헤더 설정 로직 수정 --- ✨
+  const headers: { [key: string]: string } = { // 또는 Record<string, string>
     ...(body && { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
 
+  // 1. LocalStorage에서 Access Token을 가져옵니다.
+  // 이 코드는 클라이언트 사이드에서만 실행되므로 window 객체 사용이 안전합니다.
+  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_STORAGE_KEY) : null;
+  
+  // 2. 토큰이 존재하면, Authorization 헤더를 추가합니다.
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const config: RequestInit = {
-    // ✨ 기본 메소드는 GET으로 설정하고, options에서 받은 값으로 덮어쓰도록 함
     method: 'GET',
     ...customConfig,
     headers,
-    credentials: 'include', // 세션 쿠키를 주고받기 위해 필수
+    // ✨ credentials 옵션은 더 이상 필요 없으므로 제거합니다.
+    // credentials: 'include', 
   };
 
   if (body) {
@@ -33,6 +43,14 @@ async function apiClient<T>(
   try {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
 
+    // 401 Unauthorized 에러가 발생하면, 토큰을 삭제하고 로그인 페이지로 보낼 수 있습니다.
+    if (response.status === 401) {
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(TOKEN_STORAGE_KEY);
+            // window.location.href = '/login'; // 강제 리디렉션
+        }
+    }
+    
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({ message: response.statusText }));
       throw new Error(errorData.message || `API call failed: ${response.status}`);
