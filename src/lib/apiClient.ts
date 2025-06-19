@@ -7,6 +7,14 @@ interface FetchOptions extends RequestInit {
   body?: any;
 }
 
+function getCookie(name: string): string | null {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+}
+
 async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {},
@@ -17,6 +25,14 @@ async function apiClient<T>(
     ...(body && { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
+
+  const method = options.method?.toUpperCase() || (body ? 'POST' : 'GET');
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+    const csrfToken = getCookie('XSRF-TOKEN');
+    if (csrfToken) {
+      headers['X-XSRF-TOKEN'] = csrfToken;
+    }
+  }
 
   const config: RequestInit = {
     method: 'GET',
