@@ -13,27 +13,16 @@ async function apiClient<T>(
 ): Promise<T> {
   const { body, ...customConfig } = options;
 
-  // ✨ --- 헤더 설정 로직 수정 --- ✨
   const headers: { [key: string]: string } = { // 또는 Record<string, string>
     ...(body && { 'Content-Type': 'application/json' }),
     ...options.headers,
   };
 
-  // 1. LocalStorage에서 Access Token을 가져옵니다.
-  // 이 코드는 클라이언트 사이드에서만 실행되므로 window 객체 사용이 안전합니다.
-  const token = typeof window !== 'undefined' ? localStorage.getItem(TOKEN_STORAGE_KEY) : null;
-  
-  // 2. 토큰이 존재하면, Authorization 헤더를 추가합니다.
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-
   const config: RequestInit = {
     method: 'GET',
     ...customConfig,
     headers,
-    // ✨ credentials 옵션은 더 이상 필요 없으므로 제거합니다.
-    // credentials: 'include', 
+    credentials: 'include', 
   };
 
   if (body) {

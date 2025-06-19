@@ -14,12 +14,13 @@ export function middleware(request: NextRequest) {
   // 1. 요청에서 'surfai_access_token' 쿠키를 확인합니다.
   // 이 쿠키는 로그인 상태를 빠르게 확인하기 위한 '힌트' 역할을 합니다.
   // 실제 인증은 각 페이지나 API 요청 시 백엔드를 통해 이루어집니다.
-  const accessToken = request.cookies.get('surfai_access_token')?.value;
+  const accessToken = request.cookies.get('access_token')?.value;
+  const refreshToken = request.cookies.get('refresh_token')?.value;
 
   const isPublicPath = PUBLIC_PATHS.includes(pathname);
 
   // 2. 사용자가 로그인하지 않았고 (토큰 없음), 접근하려는 경로가 보호된 경로일 경우
-  if (!accessToken && !isPublicPath) {
+  if (!accessToken && !refreshToken && !isPublicPath) {
     // 로그인 페이지로 리디렉션합니다.
     const loginUrl = new URL('/login', request.url);
     loginUrl.searchParams.set('redirect_to', pathname);
