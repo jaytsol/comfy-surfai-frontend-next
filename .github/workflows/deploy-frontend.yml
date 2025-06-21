@@ -1,0 +1,39 @@
+name: Deploy Frontend to Google Cloud Run
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: '${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}'
+          service_account: 'github-actions-deployer@${{ secrets.GCP_PROJECT_ID }}.iam.gserviceaccount.com'
+
+      - name: Setup gcloud CLI
+        uses: 'google-github-actions/setup-gcloud@v2'
+
+      - name: Build and Push Docker image
+        run: |-
+          gcloud builds submit --config cloudbuild.yaml \
+            --substitutions=_NEXT_PUBLIC_API_URL='${{ secrets.NEXT_PUBLIC_API_URL }}',_NEXT_PUBLIC_WEBSOCKET_URL='${{ secrets.NEXT_PUBLIC_WEBSOCKET_URL }}'
+            
+      - name: Deploy to Cloud Run
+        run: |-
+          gcloud run deploy surfai-frontend \
+            --image "gcr.io/${{ secrets.GCP_PROJECT_ID }}/surfai-frontend:latest" \
+            --platform managed \
+            --region asia-northeast1 \
+            --project ${{ secrets.GCP_PROJECT_ID }}
