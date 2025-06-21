@@ -2,10 +2,8 @@ steps:
   - name: 'gcr.io/cloud-builders/docker'
     args:
       - 'build'
-      # API URL 빌드 인자
       - '--build-arg'
       - 'NEXT_PUBLIC_API_URL=${_NEXT_PUBLIC_API_URL}'
-      # ✨ WebSocket URL 빌드 인자 추가
       - '--build-arg'
       - 'NEXT_PUBLIC_WEBSOCKET_URL=${_NEXT_PUBLIC_WEBSOCKET_URL}'
       - '-t'
