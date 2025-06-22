@@ -1,10 +1,4 @@
-// common/dto/login.dto.ts
-export class LoginDTO {
-    username: string;
-    password: string;
-
-    constructor(username: string, password: string) {
-      this.username = username;
-      this.password = password;
-    }
-}
+export type LoginDTO = {
+  email: string;
+  password: string;
+};
