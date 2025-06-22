@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 // 로그인하지 않아도 접근할 수 있는 공개 경로 목록
 // '/auth/callback'은 Google 로그인 후 토큰을 받기 위해 반드시 포함되어야 합니다.
-const PUBLIC_PATHS = ['/', '/login', '/register', '/auth/callback', '/documents']; 
+const PUBLIC_PATHS = ['/', '/login', '/register', '/auth/callback', '/documents', '/privacy-policy']; 
 
 // API 라우트는 별도로 처리되므로, matcher에서 제외하여 미들웨어가 실행되지 않도록 합니다.
 // API의 각 엔드포인트는 백엔드의 'JwtAuthGuard'가 보호합니다.
