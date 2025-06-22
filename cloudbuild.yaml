@@ -7,9 +7,9 @@ steps:
       - '--build-arg'
       - 'NEXT_PUBLIC_WEBSOCKET_URL=${_NEXT_PUBLIC_WEBSOCKET_URL}'
       - '-t'
-      - 'gcr.io/${GCP_PROJECT_ID}/surfai-frontend:latest'
+      - 'gcr.io/${PROJECT_ID}/surfai-frontend:latest'
       - '.'
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/${GCP_PROJECT_ID}/surfai-frontend:latest']
+    args: ['push', 'gcr.io/${PROJECT_ID}/surfai-frontend:latest']
 images:
-  - 'gcr.io/${GCP_PROJECT_ID}/surfai-frontend:latest'
+  - 'gcr.io/${PROJECT_ID}/surfai-frontend:latest'
