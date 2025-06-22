@@ -14,78 +14,95 @@ function getCookie(name: string): string | null {
   return null;
 }
 
-// 이전에 refresh를 시도했는지 여부를 추적하는 플래그
 let isRefreshing = false;
+let failedQueue: { resolve: (value?: any) => void; reject: (reason?: any) => void; }[] = [];
+
+const processQueue = (error: Error | null) => {
+  failedQueue.forEach(prom => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+  failedQueue = [];
+};
 
 async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {},
 ): Promise<T> {
-  const { body, ...customConfig } = options;
-
-  const headers: { [key: string]: string } = {
-    ...(body && { 'Content-Type': 'application/json' }),
-    ...options.headers,
-  };
-
-  const method = options.method?.toUpperCase() || (body ? 'POST' : 'GET');
-  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
-    const csrfToken = getCookie('XSRF-TOKEN');
-    if (csrfToken) {
-      headers['X-XSRF-TOKEN'] = csrfToken;
+  const fetcher = async (): Promise<Response> => {
+    const { body, ...customConfig } = options;
+    const headers: { [key: string]: string } = {
+      ...(body && { 'Content-Type': 'application/json' }),
+      ...options.headers,
+    };
+    const method = options.method?.toUpperCase() || (body ? 'POST' : 'GET');
+    if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method)) {
+      const csrfToken = getCookie('XSRF-TOKEN');
+      if (csrfToken) {
+        headers['X-XSRF-TOKEN'] = csrfToken;
+      }
     }
-  }
-
-  const config: RequestInit = {
-    method: 'GET',
-    ...customConfig,
-    headers,
-    credentials: 'include', // HttpOnly 쿠키를 주고받기 위해 필수
+    const config: RequestInit = {
+      method: options.method || (body ? 'POST' : 'GET'),
+      ...customConfig,
+      headers,
+      credentials: 'include',
+    };
+    if (body) {
+      config.body = JSON.stringify(body);
+    }
+    return fetch(`${API_BASE_URL}${endpoint}`, config);
   };
 
-  if (body) {
-    config.body = JSON.stringify(body);
-  }
+  let response = await fetcher();
 
-  // ✨ --- 1. 첫 번째 API 요청 --- ✨
-  let response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  if (response.status === 401) {
+    // ✨ --- 이 부분이 핵심 수정 사항 --- ✨
+    // 로그인, 회원가입, 토큰 재발급 요청 자체가 실패한 경우에는 재시도하지 않습니다.
+    if (endpoint === '/auth/login' || endpoint === '/auth/register' || endpoint === '/auth/refresh') {
+      const errorData = await response.json().catch(() => ({ message: response.statusText }));
+      throw new Error(errorData.message || `API call failed: ${response.status}`);
+    }
 
-  // ✨ --- 2. 토큰 만료 시 (401 에러) 자동 재발급 로직 --- ✨
-  // 'isRefreshing' 플래그는 여러 API가 동시에 401 에러를 받았을 때,
-  // 재발급 요청이 한 번만 실행되도록 보장합니다.
-  if (response.status === 401 && !isRefreshing) {
+    if (isRefreshing) {
+      // 이미 다른 요청이 토큰을 재발급 중이라면, 이 요청은 대기열에 추가합니다.
+      return new Promise<T>((resolve, reject) => {
+        failedQueue.push({ 
+          resolve: (value: T) => resolve(value),
+          reject 
+        });
+      })
+      .then(() => apiClient<T>(endpoint, options));
+    }
+
     isRefreshing = true;
-    console.log('Access token expired. Attempting to refresh...');
 
     try {
-      // 2-1. 백엔드에 토큰 재발급 요청 (POST /auth/refresh)
       const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
-        credentials: 'include', // refresh_token 쿠키를 보내기 위해 필수
+        credentials: 'include',
       });
       
       if (!refreshResponse.ok) {
-        // 리프레시 토큰마저 만료/무효한 경우, 로그아웃 처리
-        console.error('Failed to refresh token. Logging out.');
-        // window.location.href = '/login'; // AuthContext에서 처리하도록 유도
         throw new Error('Session expired. Please log in again.');
       }
       
-      console.log('Token refreshed successfully. Retrying original request.');
-
-      // 2-2. 재발급이 성공하면, 원래 실패했던 요청을 다시 시도합니다.
-      // (브라우저에는 이미 새로운 access_token 쿠키가 설정된 상태)
-      response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+      processQueue(null); // 대기열에 있던 요청들 재개
+      response = await fetcher(); // 원래 요청 재시도
 
     } catch (refreshError) {
-      console.error('Token refresh failed:', refreshError);
-      throw refreshError; // 최종 실패 처리
+      processQueue(refreshError as Error); // 대기열에 있던 요청들 모두 실패 처리
+      // TODO: AuthContext의 logout 함수를 호출하여 상태를 정리
+      console.error('Token refresh failed, logging out:', refreshError);
+      throw refreshError;
     } finally {
       isRefreshing = false;
     }
   }
 
-  // --- 3. 최종 응답 처리 ---
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({ message: response.statusText }));
     throw new Error(errorData.message || `API call failed: ${response.status}`);
