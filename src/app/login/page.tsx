@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button'; // shadcn/ui의 Button 컴포넌트 사용 예시
+import Link from 'next/link';
 
 // Google 로고 SVG 컴포넌트 (선택 사항)
 const GoogleIcon = () => (
@@ -16,6 +17,8 @@ export default function LoginPage() {
   const { user, isLoading } = useAuth();
   const router = useRouter();
 
+  const [agreed, setAgreed] = useState(false);
+
   // 이미 로그인된 사용자는 대시보드로 리디렉션합니다.
   useEffect(() => {
     if (!isLoading && user) {
@@ -25,6 +28,10 @@ export default function LoginPage() {
 
   // Google 로그인 버튼 클릭 시 실행될 핸들러
   const handleGoogleLogin = () => {
+    if (!agreed) {
+      alert('개인정보 수집 및 이용에 동의해주세요.');
+      return;
+    }
     // 백엔드의 Google 로그인 시작 API 엔드포인트로 페이지를 이동시킵니다.
     // NEXT_PUBLIC_API_URL은 .env.local 파일에 정의되어 있어야 합니다.
     const backendUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
@@ -45,18 +52,31 @@ export default function LoginPage() {
       <div className="w-full max-w-sm p-8 space-y-8 bg-white shadow-lg rounded-lg">
         <div className="text-center">
           <h1 className="text-3xl font-bold tracking-tight text-gray-900">
-            Surf AI
+            SurfAI
           </h1>
-          <p className="mt-2 text-sm text-gray-600">
-            시작하려면 Google 계정으로 로그인하세요
+          <p className="mt-6 text-sm text-gray-600">
+            {/* 시작하려면 Google 계정으로 로그인하세요 */}
+            Surfai는 현재 운영 중인 서비스가 아닙니다.
           </p>
         </div>
-        
+        {/* 개인정보 처리방침 동의 체크박스 */}
+        <div className="flex items-center space-x-2 my-4">
+          <input 
+            type="checkbox" 
+            id="agreement" 
+            checked={agreed} 
+            onChange={(e) => setAgreed(e.target.checked)} 
+            className="h-4 w-4"
+          />
+          <label htmlFor="agreement" className="text-sm text-gray-600">
+            (필수) <Link href="/privacy-policy" className="underline">개인정보 처리방침</Link>에 동의합니다.
+          </label>
+        </div>
         {/* 아이디/비밀번호 폼 대신 Google 로그인 버튼 하나만 표시합니다. */}
-        <div className="pt-4">
+        <div>
           <Button
             onClick={handleGoogleLogin}
-            className="w-full flex justify-center items-center py-3 px-4"
+            className="w-full flex justify-center items-center px-4"
             variant="outline"
           >
             <GoogleIcon />
