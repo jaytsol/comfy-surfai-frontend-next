@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -22,45 +22,39 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
   const handleLogout = async () => {
     try {
       await logout();
-      router.push('/login');
-      router.refresh(); // Ensure the page refreshes to reflect auth state changes
     } catch (error) {
       console.error('Logout failed:', error);
-      // Optionally show an error message to the user
     }
   };
 
-  // Filter sidebar items based on authentication status
   const getFilteredSidebarItems = () => {
     if (isLoading) {
-      return []; // Or return a loading state
+      return [];
     }
 
-    // Filter items based on login state
     return sidebarNavItems.filter(item => {
-      // Always show dividers if they have the right visibility flag
-      if (item.isDivider) {
-        return user ? item.showWhenLoggedIn : item.showWhenLoggedOut;
+      if (!user) {
+        return item.showWhenLoggedOut;
+      }
+
+      if (item.showWhenLoggedIn === false) {
+        return false;
       }
       
-      // Show items based on login state and their visibility flags
-      if (user) {
-        return item.showWhenLoggedIn !== false; // Show if not explicitly hidden
-      } else {
-        return item.showWhenLoggedOut === true; // Only show if explicitly allowed
+      if (item.requiredRole) {
+        return user.role === item.requiredRole;
       }
+
+      return true;
     });
   };
   
-  // Add click handlers to interactive items
   const processedSidebarItems = getFilteredSidebarItems().map(item => {
     if (item.isLogout) {
       return { ...item, onClick: handleLogout };
     }
     return item;
   });
-
-  const filteredSidebarItems = processedSidebarItems;
 
   return (
     <aside
@@ -70,7 +64,6 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
       )}
     >
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Header with logo and toggle button */}
         <div className="flex h-16 items-center justify-between border-b px-4">
           <button 
             onClick={() => router.push('/')}
@@ -93,10 +86,9 @@ export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
           />
         </div>
 
-        {/* Navigation items */}
         <nav className="flex flex-1 flex-col overflow-hidden">
           <ul className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2">
-            {filteredSidebarItems.map((item, index: number) => {
+            {processedSidebarItems.map((item, index: number) => {
               if (item.isDivider) {
                 return (
                   <li key={`divider-${index}`} className="my-2">

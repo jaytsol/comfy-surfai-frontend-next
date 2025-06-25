@@ -1,4 +1,6 @@
-import { LayoutDashboard, Settings, FileText, Users, User, Sparkles, LogOut, LogIn, History as HistoryIcon } from "lucide-react";
+import { Role } from "@/interfaces/role.enum";
+import { User } from "@/interfaces/user.interface";
+import { LayoutDashboard, Settings, FileText, Users, User as UserIcon, Sparkles, LogOut, LogIn, History as HistoryIcon, ShieldCheck } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type
@@ -10,6 +12,7 @@ export interface NavItem {
   isLogin?: boolean;
   showWhenLoggedIn?: boolean;
   showWhenLoggedOut?: boolean;
+  requiredRole?: User['role'];
 }
 
 export const sidebarNavItems: NavItem[] = [
@@ -45,11 +48,18 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: true
   },
   {
-    icon: User,
+    icon: UserIcon,
     label: "Profile",
     href: "/profile",
     showWhenLoggedIn: true
   },
+  {
+    icon: ShieldCheck,
+    label: "Admin",
+    href: "/admin",
+    showWhenLoggedIn: true,
+    requiredRole: Role.Admin
+    },
   {
     icon: Settings,
     label: "Settings",
