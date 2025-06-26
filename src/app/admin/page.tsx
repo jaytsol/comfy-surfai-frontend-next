@@ -70,7 +70,7 @@ export default function WorkflowAdminPage() {
           <ShieldCheck className="h-8 w-8" />
           워크플로우 관리
         </h1>
-        <Link href="/workflow-templates/new">
+        <Link href="/admin/workflows/new">
           <Button className="flex items-center gap-2">
             <PlusCircle className="h-4 w-4" />
             <span>새 워크플로우</span>
@@ -97,7 +97,7 @@ export default function WorkflowAdminPage() {
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">{template.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-500 truncate max-w-md">{template.description}</td>
                 <td className="px-6 py-4 text-right text-sm font-medium space-x-2">
-                  <Link href={`/workflow-templates/${template.id}/edit`} passHref>
+                  <Link href={`/admin/workflows/${template.id}/edit`} passHref>
                     <Button variant="outline" size="sm"><Edit className="h-4 w-4" /></Button>
                   </Link>
                   <Button variant="destructive" size="sm" onClick={() => handleDelete(template.id)}>
