@@ -31,7 +31,7 @@ export default function WorkflowAdminPage() {
         setIsLoadingData(true);
         try {
           // 관리자용 API 호출
-          const response = await apiClient<WorkflowTemplate[]>('/admin/workflows');
+          const response = await apiClient<WorkflowTemplate[]>('/workflow-templates');
           setTemplates(response);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err: any) {
@@ -49,7 +49,7 @@ export default function WorkflowAdminPage() {
   const handleDelete = async (templateId: number) => {
     if (confirm(`ID: ${templateId} 워크플로우 템플릿을 정말로 삭제하시겠습니까?`)) {
       try {
-        await apiClient(`/admin/workflows/${templateId}`, { method: 'DELETE' });
+        await apiClient(`/workflow-templates/${templateId}`, { method: 'DELETE' });
         setTemplates(prev => prev.filter(t => t.id !== templateId));
         alert('삭제되었습니다.');
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -70,7 +70,7 @@ export default function WorkflowAdminPage() {
           <ShieldCheck className="h-8 w-8" />
           워크플로우 관리
         </h1>
-        <Link href="/admin/workflows/new">
+        <Link href="/workflow-templates/new">
           <Button className="flex items-center gap-2">
             <PlusCircle className="h-4 w-4" />
             <span>새 워크플로우</span>
@@ -97,7 +97,7 @@ export default function WorkflowAdminPage() {
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">{template.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-500 truncate max-w-md">{template.description}</td>
                 <td className="px-6 py-4 text-right text-sm font-medium space-x-2">
-                  <Link href={`/admin/workflows/${template.id}/edit`} passHref>
+                  <Link href={`/workflow-templates/${template.id}/edit`} passHref>
                     <Button variant="outline" size="sm"><Edit className="h-4 w-4" /></Button>
                   </Link>
                   <Button variant="destructive" size="sm" onClick={() => handleDelete(template.id)}>
