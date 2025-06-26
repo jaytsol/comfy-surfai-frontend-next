@@ -4,7 +4,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { SidebarToggleButton } from './SidebarToggleButton';
 import { SidebarMenuItem } from './SidebarMenuItem';
-import { sidebarNavItems } from '@/constants/sidebarNavItems';
+import { sidebarNavItems } from '@/components/ui/Sidebar/sidebarNavItems';
 import { Separator } from '../separator';
 import { useAuth } from '@/contexts/AuthContext';
 import { Home } from 'lucide-react';

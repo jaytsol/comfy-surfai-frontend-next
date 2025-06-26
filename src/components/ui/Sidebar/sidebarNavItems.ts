@@ -28,25 +28,25 @@ export const sidebarNavItems: NavItem[] = [
     href: "/history",
     showWhenLoggedIn: true
   },
-  {
-    icon: LayoutDashboard,
-    label: "Dashboard",
-    href: "/dashboard",
-    showWhenLoggedIn: true
-  },
-  {
-    icon: FileText,
-    label: "Documents",
-    href: "/documents",
-    showWhenLoggedIn: true,
-    showWhenLoggedOut: true
-  },
-  {
-    icon: Users,
-    label: "Team",
-    href: "/team",
-    showWhenLoggedIn: true
-  },
+  // {
+  //   icon: LayoutDashboard,
+  //   label: "Dashboard",
+  //   href: "/dashboard",
+  //   showWhenLoggedIn: true
+  // },
+  // {
+  //   icon: FileText,
+  //   label: "Documents",
+  //   href: "/documents",
+  //   showWhenLoggedIn: true,
+  //   showWhenLoggedOut: true
+  // },
+  // {
+  //   icon: Users,
+  //   label: "Team",
+  //   href: "/team",
+  //   showWhenLoggedIn: true
+  // },
   {
     icon: UserIcon,
     label: "Profile",
@@ -60,12 +60,12 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: true,
     requiredRole: Role.Admin
     },
-  {
-    icon: Settings,
-    label: "Settings",
-    href: "/settings",
-    showWhenLoggedIn: true
-  },
+  // {
+  //   icon: Settings,
+  //   label: "Settings",
+  //   href: "/settings",
+  //   showWhenLoggedIn: true
+  // },
   {
     icon: null,
     label: "divider",

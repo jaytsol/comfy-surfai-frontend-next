@@ -30,14 +30,14 @@ const adminMenuItems: AdminMenuItem[] = [
   {
     href: "/admin/users",
     icon: Users,
-    title: "사용자 관리",
+    title: "사용자 관리 (개발 중)",
     description:
       "전체 사용자 목록을 조회하고 역할을 변경하거나 계정을 관리합니다.",
   },
   {
     href: "/admin/analytics",
     icon: BarChart3,
-    title: "서비스 통계",
+    title: "서비스 통계 (개발 중)",
     description:
       "API 사용량, 인기 워크플로우 등 서비스 관련 통계를 확인합니다.",
   },
