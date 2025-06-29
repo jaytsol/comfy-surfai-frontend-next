@@ -30,12 +30,18 @@ interface ParameterMappingItem {
   };
 }
 
-// --- 안정적인 ID와 선택된 노드 정보를 포함한 내부 상태 관리용 인터페이스 ---
+// --- 안정적인 ID와 선택된 노�� 정보를 포함한 내부 상태 관리용 인터페이스 ---
 interface ParameterMapEntry {
   id: string;
   key: string;
   value: ParameterMappingItem;
   selectedNodeInfo?: any; // 선택된 노드의 상세 정보
+}
+
+// --- 노드 선택 드롭다운을 위한 인터페이스 ---
+interface NodeInfo {
+  id: string;
+  title: string;
 }
 
 
@@ -55,13 +61,13 @@ const ParameterMappingForm = ({
       id: `initial-${key}-${Math.random()}`,
       key,
       value,
-      selectedNodeInfo: null, // 초기에는 정보 없음
+      selectedNodeInfo: null,
     }));
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [definitionObject, setDefinitionObject] = useState<any>(null);
-  const [nodes, setNodes] = useState<string[]>([]);
+  const [nodes, setNodes] = useState<NodeInfo[]>([]);
 
   useEffect(() => {
     try {
@@ -70,7 +76,11 @@ const ParameterMappingForm = ({
         : template.definition;
       if (parsedDefinition && typeof parsedDefinition === 'object') {
         setDefinitionObject(parsedDefinition);
-        setNodes(Object.keys(parsedDefinition));
+        const nodeInfoList: NodeInfo[] = Object.entries(parsedDefinition).map(([id, nodeData]: [string, any]) => ({
+          id,
+          title: nodeData._meta?.title ? `${nodeData._meta.title} (ID: ${id})` : `Node ID: ${id}`,
+        }));
+        setNodes(nodeInfoList);
       }
     } catch (e) {
       console.error("Failed to parse definition JSON", e);
@@ -97,7 +107,7 @@ const ParameterMappingForm = ({
       entry.id === id 
         ? { 
             ...entry, 
-            value: { ...entry.value, node_id: selectedNodeId, input_name: '' }, // input_name 초기화
+            value: { ...entry.value, node_id: selectedNodeId, input_name: '' },
             selectedNodeInfo: nodeInfo 
           } 
         : entry
@@ -135,7 +145,7 @@ const ParameterMappingForm = ({
     setIsSubmitting(true);
     const finalMap = parameterMap.reduce((acc, entry) => {
       if (entry.key) {
-        const { selectedNodeInfo, ...value } = entry.value; // 제출 데이터에서 selectedNodeInfo 제외
+        const { selectedNodeInfo, ...value } = entry.value as any;
         acc[entry.key] = {
           ...value,
           options: typeof value.options === 'string' 
@@ -184,14 +194,14 @@ const ParameterMappingForm = ({
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <Label>Node ID</Label>
+                <Label>Node</Label>
                 <select
                   value={entry.value.node_id}
                   onChange={(e) => handleNodeIdChange(entry.id, e.target.value)}
                   className="w-full p-2 border rounded bg-white"
                 >
                   <option value="">노드 선택...</option>
-                  {nodes.map(nodeId => <option key={nodeId} value={nodeId}>{nodeId}</option>)}
+                  {nodes.map(node => <option key={node.id} value={node.id}>{node.title}</option>)}
                 </select>
               </div>
               <div className="space-y-1">
@@ -374,7 +384,7 @@ export default function NewWorkflowPage() {
         method: 'PATCH',
         body: { parameter_map: updatedMap },
       });
-      alert('파라미터 맵이 성공적으로 저장되었습니다. 전체 워크플로우 생성이 완료되었습니다.');
+      alert('파라미터 맵이 성공적으로 저장되었습니다. 전체 워크플로우 ���성이 완료되었습니다.');
       router.push('/admin/workflows');
     } catch (err: any) {
       setError(err.message || '파라미터 맵 저장에 실패했습니다.');
