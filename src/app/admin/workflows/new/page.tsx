@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ArrowLeft, Save, Settings, Loader2, PlusCircle, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Settings, Loader2, PlusCircle, Trash2, Info } from 'lucide-react';
 import { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import { CreateWorkflowTemplateDTO } from '@/dto/create-workflow-templates.dto';
 
@@ -30,11 +30,12 @@ interface ParameterMappingItem {
   };
 }
 
-// --- 안정적인 ID를 포함한 내부 상태 관리용 인터페이스 ---
+// --- 안정적인 ID와 선택된 노드 정보를 포함한 내부 상태 관리용 인터페이스 ---
 interface ParameterMapEntry {
-  id: string; // React key로 사용할 고유하고 안정적인 ID
-  key: string; // 사용자가 편집하는 파라미터 키
+  id: string;
+  key: string;
   value: ParameterMappingItem;
+  selectedNodeInfo?: any; // 선택된 노드의 상세 정보
 }
 
 
@@ -51,22 +52,25 @@ const ParameterMappingForm = ({
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>(() => {
     const initialMap = (template.parameter_map as Record<string, ParameterMappingItem>) || {};
     return Object.entries(initialMap).map(([key, value]) => ({
-      id: `initial-${key}-${Math.random()}`, // 초기 로드 시 고유 ID 생성
+      id: `initial-${key}-${Math.random()}`,
       key,
       value,
+      selectedNodeInfo: null, // 초기에는 정보 없음
     }));
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [definitionObject, setDefinitionObject] = useState<any>(null);
   const [nodes, setNodes] = useState<string[]>([]);
 
   useEffect(() => {
     try {
-      const definition = typeof template.definition === 'string' 
+      const parsedDefinition = typeof template.definition === 'string' 
         ? JSON.parse(template.definition) 
         : template.definition;
-      if (definition && typeof definition === 'object') {
-        setNodes(Object.keys(definition));
+      if (parsedDefinition && typeof parsedDefinition === 'object') {
+        setDefinitionObject(parsedDefinition);
+        setNodes(Object.keys(parsedDefinition));
       }
     } catch (e) {
       console.error("Failed to parse definition JSON", e);
@@ -75,20 +79,29 @@ const ParameterMappingForm = ({
 
   const handleAddParam = () => {
     const newEntry: ParameterMapEntry = {
-      id: `new-${Date.now()}`, // 새 항목에 고유 ID 부여
+      id: `new-${Date.now()}`,
       key: `new_param_${parameterMap.length}`,
       value: {
-        node_id: '',
-        input_name: '',
-        label: '',
-        description: '',
-        type: 'text',
-        default_value: '',
-        options: [],
+        node_id: '', input_name: '', label: '', description: '',
+        type: 'text', default_value: '', options: [],
         validation: { required: false }
       },
+      selectedNodeInfo: null,
     };
     setParameterMap([...parameterMap, newEntry]);
+  };
+
+  const handleNodeIdChange = (id: string, selectedNodeId: string) => {
+    const nodeInfo = definitionObject?.[selectedNodeId] || null;
+    setParameterMap(prevMap => prevMap.map(entry => 
+      entry.id === id 
+        ? { 
+            ...entry, 
+            value: { ...entry.value, node_id: selectedNodeId, input_name: '' }, // input_name 초기화
+            selectedNodeInfo: nodeInfo 
+          } 
+        : entry
+    ));
   };
 
   const handleKeyChange = (id: string, newKey: string) => {
@@ -120,21 +133,18 @@ const ParameterMappingForm = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-
-    // 내부 상태(배열)를 API가 요구하는 객체 형태로 변환
     const finalMap = parameterMap.reduce((acc, entry) => {
-      if (entry.key) { // 키가 비어있지 않은 항목만 포함
+      if (entry.key) {
+        const { selectedNodeInfo, ...value } = entry.value; // 제출 데이터에서 selectedNodeInfo 제외
         acc[entry.key] = {
-          ...entry.value,
-          // options가 쉼표로 구분된 문자열이면 배열로 변환
-          options: typeof entry.value.options === 'string' 
-            ? (entry.value.options as string).split(',').map(s => s.trim()) 
-            : entry.value.options,
+          ...value,
+          options: typeof value.options === 'string' 
+            ? (value.options as string).split(',').map(s => s.trim()) 
+            : value.options,
         };
       }
       return acc;
     }, {} as Record<string, ParameterMappingItem>);
-
     await onSave(finalMap);
     setIsSubmitting(false);
   };
@@ -150,8 +160,7 @@ const ParameterMappingForm = ({
         </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onBack}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            이전 단계
+            <ArrowLeft className="h-4 w-4 mr-2" /> 이전 단계
           </Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
@@ -178,7 +187,7 @@ const ParameterMappingForm = ({
                 <Label>Node ID</Label>
                 <select
                   value={entry.value.node_id}
-                  onChange={(e) => handleValueChange(entry.id, 'node_id', e.target.value)}
+                  onChange={(e) => handleNodeIdChange(entry.id, e.target.value)}
                   className="w-full p-2 border rounded bg-white"
                 >
                   <option value="">노드 선택...</option>
@@ -190,6 +199,25 @@ const ParameterMappingForm = ({
                 <Input value={entry.value.input_name} onChange={(e) => handleValueChange(entry.id, 'input_name', e.target.value)} placeholder="e.g., text, seed" />
               </div>
             </div>
+
+            {entry.selectedNodeInfo && (
+              <div className="mt-2 p-3 border rounded-md bg-gray-100 text-xs">
+                <p className="font-bold flex items-center gap-2"><Info size={14} /> Node Info: <span className="font-mono bg-gray-200 px-1 rounded">{entry.selectedNodeInfo.class_type}</span></p>
+                <p className="mt-2 font-semibold">Available Inputs (click to use):</p>
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {Object.keys(entry.selectedNodeInfo.inputs).map(inputName => (
+                    <button
+                      type="button"
+                      key={inputName}
+                      onClick={() => handleValueChange(entry.id, 'input_name', inputName)}
+                      className="px-2 py-1 bg-blue-100 text-blue-800 rounded-md hover:bg-blue-200 font-mono text-xs"
+                    >
+                      {inputName}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1">
               <Label>Label</Label>
