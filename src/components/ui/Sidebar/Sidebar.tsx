@@ -10,11 +10,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Home } from 'lucide-react';
 
 interface SidebarProps {
+  isMounted: boolean;
   isExpanded: boolean;
   onToggle: () => void;
 }
 
-export function Sidebar({ isExpanded, onToggle }: SidebarProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function Sidebar({ isMounted, isExpanded, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const { logout, user, isLoading } = useAuth();
