@@ -67,11 +67,12 @@ interface NodeInfo {
 }
 
 // --- 재사용 가능한 파라미터 추가 버튼 ---
-const AddParameterButton = ({ onAdd, presets, category, position }: {
+const AddParameterButton = ({ onAdd, presets, category, position, existingKeys }: {
   onAdd: (preset: ParameterPreset | undefined, position: 'top' | 'bottom') => void;
   presets: ParameterPreset[];
   category?: string;
   position: 'top' | 'bottom';
+  existingKeys: string[];
 }) => (
   <DropdownMenu>
     <DropdownMenuTrigger asChild>
@@ -83,7 +84,11 @@ const AddParameterButton = ({ onAdd, presets, category, position }: {
     </DropdownMenuTrigger>
     <DropdownMenuContent>
       {presets.map(preset => (
-        <DropdownMenuItem key={preset.key} onClick={() => onAdd(preset, position)}>
+        <DropdownMenuItem 
+          key={preset.key} 
+          onClick={() => onAdd(preset, position)}
+          disabled={existingKeys.includes(preset.key)}
+        >
           {preset.label}
         </DropdownMenuItem>
       ))}
@@ -240,6 +245,14 @@ const ParameterMappingForm = ({
     e.preventDefault();
     setFormError(null);
 
+    // 최종 제출 시 중복 키 검사
+    const keys = parameterMap.map(p => p.key);
+    const uniqueKeys = new Set(keys);
+    if (keys.length !== uniqueKeys.size) {
+      setFormError('중복된 파라미터 키가 존재합니다. 키 값은 고유해야 합니다.');
+      return;
+    }
+
     for (const entry of parameterMap) {
       if (!entry.value.input_name || entry.value.input_name.trim() === '') {
         setFormError(`'${entry.key}' 파라미터의 'Input Name' 필드가 비어있습니다.`);
@@ -266,6 +279,8 @@ const ParameterMappingForm = ({
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
   const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
+  const existingKeys = parameterMap.map(p => p.key);
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex justify-between items-center">
@@ -290,7 +305,7 @@ const ParameterMappingForm = ({
       </div>
       
       <div className="flex justify-start">
-        <AddParameterButton onAdd={handleAddParam} presets={presets} category={template.category} position="top" />
+        <AddParameterButton onAdd={handleAddParam} presets={presets} category={template.category} position="top" existingKeys={existingKeys} />
       </div>
 
       <div className="space-y-4">
@@ -397,7 +412,7 @@ const ParameterMappingForm = ({
       </div>
 
       <div className="flex justify-between mt-6">
-        <AddParameterButton onAdd={handleAddParam} presets={presets} category={template.category} position="bottom" />
+        <AddParameterButton onAdd={handleAddParam} presets={presets} category={template.category} position="bottom" existingKeys={existingKeys} />
         <div className="flex gap-2">
           <Button type="button" variant="outline" size="icon" onClick={scrollToTop} title="위로 스크롤"><ArrowUp className="h-4 w-4" /></Button>
           <Button type="submit" disabled={isSubmitting}>
@@ -409,7 +424,7 @@ const ParameterMappingForm = ({
   );
 };
 
-// --- 1단계: 기본 정보 입력을 위한 메인 컴포넌트 ---
+// --- 1단계: ���본 정보 입력을 위한 메인 컴포넌트 ---
 export default function NewWorkflowPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
@@ -537,7 +552,7 @@ export default function NewWorkflowPage() {
       <div className="space-y-2"><Label htmlFor="tags">태그 (쉼표로 구분)</Label><Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="portrait, realistic, ..." /></div>
       <div className="space-y-2"><Label htmlFor="description">설명</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI에서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
-      <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">모든 사용자에게 공개</Label></div>
+      <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">���든 사용자에게 공개</Label></div>
     </form>
   );
 }
