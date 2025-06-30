@@ -77,6 +77,7 @@ export default function EditWorkflowPage() {
     let parsedDefinition;
     try {
       parsedDefinition = JSON.parse(definition);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Definition의 JSON 형식이 올바르지 않습니다.');
       setIsSubmitting(false);
