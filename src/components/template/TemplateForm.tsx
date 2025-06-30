@@ -61,10 +61,10 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(selectedTemplate.parameter_map).map(
               ([paramName, paramConfig]) => {
-                const label = paramConfig.ui?.label ?? paramName.replace(/_/g, ' ');
-                const inputType = paramConfig.ui?.type ?? 'text';
-                const description = paramConfig.ui?.description;
-                const options = paramConfig.ui?.options;
+                const label = paramConfig.label ?? paramName.replace(/_/g, ' ');
+                const inputType = paramConfig.type === 'boolean' ? 'checkbox' : paramConfig.type;
+                const description = paramConfig.description;
+                const options = paramConfig.options;
 
                 return (
                   <ParameterField
@@ -76,7 +76,6 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
                     inputType={inputType}
                     description={description}
                     options={options}
-                    // textarea일 경우 폼에서 더 넓은 공간을 차지하도록 설정
                     className={inputType === 'textarea' ? 'md:col-span-2' : 'col-span-1'}
                   />
                 );
