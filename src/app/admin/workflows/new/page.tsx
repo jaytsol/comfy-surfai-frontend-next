@@ -15,7 +15,6 @@ import { CreateWorkflowTemplateDTO } from '@/dto/create-workflow-templates.dto';
 import { ParameterMappingForm } from '@/components/admin/ParameterMappingForm';
 import { ParameterMapEntry, ParameterMappingItem } from '@/interfaces/form-interfaces';
 
-// --- 1단계: 기본 정보 입력을 위한 메인 컴포넌트 ---
 export default function NewWorkflowPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
@@ -99,22 +98,15 @@ export default function NewWorkflowPage() {
     }
   };
 
-  const handleParameterMapSave = async () => {
+  const handleParameterMapSave = async (mapToSave: Record<string, ParameterMappingItem>) => {
     if (!createdTemplateId) return;
     
-    const finalMap = parameterMap.reduce((acc, entry) => {
-      if (entry.key) {
-        acc[entry.key] = { ...entry.value };
-      }
-      return acc;
-    }, {} as Record<string, ParameterMappingItem>);
-
     setError(null);
     setIsSubmitting(true);
     try {
       await apiClient(`/workflow-templates/${createdTemplateId}/parameter-map`, {
         method: 'PUT',
-        body: finalMap,
+        body: mapToSave,
       });
       alert('워크플로우 템플릿이 성공적으로 생성되었습니다.');
       router.push('/admin/workflows');
@@ -139,7 +131,9 @@ export default function NewWorkflowPage() {
           setParameterMap={setParameterMap}
           onSave={handleParameterMapSave}
           onBack={handleBackToStep1}
+          isSubmitting={isSubmitting}
         />
+        {error && <p className="mt-4 text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
       </div>
     );
   }

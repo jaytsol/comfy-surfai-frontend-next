@@ -12,7 +12,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import { ParameterMappingForm } from '@/components/admin/ParameterMappingForm';
-import { ParameterMapEntry } from '@/interfaces/form-interfaces';
+import { ParameterMapEntry, ParameterMappingItem } from '@/interfaces/form-interfaces';
 
 export default function EditWorkflowPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -28,7 +28,7 @@ export default function EditWorkflowPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
-  const [definition, setDefinition] = useState<object | string>('');
+  const [definition, setDefinition] = useState<string>('');
   const [isPublic, setIsPublic] = useState(false);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
@@ -49,11 +49,10 @@ export default function EditWorkflowPage() {
       const mapEntries = Object.entries(initialMap).map(([key, value]) => ({
         id: `initial-${key}-${Math.random()}`,
         key, value,
-        isCustom: true, // 편집 시에는 모두 커스텀으로 취급하여 유연성 부여
+        isCustom: true,
         isEssential: false,
-        selectedNodeInfo: null,
       }));
-      setParameterMap(mapEntries);
+      setParameterMap(mapEntries as ParameterMapEntry[]);
 
     } catch (err: any) {
       setError(err.message || '템플릿 정보를 불러오는 데 실패했습니다.');
@@ -63,8 +62,12 @@ export default function EditWorkflowPage() {
   }, [id]);
 
   useEffect(() => {
-    fetchTemplate();
-  }, [fetchTemplate]);
+    if (!isAuthLoading && user) {
+      fetchTemplate();
+    } else if (!isAuthLoading && !user) {
+      router.replace('/login');
+    }
+  }, [user, isAuthLoading, router, fetchTemplate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,7 +76,8 @@ export default function EditWorkflowPage() {
 
     let parsedDefinition;
     try {
-      parsedDefinition = JSON.parse(definition as string);
+      parsedDefinition = JSON.parse(definition);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Definition의 JSON 형식이 올바르지 않습니다.');
       setIsSubmitting(false);
@@ -81,14 +85,18 @@ export default function EditWorkflowPage() {
     }
     
     const finalParameterMap = parameterMap.reduce((acc, entry) => {
-      if (entry.key) acc[entry.key] = { ...entry.value };
+      if (entry.key) {
+        // isCustom, isEssential 등 UI 전용 속성을 제외하고 순수 데이터만 추출
+        acc[entry.key] = entry.value;
+      }
       return acc;
-    }, {} as any);
+    }, {} as Record<string, ParameterMappingItem>);
 
     const payload = {
       name, description, tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       definition: parsedDefinition, isPublicTemplate: isPublic,
       parameter_map: finalParameterMap,
+      category,
     };
 
     try {
@@ -96,7 +104,7 @@ export default function EditWorkflowPage() {
         method: 'PATCH',
         body: payload,
       });
-      alert('템플릿이 성공적으로 수정되었습니다.');
+      alert('템���릿이 성공적으로 수정되었습니다.');
       router.push('/admin/workflows');
     } catch (err: any) {
       setError(err.message || '템플릿 수정에 실패했습니다.');
@@ -129,18 +137,39 @@ export default function EditWorkflowPage() {
 
       <div className="p-4 border rounded-lg space-y-4 bg-slate-50">
         <h2 className="text-xl font-semibold">기본 정보</h2>
-        {/* ... 기본 정보 폼 ... */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <Label htmlFor="name">템플릿 이름</Label>
+            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="category">카테고리</Label>
+            <Input id="category" value={category || ''} onChange={(e) => setCategory(e.target.value)} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
+          <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="description">설명</Label>
+          <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
+        </div>
+        <div className="flex items-center space-x-2">
+          <Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} />
+          <Label htmlFor="isPublic">모든 사용자에게 공개</Label>
+        </div>
       </div>
 
       <div className="p-4 border rounded-lg space-y-2 bg-slate-50">
         <h2 className="text-xl font-semibold">Definition (JSON)</h2>
-        <Textarea value={definition as string} onChange={(e) => setDefinition(e.target.value)} required rows={20} />
+        <Textarea value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={20} />
       </div>
 
       <div className="p-4 border rounded-lg space-y-4 bg-slate-50">
         <h2 className="text-xl font-semibold">파라미터 매핑</h2>
         <ParameterMappingForm 
-          definition={definition}
+          definition={JSON.parse(definition || '{}')}
           category={category}
           parameterMap={parameterMap}
           setParameterMap={setParameterMap}

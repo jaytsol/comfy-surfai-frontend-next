@@ -58,15 +58,16 @@ export const ParameterMappingForm = ({
   setParameterMap,
   onSave,
   onBack,
+  isSubmitting,
 }: {
   definition: object;
   category?: string;
   parameterMap: ParameterMapEntry[];
   setParameterMap: React.Dispatch<React.SetStateAction<ParameterMapEntry[]>>;
-  onSave: (map: Record<string, ParameterMappingItem>) => Promise<void>;
-  onBack: () => Promise<void> | void;
+  onSave?: (map: Record<string, ParameterMappingItem>) => Promise<void>;
+  onBack?: () => Promise<void> | void;
+  isSubmitting?: boolean;
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [definitionObject, setDefinitionObject] = useState<any>(null);
   const [nodes, setNodes] = useState<NodeInfo[]>([]);
   const [presets, setPresets] = useState<ParameterPreset[]>([]);
@@ -90,7 +91,7 @@ export const ParameterMappingForm = ({
     if (category) {
       apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${category}`).then(allPresets => {
         setPresets(allPresets);
-        if (parameterMap.length === 0) {
+        if (parameterMap.length === 0 && onBack) {
           const essentialPresets = allPresets.filter(p => p.essentialForCategories?.includes(category));
           const newEntries = essentialPresets.map(preset => ({
             id: `preset-${preset.key}-${Math.random()}`,
@@ -113,7 +114,7 @@ export const ParameterMappingForm = ({
         }
       });
     }
-  }, [definition, category, setParameterMap, parameterMap.length]);
+  }, [definition, category, setParameterMap, parameterMap.length, onBack]);
 
   const handleAddParam = (preset?: ParameterPreset, position: 'top' | 'bottom' = 'bottom') => {
     const newEntry: ParameterMapEntry = {
@@ -173,6 +174,8 @@ export const ParameterMappingForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!onSave) return;
+
     setFormError(null);
 
     const keys = parameterMap.map(p => p.key);
@@ -188,8 +191,7 @@ export const ParameterMappingForm = ({
         return;
       }
     }
-
-    setIsSubmitting(true);
+    
     const finalMap = parameterMap.reduce((acc, entry) => {
       if (entry.key) {
         acc[entry.key] = { ...entry.value };
@@ -198,8 +200,6 @@ export const ParameterMappingForm = ({
     }, {} as Record<string, ParameterMappingItem>);
     
     await onSave(finalMap);
-    
-    setIsSubmitting(false);
   };
 
   const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
@@ -207,28 +207,32 @@ export const ParameterMappingForm = ({
 
   const existingKeys = parameterMap.map(p => p.key);
 
-  return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold">2. 파라미터 매핑 설정</h2>
-          <p className="text-muted-foreground">&apos;{category}&apos; 워크플로우의 동적 파라미터를 설정합니다.</p>
+  const formContent = (
+    <div className="space-y-6">
+      {onSave && onBack && (
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-2xl font-bold">2. 파라미터 매핑 설정</h2>
+            <p className="text-muted-foreground">&apos;{category}&apos; 워크플로우의 동적 파라미터를 설정합니다.</p>
+          </div>
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" onClick={onBack}><ArrowLeft className="h-4 w-4 mr-2" /> 이전</Button>
+            <Button type="button" variant="outline" size="icon" onClick={scrollToBottom} title="아래로 스크롤"><ArrowDown className="h-4 w-4" /></Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />} 저장
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={onBack}><ArrowLeft className="h-4 w-4 mr-2" /> 이전</Button>
-          <Button type="button" variant="outline" size="icon" onClick={scrollToBottom} title="아래로 스크롤"><ArrowDown className="h-4 w-4" /></Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />} 저장
-          </Button>
-        </div>
-      </div>
+      )}
 
       {formError && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{formError}</p>}
 
-      <div className="space-y-1 p-4 bg-slate-100 rounded-lg">
-        <Label>워크플로우 카테고리</Label>
-        <Badge variant="outline" className="p-2 text-lg">{category}</Badge>
-      </div>
+      {onBack && (
+        <div className="space-y-1 p-4 bg-slate-100 rounded-lg">
+          <Label>워크플로우 카테고리</Label>
+          <Badge variant="outline" className="p-2 text-lg">{category}</Badge>
+        </div>
+      )}
       
       <div className="flex justify-start">
         <AddParameterButton onAdd={handleAddParam} presets={presets} category={category} position="top" existingKeys={existingKeys} />
@@ -339,13 +343,17 @@ export const ParameterMappingForm = ({
 
       <div className="flex justify-between mt-6">
         <AddParameterButton onAdd={handleAddParam} presets={presets} category={category} position="bottom" existingKeys={existingKeys} />
-        <div className="flex gap-2">
-          <Button type="button" variant="outline" size="icon" onClick={scrollToTop} title="위로 스크롤"><ArrowUp className="h-4 w-4" /></Button>
-          <Button type="submit" disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />} 저장
-          </Button>
-        </div>
+        {onSave && (
+          <div className="flex gap-2">
+            <Button type="button" variant="outline" size="icon" onClick={scrollToTop} title="위로 스크롤"><ArrowUp className="h-4 w-4" /></Button>
+            <Button type="submit" disabled={isSubmitting}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />} 저장
+            </Button>
+          </div>
+        )}
       </div>
-    </form>
+    </div>
   );
+
+  return onSave ? <form onSubmit={handleSubmit}>{formContent}</form> : <div>{formContent}</div>;
 };
