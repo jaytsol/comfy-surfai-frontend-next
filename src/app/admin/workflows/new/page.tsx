@@ -424,7 +424,7 @@ const ParameterMappingForm = ({
   );
 };
 
-// --- 1단계: ���본 정보 입력을 위한 메인 컴포넌트 ---
+// --- 1단계: 기본 정보 입력을 위한 메인 컴포넌트 ---
 export default function NewWorkflowPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
   const router = useRouter();
@@ -552,7 +552,7 @@ export default function NewWorkflowPage() {
       <div className="space-y-2"><Label htmlFor="tags">태그 (쉼표로 구분)</Label><Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="portrait, realistic, ..." /></div>
       <div className="space-y-2"><Label htmlFor="description">설명</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI에서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
-      <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">���든 사용자에게 공개</Label></div>
+      <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">모든 사용자에게 공개</Label></div>
     </form>
   );
 }
