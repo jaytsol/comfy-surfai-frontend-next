@@ -32,6 +32,7 @@ export interface WorkflowTemplate {
   id: number;
   name: string;
   description?: string;
+  category?: string;
   definition: object;
   parameter_map?: Record<string, WorkflowParameterMappingItem>;
   previewImageUrl?: string;

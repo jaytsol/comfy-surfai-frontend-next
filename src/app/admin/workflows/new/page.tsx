@@ -40,7 +40,7 @@ interface ParameterMappingItem {
   node_id: string;
   input_name: string;
   label: string;
-  description: string;
+  description?: string;
   type: 'text' | 'number' | 'textarea' | 'select' | 'boolean';
   default_value?: any;
   options?: string[];
@@ -92,14 +92,11 @@ const ParameterMappingForm = ({
   const [definitionObject, setDefinitionObject] = useState<any>(null);
   const [nodes, setNodes] = useState<NodeInfo[]>([]);
   
-  const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>(template.category || '');
   const [presets, setPresets] = useState<ParameterPreset[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiClient<string[]>('/workflow-templates/categories').then(setCategories);
-    
+    // Definition 파싱
     try {
       const parsedDefinition = typeof template.definition === 'string' 
         ? JSON.parse(template.definition) 
@@ -115,15 +112,41 @@ const ParameterMappingForm = ({
     } catch (e) {
       console.error("Failed to parse definition JSON", e);
     }
-  }, [template.definition]);
 
-  useEffect(() => {
-    if (selectedCategory) {
-      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${selectedCategory}`).then(setPresets);
-    } else {
-      setPresets([]);
+    // 카테고리가 있으면 프리셋 로드 및 필수 파라미터 자동 추가
+    if (template.category) {
+      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${template.category}`).then(allPresets => {
+        setPresets(allPresets);
+        
+        if (parameterMap.length === 0) {
+          const essentialPresets = allPresets.filter(p => p.essentialForCategories?.includes(template.category!));
+          const newEntries = essentialPresets.map(preset => ({
+            id: `preset-${preset.key}-${Math.random()}`,
+            key: preset.key,
+            isCustom: false,
+            isEssential: true,
+            value: {
+              node_id: '',
+              input_name: '',
+              label: preset.label,
+              description: preset.description,
+              type: preset.type,
+              options: preset.options || [],
+              default_value: preset.default_value,
+              validation: {
+                required: false,
+                min: preset.validation?.min,
+                max: preset.validation?.max,
+                step: preset.validation?.step,
+              }
+            },
+            selectedNodeInfo: null,
+          }));
+          setParameterMap(newEntries);
+        }
+      });
     }
-  }, [selectedCategory]);
+  }, [template]);
 
   const handleAddParam = (preset?: ParameterPreset) => {
     const newEntry: ParameterMapEntry = {
@@ -188,7 +211,7 @@ const ParameterMappingForm = ({
 
     for (const entry of parameterMap) {
       if (!entry.value.input_name || entry.value.input_name.trim() === '') {
-        setFormError(`'${entry.key}' 파라미터의 'Input Name' 필드�� 비어있습니다.`);
+        setFormError(`'${entry.key}' 파라미터의 'Input Name' 필드가 비어있습니다.`);
         return;
       }
     }
@@ -430,7 +453,7 @@ export default function NewWorkflowPage() {
     try {
       await apiClient(`/workflow-templates/${createdTemplate.id}/parameter-map`, {
         method: 'PUT',
-        body: { parameter_map: updatedMap },
+        body: updatedMap,
       });
       alert('파라미터 맵이 성공적으로 저장되었습니다. 전체 워크플로우 생성이 완료되었습니다.');
       router.push('/admin/workflows');
