@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Save, Settings, Loader2, PlusCircle, Trash2, Info, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Save, Settings, Loader2, PlusCircle, Trash2, Info, ChevronDown, ArrowDown, ArrowUp } from 'lucide-react';
 import { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import { CreateWorkflowTemplateDTO } from '@/dto/create-workflow-templates.dto';
 import {
@@ -66,6 +66,35 @@ interface NodeInfo {
   title: string;
 }
 
+// --- 재사용 가능한 파라미터 추가 버튼 ---
+const AddParameterButton = ({ onAdd, presets, category, position }: {
+  onAdd: (preset: ParameterPreset | undefined, position: 'top' | 'bottom') => void;
+  presets: ParameterPreset[];
+  category?: string;
+  position: 'top' | 'bottom';
+}) => (
+  <DropdownMenu>
+    <DropdownMenuTrigger asChild>
+      <Button variant="secondary" disabled={!category}>
+        <PlusCircle className="h-4 w-4 mr-2" />
+        파라미터 추가
+        <ChevronDown className="h-4 w-4 ml-2" />
+      </Button>
+    </DropdownMenuTrigger>
+    <DropdownMenuContent>
+      {presets.map(preset => (
+        <DropdownMenuItem key={preset.key} onClick={() => onAdd(preset, position)}>
+          {preset.label}
+        </DropdownMenuItem>
+      ))}
+      <DropdownMenuItem onClick={() => onAdd(undefined, position)}>
+        커스텀 파라미터 추가
+      </DropdownMenuItem>
+    </DropdownMenuContent>
+  </DropdownMenu>
+);
+
+
 // --- 2단계: 파라미터 매핑 컴포넌트 ---
 const ParameterMappingForm = ({
   template,
@@ -96,7 +125,6 @@ const ParameterMappingForm = ({
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
-    // Definition 파싱
     try {
       const parsedDefinition = typeof template.definition === 'string' 
         ? JSON.parse(template.definition) 
@@ -113,7 +141,6 @@ const ParameterMappingForm = ({
       console.error("Failed to parse definition JSON", e);
     }
 
-    // 카테고리가 있으면 프리셋 로드 및 필수 파라미터 자동 추가
     if (template.category) {
       apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${template.category}`).then(allPresets => {
         setPresets(allPresets);
@@ -129,7 +156,7 @@ const ParameterMappingForm = ({
               node_id: '',
               input_name: '',
               label: preset.label,
-              description: preset.description,
+              description: preset.description || '',
               type: preset.type,
               options: preset.options || [],
               default_value: preset.default_value,
@@ -148,7 +175,7 @@ const ParameterMappingForm = ({
     }
   }, [template]);
 
-  const handleAddParam = (preset?: ParameterPreset) => {
+  const handleAddParam = (preset?: ParameterPreset, position: 'top' | 'bottom' = 'bottom') => {
     const newEntry: ParameterMapEntry = {
       id: `new-${Date.now()}`,
       key: preset?.key || `custom_param_${parameterMap.length}`,
@@ -171,7 +198,11 @@ const ParameterMappingForm = ({
       },
       selectedNodeInfo: null,
     };
-    setParameterMap([...parameterMap, newEntry]);
+    if (position === 'top') {
+      setParameterMap(prev => [newEntry, ...prev]);
+    } else {
+      setParameterMap(prev => [...prev, newEntry]);
+    }
   };
 
   const handleNodeIdChange = (id: string, selectedNodeId: string) => {
@@ -232,6 +263,9 @@ const ParameterMappingForm = ({
     setIsSubmitting(false);
   };
 
+  const scrollToBottom = () => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+  const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex justify-between items-center">
@@ -241,6 +275,7 @@ const ParameterMappingForm = ({
         </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onBack}><ArrowLeft className="h-4 w-4 mr-2" /> 이전</Button>
+          <Button type="button" variant="outline" size="icon" onClick={scrollToBottom} title="아래로 스크롤"><ArrowDown className="h-4 w-4" /></Button>
           <Button type="submit" disabled={isSubmitting}>
             {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />} 저장
           </Button>
@@ -252,6 +287,10 @@ const ParameterMappingForm = ({
       <div className="space-y-1 p-4 bg-slate-100 rounded-lg">
         <Label>워크플로우 카테고리</Label>
         <Badge variant="outline" className="p-2 text-lg">{template.category}</Badge>
+      </div>
+      
+      <div className="flex justify-start">
+        <AddParameterButton onAdd={handleAddParam} presets={presets} category={template.category} position="top" />
       </div>
 
       <div className="space-y-4">
@@ -357,26 +396,14 @@ const ParameterMappingForm = ({
         ))}
       </div>
 
-      <div className="mt-6">
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="secondary" disabled={!template.category}>
-              <PlusCircle className="h-4 w-4 mr-2" />
-              파라미터 추가
-              <ChevronDown className="h-4 w-4 ml-2" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent>
-            {presets.map(preset => (
-              <DropdownMenuItem key={preset.key} onClick={() => handleAddParam(preset)}>
-                {preset.label}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuItem onClick={() => handleAddParam()}>
-              커스텀 파라미터 추가
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+      <div className="flex justify-between mt-6">
+        <AddParameterButton onAdd={handleAddParam} presets={presets} category={template.category} position="bottom" />
+        <div className="flex gap-2">
+          <Button type="button" variant="outline" size="icon" onClick={scrollToTop} title="위로 스크롤"><ArrowUp className="h-4 w-4" /></Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="h-4 w-4 mr-2" />} 저장
+          </Button>
+        </div>
       </div>
     </form>
   );

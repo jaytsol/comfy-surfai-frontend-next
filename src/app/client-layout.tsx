@@ -15,12 +15,10 @@ export default function ClientLayout({
   useEffect(() => {
     setIsMounted(true);
     
-    // Check for saved preference in localStorage
     const savedPreference = localStorage.getItem('sidebar-expanded');
     if (savedPreference !== null) {
       setIsSidebarExpanded(JSON.parse(savedPreference));
     } else {
-      // Default to expanded on larger screens
       const mediaQuery = window.matchMedia('(min-width: 1024px)');
       setIsSidebarExpanded(mediaQuery.matches);
     }
@@ -33,33 +31,23 @@ export default function ClientLayout({
     }
   }, [isSidebarExpanded, isMounted]);
 
-  if (!isMounted) {
-    return (
-      <div className="flex h-screen overflow-hidden">
-        <div className="w-20 h-screen border-r bg-background" />
-        <div className="flex-1 overflow-auto pl-20">
-          <div className="container mx-auto p-4 md:p-6">
-            {children}
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Hydration-safe rendering
+  const mainContentStyle = {
+    marginLeft: isMounted ? (isSidebarExpanded ? '16rem' : '5rem') : '16rem', // 기본값을 확장된 사이드바 너비로
+    width: isMounted ? (isSidebarExpanded ? 'calc(100% - 16rem)' : 'calc(100% - 5rem)') : 'calc(100% - 16rem)',
+  };
 
   return (
-    <div className="flex h-screen overflow-hidden">
-      <Sidebar isExpanded={isSidebarExpanded} onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)} />
-      <div 
-        className="flex-1 overflow-auto transition-all duration-300 ease-in-out"
-        style={{
-          marginLeft: isSidebarExpanded ? '16rem' : '5rem',
-          width: isSidebarExpanded ? 'calc(100% - 16rem)' : 'calc(100% - 5rem)',
-        }}
+    <div className="flex min-h-screen bg-background">
+      <Sidebar isMounted={isMounted} isExpanded={isSidebarExpanded} onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)} />
+      <main 
+        className="flex-1 transition-all duration-300 ease-in-out"
+        style={mainContentStyle}
       >
         <div className="container mx-auto p-4 md:p-6">
           {children}
         </div>
-      </div>
+      </main>
     </div>
   );
 }
