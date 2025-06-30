@@ -57,6 +57,7 @@ interface ParameterMapEntry {
   key: string;
   value: ParameterMappingItem;
   isCustom: boolean;
+  isEssential: boolean; // 필수 파라미터 여부
   selectedNodeInfo?: any;
 }
 
@@ -82,6 +83,7 @@ const ParameterMappingForm = ({
       key,
       value,
       isCustom: true,
+      isEssential: false, // 기존에 저장된 값들은 필수가 아닌 것으로 간주
       selectedNodeInfo: null,
     }));
   });
@@ -124,6 +126,7 @@ const ParameterMappingForm = ({
           id: `preset-${preset.key}-${Math.random()}`,
           key: preset.key,
           isCustom: false,
+          isEssential: true, // 필수 파라미터로 설정
           value: {
             node_id: '',
             input_name: '',
@@ -155,6 +158,7 @@ const ParameterMappingForm = ({
       id: `new-${Date.now()}`,
       key: preset?.key || `custom_param_${parameterMap.length}`,
       isCustom: !preset,
+      isEssential: false, // 수동 추가는 필수가 아님
       value: {
         node_id: '',
         input_name: '',
@@ -261,7 +265,15 @@ const ParameterMappingForm = ({
           <div key={entry.id} className="p-4 border rounded-lg space-y-4 bg-slate-50">
             <div className="flex justify-between items-center">
               <Input value={entry.key} onChange={(e) => handleKeyChange(entry.id, e.target.value)} className="font-mono font-bold text-lg w-1/3" disabled={!entry.isCustom} />
-              <Button variant="destructive" size="sm" onClick={() => handleRemoveParam(entry.id)}><Trash2 className="h-4 w-4 mr-2" />삭제</Button>
+              <Button 
+                variant="destructive" 
+                size="sm" 
+                onClick={() => handleRemoveParam(entry.id)}
+                disabled={entry.isEssential}
+                title={entry.isEssential ? "필수 파라미터는 삭제할 수 없습니다." : "파라미터 삭제"}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />삭제
+              </Button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-1">
@@ -485,7 +497,7 @@ export default function NewWorkflowPage() {
         <div className="space-y-2"><Label htmlFor="tags">태그 (쉼표로 구분)</Label><Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="portrait, realistic, ..." /></div>
       </div>
       <div className="space-y-2"><Label htmlFor="description">설명</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-      <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI에서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
+      <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI��서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
       <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">모든 사용자에게 공개</Label></div>
       {error && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
     </form>
