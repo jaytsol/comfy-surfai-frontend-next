@@ -10,7 +10,7 @@ import apiClient from "@/lib/apiClient";
 import { useComfyWebSocket } from "@/hooks/useComfyWebSocket";
 import SystemMonitor from "@/components/generate/SystemMonitor";
 import TemplateForm from "@/components/template/TemplateForm";
-import type { WorkflowTemplate } from "@/interfaces/workflow.interface";
+import type { WorkflowTemplate, WorkflowParameterMappingItem } from "@/interfaces/workflow.interface";
 import GenerationDisplay from "@/components/generate/GenerationDisplay";
 import {
   GenerateImagePayload,
@@ -93,12 +93,18 @@ export default function GeneratePage() {
       const initialParams: Record<string, any> = {};
       if (foundTemplate?.parameter_map) {
         for (const key in foundTemplate.parameter_map) {
-          const mappingInfo = foundTemplate.parameter_map[key];
-          try {
-            const node = (foundTemplate.definition as any)[mappingInfo.node_id];
-            initialParams[key] = node?.inputs?.[mappingInfo.input_name] ?? "";
-          } catch {
-            initialParams[key] = "";
+          const mappingInfo = foundTemplate.parameter_map[key] as WorkflowParameterMappingItem;
+          // 1. default_value가 있으면 우선적으로 사용
+          if (mappingInfo.default_value !== undefined) {
+            initialParams[key] = mappingInfo.default_value;
+          } else {
+            // 2. 없으면 definition에서 값 추론 (fallback)
+            try {
+              const node = (foundTemplate.definition as any)[mappingInfo.node_id];
+              initialParams[key] = node?.inputs?.[mappingInfo.input_name] ?? "";
+            } catch {
+              initialParams[key] = "";
+            }
           }
         }
       }
@@ -107,31 +113,24 @@ export default function GeneratePage() {
       setSelectedTemplate(null);
       setParameterValues({});
     }
-    setApiError(null); // 템플릿 변경 시 에러 초기화
+    setApiError(null);
   }, [selectedTemplateId, templates]);
 
   // ✨ --- 캐싱 로직이 포함된 이미지 클릭 핸들러 --- ✨
   const handleImageClick = async (item: HistoryItemData) => {
-    // 1. 캐시에 이미 URL이 있는지 확인합니다.
     if (urlCache[item.id]) {
-      setViewingItem(item); // 캐시된 URL로 라이트박스를 즉시 엽니다.
+      setViewingItem(item);
       return;
     }
-
-    // 2. 캐시에 URL이 없다면, 백엔드에 새로 요청합니다.
     try {
       const response = await apiClient<{ viewUrl: string }>(
         `/my-outputs/${item.id}/view-url`
       );
       const newUrl = response.viewUrl;
-
-      // 3. 받아온 URL을 캐시에 저장합니다.
       setUrlCache((prevCache) => ({
         ...prevCache,
         [item.id]: newUrl,
       }));
-
-      // 4. 라이트박스를 엽니다.
       setViewingItem(item);
     } catch (error) {
       console.error(`Failed to get view URL for output ${item.id}`, error);
@@ -152,7 +151,6 @@ export default function GeneratePage() {
     if (type === "number") {
       parsedValue = parseFloat(value) || 0;
     } else if (type === "checkbox") {
-      // HTMLInputElement 타입 단언
       parsedValue = (e.target as HTMLInputElement).checked;
     }
 
@@ -175,12 +173,10 @@ export default function GeneratePage() {
     };
 
     try {
-      // API 호출만 하고, 결과 처리는 WebSocket 훅이 알아서 합니다.
       await apiClient<ImageGenerationResponse>("/api/generate", {
         method: "POST",
         body: payload,
       });
-      // 성공 응답 후, execution_start WebSocket 메시지가 오면 훅이 상태를 업데이트합니다.
     } catch (err: any) {
       setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
     } finally {
@@ -196,22 +192,16 @@ export default function GeneratePage() {
     const itemToDelete = items.find((item) => item.id === id);
     if (!itemToDelete) return;
 
-    // 1. 낙관적 업데이트: UI에서 즉시 제거
     removeItem(id);
 
     try {
-      // 2. 백엔드에 실제 삭제 API 호출
       await apiClient(`/my-outputs/${id}`, { method: "DELETE" });
-      // 성공!
     } catch (err: any) {
-      // 3. API 호출 실패 시 롤백
       alert("삭제에 실패했습니다: " + err.message);
-      // 훅에서 받은 함수를 사용하여 UI 상태를 원래대로 복구
       addItem(itemToDelete);
     }
   };
 
-  // 렌더링 차단
   if (isAuthLoading || !user) {
     return <p className="text-center py-10">권한 확인 중...</p>;
   }
@@ -219,7 +209,6 @@ export default function GeneratePage() {
     return <p className="text-center py-10">접근 권한이 없습니다.</p>;
   }
 
-  // --- UI 렌더링 ---
   return (
     <div className="container mx-auto py-8 px-4">
       <div className="bg-white rounded-lg shadow-xl p-6 md:p-8 space-y-8">
@@ -268,10 +257,10 @@ export default function GeneratePage() {
           items={items}
           onImageClick={handleImageClick}
           onDelete={handleDelete}
-          layout="scroll" // ✨ 좌우 스크롤 레이아웃 지정
+          layout="scroll"
           title="이번 세션의 생성 기록"
-          sortOrder="newest-first" // ✨ 최신순으로 표시
-          emptyStateMessage={<></>} // generate 페이지에선 비어있을 때 아무것도 안보여줌
+          sortOrder="newest-first"
+          emptyStateMessage={<></>}
         />
       </div>
       <ItemLightbox onClose={handleCloseLightbox} item={viewingItem} />
