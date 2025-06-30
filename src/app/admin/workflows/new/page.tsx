@@ -93,9 +93,9 @@ const ParameterMappingForm = ({
   const [nodes, setNodes] = useState<NodeInfo[]>([]);
   
   const [categories, setCategories] = useState<string[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<string>(template.category || '');
   const [presets, setPresets] = useState<ParameterPreset[]>([]);
-  const [formError, setFormError] = useState<string | null>(null); // 폼 에러 상태 추가
+  const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
     apiClient<string[]>('/workflow-templates/categories').then(setCategories);
@@ -117,42 +117,13 @@ const ParameterMappingForm = ({
     }
   }, [template.definition]);
 
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    if (parameterMap.length === 0 && category) {
-      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${category}`).then(allPresets => {
-        setPresets(allPresets);
-        const essentialPresets = allPresets.filter(p => p.essentialForCategories?.includes(category));
-        const newEntries = essentialPresets.map(preset => ({
-          id: `preset-${preset.key}-${Math.random()}`,
-          key: preset.key,
-          isCustom: false,
-          isEssential: true,
-          value: {
-            node_id: '',
-            input_name: '',
-            label: preset.label,
-            description: preset.description,
-            type: preset.type,
-            options: preset.options || [],
-            default_value: preset.default_value,
-            validation: {
-              required: false,
-              min: preset.validation?.min,
-              max: preset.validation?.max,
-              step: preset.validation?.step,
-            }
-          },
-          selectedNodeInfo: null,
-        }));
-        setParameterMap(newEntries);
-      });
-    } else if (category) {
-      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${category}`).then(setPresets);
+  useEffect(() => {
+    if (selectedCategory) {
+      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${selectedCategory}`).then(setPresets);
     } else {
       setPresets([]);
     }
-  };
+  }, [selectedCategory]);
 
   const handleAddParam = (preset?: ParameterPreset) => {
     const newEntry: ParameterMapEntry = {
@@ -213,13 +184,12 @@ const ParameterMappingForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setFormError(null); // 이전 에러 초기화
+    setFormError(null);
 
-    // Input Name 유효성 검사
     for (const entry of parameterMap) {
       if (!entry.value.input_name || entry.value.input_name.trim() === '') {
-        setFormError(`'${entry.key}' 파라미터의 'Input Name' 필드가 비어있습니다. 모든 파라미터에 노드와 입력 이름을 지정해야 합니다.`);
-        return; // 저장 중단
+        setFormError(`'${entry.key}' 파라미터의 'Input Name' 필드�� 비어있습니다.`);
+        return;
       }
     }
 
@@ -257,20 +227,8 @@ const ParameterMappingForm = ({
       {formError && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{formError}</p>}
 
       <div className="space-y-1 p-4 bg-slate-100 rounded-lg">
-        <Label htmlFor="category">워크플로우 카테고리</Label>
-        <select
-          id="category"
-          value={selectedCategory}
-          onChange={(e) => handleCategoryChange(e.target.value)}
-          className="w-full p-2 border rounded bg-white disabled:bg-gray-200 disabled:cursor-not-allowed"
-          disabled={parameterMap.length > 0}
-        >
-          <option value="">카테고리 선택...</option>
-          {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-        </select>
-        {parameterMap.length > 0 && (
-          <p className="text-xs text-muted-foreground mt-1">카테고리는 첫 파라미터 추가 후 변경할 수 없습니다.</p>
-        )}
+        <Label>워크플로우 카테고리</Label>
+        <Badge variant="outline" className="p-2 text-lg">{template.category}</Badge>
       </div>
 
       <div className="space-y-4">
@@ -379,7 +337,7 @@ const ParameterMappingForm = ({
       <div className="mt-6">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="secondary" disabled={!selectedCategory}>
+            <Button variant="secondary" disabled={!template.category}>
               <PlusCircle className="h-4 w-4 mr-2" />
               파라미터 추가
               <ChevronDown className="h-4 w-4 ml-2" />
@@ -415,18 +373,26 @@ export default function NewWorkflowPage() {
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<'initial' | 'mapping'>('initial');
   const [createdTemplate, setCreatedTemplate] = useState<WorkflowTemplate | null>(null);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
 
   useEffect(() => {
     if (!isAuthLoading) {
       if (!user || user.role !== 'admin') {
         alert('관리자만 접근할 수 있는 페이지입니다.');
         router.replace('/');
+      } else {
+        apiClient<string[]>('/workflow-templates/categories').then(setCategories);
       }
     }
   }, [user, isAuthLoading, router]);
   
   const handleInitialSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!selectedCategory) {
+      setError('워크플로우 카테고리를 선택해야 합니다.');
+      return;
+    }
     setError(null);
     setIsSubmitting(true);
     let parsedDefinition: object;
@@ -439,6 +405,7 @@ export default function NewWorkflowPage() {
     }
     const payload: CreateWorkflowTemplateDTO = {
       name, description,
+      category: selectedCategory,
       tags: tags.split(',').map(tag => tag.trim()).filter(tag => tag),
       definition: parsedDefinition,
       isPublicTemplate: isPublic,
@@ -450,7 +417,6 @@ export default function NewWorkflowPage() {
       });
       setCreatedTemplate(newTemplate);
       setStep('mapping');
-      alert('기본 정보가 저장되었습니다. 이제 파라미터 매핑을 설정해주세요.');
     } catch (err: any) {
       setError(err.message || '템플릿 생성에 실패했습니다.');
     } finally {
@@ -462,8 +428,8 @@ export default function NewWorkflowPage() {
     if (!createdTemplate) return;
     setError(null);
     try {
-      await apiClient(`/workflow-templates/${createdTemplate.id}`, {
-        method: 'PATCH',
+      await apiClient(`/workflow-templates/${createdTemplate.id}/parameter-map`, {
+        method: 'PUT',
         body: { parameter_map: updatedMap },
       });
       alert('파라미터 맵이 성공적으로 저장되었습니다. 전체 워크플로우 생성이 완료되었습니다.');
@@ -505,14 +471,23 @@ export default function NewWorkflowPage() {
           </Button>
         </div>
       </div>
+      
+      {error && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2"><Label htmlFor="name">템플릿 이름</Label><Input id="name" value={name} onChange={(e) => setName(e.target.value)} required /></div>
-        <div className="space-y-2"><Label htmlFor="tags">태그 (쉼표로 구분)</Label><Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="portrait, realistic, ..." /></div>
+        <div className="space-y-2">
+          <Label htmlFor="category">워크플로우 카테고리</Label>
+          <select id="category" value={selectedCategory} onChange={e => setSelectedCategory(e.target.value)} className="w-full p-2 border rounded bg-white">
+            <option value="">카테고리 선택...</option>
+            {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+          </select>
+        </div>
       </div>
+      <div className="space-y-2"><Label htmlFor="tags">태그 (쉼표로 구분)</Label><Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="portrait, realistic, ..." /></div>
       <div className="space-y-2"><Label htmlFor="description">설명</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
       <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI에서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
       <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">모든 사용자에게 공개</Label></div>
-      {error && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
     </form>
   );
 }
