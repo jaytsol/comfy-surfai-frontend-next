@@ -32,7 +32,8 @@ interface ParameterPreset {
     min?: number;
     max?: number;
     step?: number;
-  }
+  };
+  essentialForCategories?: string[];
 }
 
 interface ParameterMappingItem {
@@ -113,13 +114,41 @@ const ParameterMappingForm = ({
     }
   }, [template.definition]);
 
-  useEffect(() => {
-    if (selectedCategory) {
-      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${selectedCategory}`).then(setPresets);
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+    if (parameterMap.length === 0 && category) {
+      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${category}`).then(allPresets => {
+        setPresets(allPresets);
+        const essentialPresets = allPresets.filter(p => p.essentialForCategories?.includes(category));
+        const newEntries = essentialPresets.map(preset => ({
+          id: `preset-${preset.key}-${Math.random()}`,
+          key: preset.key,
+          isCustom: false,
+          value: {
+            node_id: '',
+            input_name: '',
+            label: preset.label,
+            description: preset.description,
+            type: preset.type,
+            options: preset.options || [],
+            default_value: preset.default_value,
+            validation: {
+              required: false,
+              min: preset.validation?.min,
+              max: preset.validation?.max,
+              step: preset.validation?.step,
+            }
+          },
+          selectedNodeInfo: null,
+        }));
+        setParameterMap(newEntries);
+      });
+    } else if (category) {
+      apiClient<ParameterPreset[]>(`/workflow-templates/parameter-presets?category=${category}`).then(setPresets);
     } else {
       setPresets([]);
     }
-  }, [selectedCategory]);
+  };
 
   const handleAddParam = (preset?: ParameterPreset) => {
     const newEntry: ParameterMapEntry = {
@@ -215,7 +244,7 @@ const ParameterMappingForm = ({
         <select
           id="category"
           value={selectedCategory}
-          onChange={(e) => setSelectedCategory(e.target.value)}
+          onChange={(e) => handleCategoryChange(e.target.value)}
           className="w-full p-2 border rounded bg-white disabled:bg-gray-200 disabled:cursor-not-allowed"
           disabled={parameterMap.length > 0}
         >
