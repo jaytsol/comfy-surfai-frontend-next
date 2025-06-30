@@ -27,6 +27,12 @@ interface ParameterPreset {
   type: 'text' | 'number' | 'textarea' | 'select' | 'boolean';
   description: string;
   options?: string[];
+  default_value?: any;
+  validation?: {
+    min?: number;
+    max?: number;
+    step?: number;
+  }
 }
 
 interface ParameterMappingItem {
@@ -49,7 +55,7 @@ interface ParameterMapEntry {
   id: string;
   key: string;
   value: ParameterMappingItem;
-  isCustom: boolean; // 프리셋으로 추가되었는지, 직접 추가했는지 구분
+  isCustom: boolean;
   selectedNodeInfo?: any;
 }
 
@@ -74,7 +80,7 @@ const ParameterMappingForm = ({
       id: `initial-${key}-${Math.random()}`,
       key,
       value,
-      isCustom: true, // 기존에 저장된 값들은 커스텀으로 취급하여 수정 가능하게 함
+      isCustom: true,
       selectedNodeInfo: null,
     }));
   });
@@ -119,7 +125,7 @@ const ParameterMappingForm = ({
     const newEntry: ParameterMapEntry = {
       id: `new-${Date.now()}`,
       key: preset?.key || `custom_param_${parameterMap.length}`,
-      isCustom: !preset, // 프리셋이 있으면 false, 없으면 true
+      isCustom: !preset,
       value: {
         node_id: '',
         input_name: '',
@@ -127,7 +133,13 @@ const ParameterMappingForm = ({
         description: preset?.description || '',
         type: preset?.type || 'text',
         options: preset?.options || [],
-        validation: { required: false }
+        default_value: preset?.default_value,
+        validation: { 
+          required: false,
+          min: preset?.validation?.min,
+          max: preset?.validation?.max,
+          step: preset?.validation?.step,
+        }
       },
       selectedNodeInfo: null,
     };
@@ -273,7 +285,15 @@ const ParameterMappingForm = ({
               </div>
               <div className="space-y-1">
                 <Label>Default Value</Label>
-                <Input value={entry.value.default_value || ''} onChange={(e) => handleValueChange(entry.id, 'default_value', e.target.value)} />
+                <Input 
+                  value={entry.value.default_value ?? ''} 
+                  onChange={(e) => handleValueChange(entry.id, 'default_value', e.target.value)}
+                  placeholder={
+                    (entry.value.validation?.min !== undefined && entry.value.validation?.max !== undefined)
+                    ? `Range: ${entry.value.validation.min} ~ ${entry.value.validation.max}`
+                    : '기본값 (선택 사항)'
+                  }
+                />
               </div>
             </div>
             {entry.value.type === 'select' && (
@@ -291,9 +311,9 @@ const ParameterMappingForm = ({
                 </div>
                 {entry.value.type === 'number' && (
                   <>
-                    <div className="space-y-1"><Label>Min</Label><Input type="number" value={entry.value.validation?.min || ''} onChange={(e) => handleValidationChange(entry.id, 'min', e.target.valueAsNumber)} /></div>
-                    <div className="space-y-1"><Label>Max</Label><Input type="number" value={entry.value.validation?.max || ''} onChange={(e) => handleValidationChange(entry.id, 'max', e.target.valueAsNumber)} /></div>
-                    <div className="space-y-1"><Label>Step</Label><Input type="number" value={entry.value.validation?.step || ''} onChange={(e) => handleValidationChange(entry.id, 'step', e.target.valueAsNumber)} /></div>
+                    <div className="space-y-1"><Label>Min</Label><Input type="number" placeholder="e.g., 1" value={entry.value.validation?.min ?? ''} onChange={(e) => handleValidationChange(entry.id, 'min', e.target.valueAsNumber)} /></div>
+                    <div className="space-y-1"><Label>Max</Label><Input type="number" placeholder="e.g., 100" value={entry.value.validation?.max ?? ''} onChange={(e) => handleValidationChange(entry.id, 'max', e.target.valueAsNumber)} /></div>
+                    <div className="space-y-1"><Label>Step</Label><Input type="number" placeholder="e.g., 1" value={entry.value.validation?.step ?? ''} onChange={(e) => handleValidationChange(entry.id, 'step', e.target.valueAsNumber)} /></div>
                   </>
                 )}
               </div>
