@@ -57,7 +57,7 @@ interface ParameterMapEntry {
   key: string;
   value: ParameterMappingItem;
   isCustom: boolean;
-  isEssential: boolean; // 필수 파라미터 여부
+  isEssential: boolean;
   selectedNodeInfo?: any;
 }
 
@@ -83,7 +83,7 @@ const ParameterMappingForm = ({
       key,
       value,
       isCustom: true,
-      isEssential: false, // 기존에 저장된 값들은 필수가 아닌 것으로 간주
+      isEssential: false,
       selectedNodeInfo: null,
     }));
   });
@@ -95,6 +95,7 @@ const ParameterMappingForm = ({
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [presets, setPresets] = useState<ParameterPreset[]>([]);
+  const [formError, setFormError] = useState<string | null>(null); // 폼 에러 상태 추가
 
   useEffect(() => {
     apiClient<string[]>('/workflow-templates/categories').then(setCategories);
@@ -126,7 +127,7 @@ const ParameterMappingForm = ({
           id: `preset-${preset.key}-${Math.random()}`,
           key: preset.key,
           isCustom: false,
-          isEssential: true, // 필수 파라미터로 설정
+          isEssential: true,
           value: {
             node_id: '',
             input_name: '',
@@ -158,7 +159,7 @@ const ParameterMappingForm = ({
       id: `new-${Date.now()}`,
       key: preset?.key || `custom_param_${parameterMap.length}`,
       isCustom: !preset,
-      isEssential: false, // 수동 추가는 필수가 아님
+      isEssential: false,
       value: {
         node_id: '',
         input_name: '',
@@ -212,6 +213,16 @@ const ParameterMappingForm = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setFormError(null); // 이전 에러 초기화
+
+    // Input Name 유효성 검사
+    for (const entry of parameterMap) {
+      if (!entry.value.input_name || entry.value.input_name.trim() === '') {
+        setFormError(`'${entry.key}' 파라미터의 'Input Name' 필드가 비어있습니다. 모든 파라미터에 노드와 입력 이름을 지정해야 합니다.`);
+        return; // 저장 중단
+      }
+    }
+
     setIsSubmitting(true);
     const finalMap = parameterMap.reduce((acc, entry) => {
       if (entry.key) {
@@ -242,6 +253,8 @@ const ParameterMappingForm = ({
           </Button>
         </div>
       </div>
+
+      {formError && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{formError}</p>}
 
       <div className="space-y-1 p-4 bg-slate-100 rounded-lg">
         <Label htmlFor="category">워크플로우 카테고리</Label>
@@ -497,7 +510,7 @@ export default function NewWorkflowPage() {
         <div className="space-y-2"><Label htmlFor="tags">태그 (쉼표로 구분)</Label><Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="portrait, realistic, ..." /></div>
       </div>
       <div className="space-y-2"><Label htmlFor="description">설명</Label><Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-      <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI��서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
+      <div className="space-y-2"><Label htmlFor="definition">Definition (JSON)</Label><Textarea id="definition" value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={15} placeholder='ComfyUI에서 "Save (API Format)"한 JSON을 여기에 붙여넣으세요.' /></div>
       <div className="flex items-center space-x-2"><Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} /><Label htmlFor="isPublic">모든 사용자에게 공개</Label></div>
       {error && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
     </form>
