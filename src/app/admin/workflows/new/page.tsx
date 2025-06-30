@@ -178,7 +178,7 @@ const ParameterMappingForm = ({
         }
       });
     }
-  }, [template]);
+  }, [template, parameterMap.length]);
 
   const handleAddParam = (preset?: ParameterPreset, position: 'top' | 'bottom' = 'bottom') => {
     const newEntry: ParameterMapEntry = {
@@ -245,7 +245,6 @@ const ParameterMappingForm = ({
     e.preventDefault();
     setFormError(null);
 
-    // 최종 제출 시 중복 키 검사
     const keys = parameterMap.map(p => p.key);
     const uniqueKeys = new Set(keys);
     if (keys.length !== uniqueKeys.size) {
@@ -286,7 +285,7 @@ const ParameterMappingForm = ({
       <div className="flex justify-between items-center">
         <div>
           <h2 className="text-2xl font-bold">2. 파라미터 매핑 설정</h2>
-          <p className="text-muted-foreground">워크플로우 '{template.name}'의 동적 파라미터를 설정합니다.</p>
+          <p className="text-muted-foreground">워크플로우 &apos;{template.name}&apos;의 동적 파라미터를 설정합니다.</p>
         </div>
         <div className="flex gap-2">
           <Button type="button" variant="outline" onClick={onBack}><ArrowLeft className="h-4 w-4 mr-2" /> 이전</Button>
@@ -463,7 +462,7 @@ export default function NewWorkflowPage() {
     let parsedDefinition: object;
     try {
       parsedDefinition = JSON.parse(definition);
-    } catch (jsonError) {
+    } catch (_jsonError) {
       setError('Definition의 JSON 형식이 올바르지 않습니다.');
       setIsSubmitting(false);
       return;
