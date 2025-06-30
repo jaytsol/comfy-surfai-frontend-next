@@ -77,7 +77,6 @@ export default function EditWorkflowPage() {
     let parsedDefinition;
     try {
       parsedDefinition = JSON.parse(definition);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (err) {
       setError('Definition의 JSON 형식이 올바르지 않습니다.');
       setIsSubmitting(false);
@@ -86,7 +85,6 @@ export default function EditWorkflowPage() {
     
     const finalParameterMap = parameterMap.reduce((acc, entry) => {
       if (entry.key) {
-        // isCustom, isEssential 등 UI 전용 속성을 제외하고 순수 데이터만 추출
         acc[entry.key] = entry.value;
       }
       return acc;
@@ -104,7 +102,7 @@ export default function EditWorkflowPage() {
         method: 'PATCH',
         body: payload,
       });
-      alert('템���릿이 성공적으로 수정되었습니다.');
+      alert('템플릿이 성공적으로 수정되었습니다.');
       router.push('/admin/workflows');
     } catch (err: any) {
       setError(err.message || '템플릿 수정에 실패했습니다.');
@@ -134,6 +132,8 @@ export default function EditWorkflowPage() {
           </Button>
         </div>
       </div>
+
+      {error && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
 
       <div className="p-4 border rounded-lg space-y-4 bg-slate-50">
         <h2 className="text-xl font-semibold">기본 정보</h2>
