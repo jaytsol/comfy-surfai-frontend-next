@@ -38,7 +38,6 @@ export default function GeneratePage() {
   const [viewingItem, setViewingItem] = useState<HistoryItemData | null>(null);
   const [urlCache, setUrlCache] = useState<Record<number, string>>({});
 
-  // ✨ --- WebSocket 관련 상태는 모두 커스텀 훅에서 가져옵니다 --- ✨
   const {
     isWsConnected,
     executionStatus,
@@ -50,7 +49,6 @@ export default function GeneratePage() {
     addItem,
   } = useComfyWebSocket(user, isAuthLoading);
 
-  // 접근 제어 및 템플릿 목록 로드
   useEffect(() => {
     if (!isAuthLoading && user?.role === "admin") {
       const fetchTemplates = async () => {
@@ -72,7 +70,6 @@ export default function GeneratePage() {
     }
   }, [user, isAuthLoading]);
 
-  // 접근 제어 리디렉션
   useEffect(() => {
     if (!isAuthLoading) {
       if (!user) router.replace("/login");
@@ -83,7 +80,6 @@ export default function GeneratePage() {
     }
   }, [user, isAuthLoading, router]);
 
-  // 선택된 템플릿 변경 시 파라미터 초기화
   useEffect(() => {
     if (selectedTemplateId) {
       const foundTemplate = templates.find(
@@ -94,11 +90,9 @@ export default function GeneratePage() {
       if (foundTemplate?.parameter_map) {
         for (const key in foundTemplate.parameter_map) {
           const mappingInfo = foundTemplate.parameter_map[key] as WorkflowParameterMappingItem;
-          // 1. default_value가 있으면 우선적으로 사용
           if (mappingInfo.default_value !== undefined) {
             initialParams[key] = mappingInfo.default_value;
           } else {
-            // 2. 없으면 definition에서 값 추론 (fallback)
             try {
               const node = (foundTemplate.definition as any)[mappingInfo.node_id];
               initialParams[key] = node?.inputs?.[mappingInfo.input_name] ?? "";
@@ -116,7 +110,6 @@ export default function GeneratePage() {
     setApiError(null);
   }, [selectedTemplateId, templates]);
 
-  // ✨ --- 캐싱 로직이 포함된 이미지 클릭 핸들러 --- ✨
   const handleImageClick = async (item: HistoryItemData) => {
     if (urlCache[item.id]) {
       setViewingItem(item);
@@ -149,7 +142,10 @@ export default function GeneratePage() {
     let parsedValue: string | number | boolean = value;
 
     if (type === "number") {
-      parsedValue = parseFloat(value) || 0;
+      parsedValue = parseFloat(value);
+      if (isNaN(parsedValue)) {
+        parsedValue = 0; // 또는 다른 기본값
+      }
     } else if (type === "checkbox") {
       parsedValue = (e.target as HTMLInputElement).checked;
     }
@@ -157,31 +153,48 @@ export default function GeneratePage() {
     setParameterValues((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
-  // 이미지 생성 폼 제출 핸들러
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selectedTemplateId) {
+    if (!selectedTemplate) {
       setApiError("먼저 워크플로우 템플릿을 선택해주세요.");
       return;
     }
     setApiError(null);
+
+    // --- 유효성 검사 로직 추가 ---
+    if (selectedTemplate.parameter_map) {
+      for (const [paramName, paramConfig] of Object.entries(selectedTemplate.parameter_map)) {
+        const value = parameterValues[paramName];
+        const rules = paramConfig.validation;
+
+        if (rules) {
+          if (rules.min !== undefined && value < rules.min) {
+            setApiError(`'${paramConfig.label || paramName}' 파라미터 값(${value})은(는) 최소값 ${rules.min}보다 작을 수 없습니다.`);
+            return;
+          }
+          if (rules.max !== undefined && value > rules.max) {
+            setApiError(`'${paramConfig.label || paramName}' 파라미터 값(${value})은(는) 최대값 ${rules.max}보다 클 수 없습니다.`);
+            return;
+          }
+        }
+      }
+    }
+    
     setIsSubmitting(true);
 
     const { batch_size = 1, ...restParameters } = parameterValues;
     const loopCount = Number(batch_size) || 1;
 
     const payload: GenerateImagePayload = {
-      templateId: parseInt(selectedTemplateId, 10),
+      templateId: selectedTemplate.id,
       parameters: restParameters,
     };
 
     try {
       for (let i = 0; i < loopCount; i++) {
-        const loopParameters = { ...payload.parameters };
-        
         await apiClient<ImageGenerationResponse>("/api/generate", {
           method: "POST",
-          body: { ...payload, parameters: loopParameters },
+          body: payload,
         });
       }
     } catch (err: any) {
@@ -195,12 +208,9 @@ export default function GeneratePage() {
     if (!confirm(`ID: #${id} 생성물을 정말로 삭제하시겠습니까?`)) {
       return;
     }
-
     const itemToDelete = items.find((item) => item.id === id);
     if (!itemToDelete) return;
-
     removeItem(id);
-
     try {
       await apiClient(`/my-outputs/${id}`, { method: "DELETE" });
     } catch (err: any) {
@@ -213,7 +223,7 @@ export default function GeneratePage() {
     return <p className="text-center py-10">권한 확인 중...</p>;
   }
   if (user.role !== "admin") {
-    return <p className="text-center py-10">접근 권한이 없습니다.</p>;
+    return <p className="text-center py-10">접근 제한이 없습니다.</p>;
   }
 
   return (
