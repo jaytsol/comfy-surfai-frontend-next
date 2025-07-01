@@ -167,16 +167,23 @@ export default function GeneratePage() {
     setApiError(null);
     setIsSubmitting(true);
 
+    const { batch_size = 1, ...restParameters } = parameterValues;
+    const loopCount = Number(batch_size) || 1;
+
     const payload: GenerateImagePayload = {
       templateId: parseInt(selectedTemplateId, 10),
-      parameters: { ...parameterValues },
+      parameters: restParameters,
     };
 
     try {
-      await apiClient<ImageGenerationResponse>("/api/generate", {
-        method: "POST",
-        body: payload,
-      });
+      for (let i = 0; i < loopCount; i++) {
+        const loopParameters = { ...payload.parameters };
+        
+        await apiClient<ImageGenerationResponse>("/api/generate", {
+          method: "POST",
+          body: { ...payload, parameters: loopParameters },
+        });
+      }
     } catch (err: any) {
       setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
     } finally {
