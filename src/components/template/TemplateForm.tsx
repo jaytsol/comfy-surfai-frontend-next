@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import type { TemplateFormProps } from "../../interfaces/template-form.interface"; // 경로 확인
 import ParameterField from "./ParameterField";
 
@@ -105,7 +106,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
             {inputImage && (
               <div className="mt-4">
                 <p className="text-sm text-gray-600 mb-2">미리보기:</p>
-                <img src={inputImage} alt="Input Preview" className="max-w-full h-auto rounded-md shadow" />
+                <Image src={inputImage} alt="Input Preview" width={500} height={300} className="max-w-full h-auto rounded-md shadow" />
               </div>
             )}
           </div>
