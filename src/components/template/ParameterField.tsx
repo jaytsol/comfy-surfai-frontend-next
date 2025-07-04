@@ -53,6 +53,8 @@ const ParameterField: React.FC<ParameterFieldProps> = ({
       case 'text':
       default:
         return <input {...commonProps} type="text" value={paramValue ?? ''} />;
+      case 'image':
+        return;
     }
   };
 
