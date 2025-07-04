@@ -14,6 +14,8 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
   isSubmitting,
   selectedTemplate,
   isLoadingTemplates,
+  onImageUpload,
+  inputImage,
 }) => {
   if (isLoadingTemplates) {
     return <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>;
@@ -82,6 +84,32 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
               }
             )}
           </div>
+
+          {/* 이미지 업로드 필드 추가 */}
+          <div className="col-span-full">
+            <label htmlFor="input-image" className="block text-sm font-medium text-gray-700 mb-1">
+              입력 이미지 (선택 사항):
+            </label>
+            <input
+              type="file"
+              id="input-image"
+              accept="image/*"
+              onChange={onImageUpload}
+              className="mt-1 block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-indigo-50 file:text-indigo-700
+                hover:file:bg-indigo-100"
+            />
+            {inputImage && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-600 mb-2">미리보기:</p>
+                <img src={inputImage} alt="Input Preview" className="max-w-full h-auto rounded-md shadow" />
+              </div>
+            )}
+          </div>
+
           <div className="flex justify-end pt-4">
             <button
               type="submit"

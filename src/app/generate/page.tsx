@@ -32,6 +32,7 @@ export default function GeneratePage() {
   const [parameterValues, setParameterValues] = useState<Record<string, any>>(
     {}
   );
+  const [inputImage, setInputImage] = useState<string | null>(null);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -153,6 +154,19 @@ export default function GeneratePage() {
     setParameterValues((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setInputImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setInputImage(null);
+    }
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!selectedTemplate) {
@@ -188,6 +202,7 @@ export default function GeneratePage() {
     const payload: GenerateImagePayload = {
       templateId: selectedTemplate.id,
       parameters: restParameters,
+      inputImage: inputImage || undefined, // inputImage가 null이면 undefined로 전송
     };
 
     try {
@@ -259,6 +274,8 @@ export default function GeneratePage() {
           isSubmitting={isSubmitting}
           selectedTemplate={selectedTemplate}
           isLoadingTemplates={isLoadingTemplates}
+          onImageUpload={handleImageUpload} // 추가
+          inputImage={inputImage} // 추가
         />
 
         <GenerationDisplay

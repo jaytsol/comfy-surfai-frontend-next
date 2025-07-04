@@ -13,17 +13,19 @@ export interface TemplateFormProps {
   isSubmitting: boolean;
   selectedTemplate: WorkflowTemplate | null;
   isLoadingTemplates: boolean;
+  onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
+  inputImage: string | null;
 }
 
 export interface ParameterFieldProps {
   paramName: string;
-  label: string; // 레이블은 항상 표시되므로 필수로 변경하는 것이 좋습니다.
+  label: string;
   paramValue: any;
   onChange: (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => void;
-  inputType?: 'text' | 'number' | 'textarea' | 'checkbox' | 'select'; // string 보다 구체적인 타입을 사용하는 것이 안전합니다.
-  description?: string; // ✨ 툴팁을 위한 description prop 추가
+  inputType?: 'text' | 'number' | 'textarea' | 'checkbox' | 'select' | 'image';
+  description?: string;
   options?: string[];
   className?: string;
 }
