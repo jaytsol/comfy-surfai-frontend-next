@@ -86,6 +86,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
             )}
           </div>
 
+          {/* 미디어 파일 입력 필드 (image, video, audio 등) */}
           {selectedTemplate.category && selectedTemplate.category.startsWith("image-to-") && (
             <div className="col-span-full mt-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
               <label className="block text-lg font-semibold text-gray-800 mb-4">

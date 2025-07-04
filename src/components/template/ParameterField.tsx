@@ -54,34 +54,36 @@ const ParameterField: React.FC<ParameterFieldProps> = ({
       default:
         return <input {...commonProps} type="text" value={paramValue ?? ''} />;
       case 'image':
-        return;
+        return null;
     }
   };
 
   return (
     <div className={className}>
-      <label htmlFor={paramName} className="flex items-center text-sm font-medium text-gray-700">
-        <span className="capitalize">{label}</span>
-        
-        {/* description prop이 있을 때만 툴팁 아이콘을 렌더링합니다. */}
-        {description && (
-          <div className="group relative flex items-center ml-2">
-            <span className="text-gray-400 border border-gray-400 rounded-full w-4 h-4 flex items-center justify-center text-xs font-mono cursor-help">
-              ?
-            </span>
-            {/* 마우스를 올렸을 때 나타나는 툴팁 패널 */}
-            <div className={`
-              absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 
-              p-2 text-xs text-white bg-gray-900 rounded-lg shadow-lg 
-              opacity-0 group-hover:opacity-100 transition-opacity duration-300
-              invisible group-hover:visible pointer-events-none
-            `}>
-              {description}
-              <div className="absolute left-1/2 top-full -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+      {inputType !== 'image' && (
+        <label htmlFor={paramName} className="flex items-center text-sm font-medium text-gray-700">
+          <span className="capitalize">{label}</span>
+          
+          {/* description prop이 있을 때만 툴팁 아이콘을 렌더링합니다. */}
+          {description && (
+            <div className="group relative flex items-center ml-2">
+              <span className="text-gray-400 border border-gray-400 rounded-full w-4 h-4 flex items-center justify-center text-xs font-mono cursor-help">
+                ?
+              </span>
+              {/* 마우스를 올렸을 때 나타나는 툴팁 패널 */}
+              <div className={`
+                absolute bottom-full left-1/2 z-20 mb-2 w-64 -translate-x-1/2 
+                p-2 text-xs text-white bg-gray-900 rounded-lg shadow-lg 
+                opacity-0 group-hover:opacity-100 transition-opacity duration-300
+                invisible group-hover:visible pointer-events-none
+              `}>
+                {description}
+                <div className="absolute left-1/2 top-full -translate-x-1/2 w-0 h-0 border-x-4 border-x-transparent border-t-4 border-t-gray-900"></div>
+              </div>
             </div>
-          </div>
-        )}
-      </label>
+          )}
+        </label>
+      )}
 
       {renderInput()}
     </div>
