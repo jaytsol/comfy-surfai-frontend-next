@@ -297,6 +297,7 @@ export const ParameterMappingForm = ({
                     <option value="textarea">Textarea</option>
                     <option value="select">Select</option>
                     <option value="boolean">Boolean</option>
+                    <option value="image">Image</option>
                   </select>
                 ) : (
                   <Badge variant="secondary" className="p-2 text-base">{entry.value.type}</Badge>

@@ -160,7 +160,7 @@ export default function HistoryPage() {
 
       <ItemLightbox
         onClose={handleCloseLightbox}
-        item={viewingItem} // 메타데이터 표시를 위해 item 객체도 전달
+        item={viewingItem}
       />
     </div>
   );

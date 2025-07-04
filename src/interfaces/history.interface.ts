@@ -12,6 +12,7 @@ export interface HistoryItemData {
     createdAt: string;
     usedParameters?: Record<string, any>;
     promptId?: string;
+    duration?: number;
 }
   
 /**

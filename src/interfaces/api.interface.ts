@@ -15,6 +15,12 @@ export interface GenerateImagePayload {
      * 이 필드는 선택 사항이며, 보내지 않으면 템플릿의 기본값으로 이미지가 생성됩니다.
      */
     parameters?: Record<string, any>;
+
+    /**
+     * Base64 인코딩된 입력 이미지 데이터 (선택 사항).
+     * 사용자가 업로드한 이미지가 있을 경우 이 필드에 포함됩니다.
+     */
+    inputImage?: string;
   }
   
   

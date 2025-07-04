@@ -84,6 +84,12 @@ const ItemLightbox: React.FC<ItemLightboxProps> = ({ item, onClose }) => {
                 <p className="font-semibold text-gray-400">생성일</p>
                 <p>{new Date(item.createdAt).toLocaleString()}</p>
               </div>
+              {item.duration && (
+                <div>
+                  <p className="font-semibold text-gray-400">소요 시간</p>
+                  <p>{item.duration.toFixed(2)}초</p>
+                </div>
+              )}
               <div>
                 <p className="font-semibold text-gray-400">Prompt ID</p>
                 <p className="text-gray-100 break-all text-xs">{item.promptId}</p>
