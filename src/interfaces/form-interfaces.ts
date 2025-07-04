@@ -3,7 +3,7 @@
 export interface ParameterPreset {
   key: string;
   label: string;
-  type: 'text' | 'number' | 'textarea' | 'select' | 'boolean';
+  type: 'text' | 'number' | 'textarea' | 'select' | 'boolean' | 'image';
   description: string;
   options?: string[];
   default_value?: any;
@@ -20,7 +20,7 @@ export interface ParameterMappingItem {
   input_name: string;
   label: string;
   description?: string;
-  type: 'text' | 'number' | 'textarea' | 'select' | 'boolean';
+  type: 'text' | 'number' | 'textarea' | 'select' | 'boolean' | 'image';
   default_value?: any;
   options?: string[];
   validation?: {
