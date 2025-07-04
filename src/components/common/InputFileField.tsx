@@ -19,8 +19,8 @@ const InputFileField: React.FC<InputFileFieldProps> = ({
   previewAlt,
 }) => {
   return (
-    <div className="col-span-full">
-      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-1">
+    <div className="w-full p-4 border border-gray-200 rounded-lg shadow-sm bg-white">
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
       <input
@@ -36,9 +36,9 @@ const InputFileField: React.FC<InputFileFieldProps> = ({
           hover:file:bg-indigo-100"
       />
       {preview && (
-        <div className="mt-4">
+        <div className="mt-4 text-center">
           <p className="text-sm text-gray-600 mb-2">미리보기:</p>
-          <Image src={preview} alt={previewAlt || "Preview"} width={500} height={300} className="max-w-full h-auto rounded-md shadow" />
+          <Image src={preview} alt={previewAlt || "Preview"} width={500} height={300} className="max-w-full h-auto rounded-md shadow-md object-contain" />
         </div>
       )}
     </div>

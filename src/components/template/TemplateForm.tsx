@@ -87,14 +87,37 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           </div>
 
           {selectedTemplate.category && selectedTemplate.category.startsWith("image-to-") && (
-            <InputFileField
-              label="입력 이미지 (선택 사항):"
-              id="input-image"
-              accept="image/*"
-              onChange={onImageUpload}
-              preview={inputImage}
-              previewAlt="Input Preview"
-            />
+            <div className="col-span-full mt-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
+              <label className="block text-lg font-semibold text-gray-800 mb-4">
+                입력 이미지 (선택 사항):
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <InputFileField
+                  label="이미지 1"
+                  id="input-image-1"
+                  accept="image/*"
+                  onChange={onImageUpload}
+                  preview={inputImage}
+                  previewAlt="Input Image 1 Preview"
+                />
+                <InputFileField
+                  label="이미지 2"
+                  id="input-image-2"
+                  accept="image/*"
+                  onChange={() => { /* 향후 구현 */ }}
+                  preview={null}
+                  previewAlt="Input Image 2 Preview"
+                />
+                <InputFileField
+                  label="이미지 3"
+                  id="input-image-3"
+                  accept="image/*"
+                  onChange={() => { /* 향후 구현 */ }}
+                  preview={null}
+                  previewAlt="Input Image 3 Preview"
+                />
+              </div>
+            </div>
           )}
 
           <div className="flex justify-end pt-4">
