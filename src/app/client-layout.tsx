@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/ui/Sidebar/Sidebar';
 
-export default function ClientLayout({
+export default function ClientLayout({ 
   children,
 }: {
   children: React.ReactNode;
