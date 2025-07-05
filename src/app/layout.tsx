@@ -55,7 +55,7 @@ export default async function RootLayout({
     <html lang="ko">
       <body className={`${inter.className} min-h-screen bg-background`}>
         <AuthProvider initialUser={user}>
-          <ClientLayout user={user}>
+          <ClientLayout>
             {children}
           </ClientLayout>
         </AuthProvider>
