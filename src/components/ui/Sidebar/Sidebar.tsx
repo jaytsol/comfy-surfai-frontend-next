@@ -90,28 +90,38 @@ export function Sidebar({ isMounted, isExpanded, onToggle }: SidebarProps) {
 
         <nav className="flex flex-1 flex-col overflow-hidden">
           <ul className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden p-2">
-            {processedSidebarItems.map((item, index: number) => {
-              if (item.isDivider) {
+            {isLoading ? ( // isLoading이 true일 때 스켈레톤 UI 렌더링
+              <>
+                <li className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse my-1"></li>
+                <li className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse my-1"></li>
+                <li className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse my-1"></li>
+                <li className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse my-1"></li>
+                <li className="h-8 bg-gray-200 dark:bg-gray-700 rounded-md animate-pulse my-1"></li>
+              </>
+            ) : ( // isLoading이 false일 때 기존 아이템 렌더링
+              processedSidebarItems.map((item, index: number) => {
+                if (item.isDivider) {
+                  return (
+                    <li key={`divider-${index}`} className="my-2">
+                      <Separator className="bg-gray-200 dark:bg-gray-700" />
+                    </li>
+                  );
+                }
+                
                 return (
-                  <li key={`divider-${index}`} className="my-2">
-                    <Separator className="bg-gray-200 dark:bg-gray-700" />
-                  </li>
+                  <SidebarMenuItem
+                    key={item.href || `item-${index}`}
+                    icon={item.icon}
+                    label={item.label}
+                    href={item.href}
+                    isExpanded={isExpanded}
+                    isActive={item.href ? pathname === item.href : false}
+                    onClick={item.onClick}
+                    isLogout={item.isLogout}
+                  />
                 );
-              }
-              
-              return (
-                <SidebarMenuItem
-                  key={item.href || `item-${index}`}
-                  icon={item.icon}
-                  label={item.label}
-                  href={item.href}
-                  isExpanded={isExpanded}
-                  isActive={item.href ? pathname === item.href : false}
-                  onClick={item.onClick}
-                  isLogout={item.isLogout}
-                />
-              );
-            })}
+              })
+            )}
           </ul>
         </nav>
       </div>
