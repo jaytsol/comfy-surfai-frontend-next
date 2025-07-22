@@ -15,6 +15,7 @@ export interface TemplateFormProps {
   isLoadingTemplates: boolean;
   onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
   inputImage: string | null;
+  user: User; // User 객체 추가
 }
 
 export interface ParameterFieldProps {

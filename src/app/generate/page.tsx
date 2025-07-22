@@ -212,6 +212,8 @@ export default function GeneratePage() {
           body: payload,
         });
       }
+      // 이미지 생성 성공 후 사용자 프로필을 다시 가져와 코인 잔액 업데이트
+      fetchUserProfile();
     } catch (err: any) {
       setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
     } finally {
@@ -276,6 +278,7 @@ export default function GeneratePage() {
           isLoadingTemplates={isLoadingTemplates}
           onImageUpload={handleImageUpload} // 추가
           inputImage={inputImage} // 추가
+          user={user} // user 객체 전달
         />
 
         <GenerationDisplay

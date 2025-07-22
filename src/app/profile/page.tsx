@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Separator } from '@/components/ui/separator';
-import { User, Shield, Mail, Calendar, LogOut } from 'lucide-react';
+import { User, Shield, Mail, Calendar, LogOut, Coins } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user, isLoading, logout } = useAuth();
@@ -77,6 +77,11 @@ export default function ProfilePage() {
               </span>
             </div>
             <div className="flex items-center">
+              <Coins className="h-5 w-5 text-muted-foreground mr-3" />
+              <span className="text-sm font-medium">코인 잔액:</span>
+              <span className="text-sm text-muted-foreground ml-auto">{user.coinBalance}</span>
+            </div>
+            <div className="flex items-center">
               <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
               <span className="text-sm font-medium">가입일:</span>
               <span className="text-sm text-muted-foreground ml-auto">{new Date(user.createdAt).toLocaleDateString()}</span>
@@ -84,29 +89,7 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
 
-        {/* 계정 관리 카드 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>계정 관리</CardTitle>
-            <CardDescription>계정 설정을 변경하거나 로그아웃합니다.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!user.googleId && (
-              <Button variant="outline" className="w-full justify-start">비밀번호 변경</Button>
-            )}
-            <Button variant="outline" className="w-full justify-start" onClick={logout}>
-                <LogOut className="mr-2 h-4 w-4"/>
-                로그아웃
-            </Button>
-            <Separator />
-            <Button variant="destructive" className="w-full justify-start">
-              계정 삭제
-            </Button>
-            <p className="text-xs text-muted-foreground">
-              계정을 삭제하면 모든 데이터가 영구적으로 제거되며 복구할 수 없습니다.
-            </p>
-          </CardContent>
-        </Card>
+        
       </div>
     </div>
   );
