@@ -21,7 +21,7 @@ import type { HistoryItemData } from "@/interfaces/history.interface";
 import OutputGallery from "@/components/common/OutputGallery";
 
 export default function GeneratePage() {
-  const { user, isLoading: isAuthLoading } = useAuth();
+  const { user, isLoading: isAuthLoading, fetchUserProfile } = useAuth();
   const router = useRouter();
 
   // --- UI 및 폼 관련 상태 ---
