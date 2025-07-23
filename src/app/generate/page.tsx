@@ -235,7 +235,7 @@ export default function GeneratePage() {
         const { batch_size = 1 } = parameterValues;
         const loopCount = Number(batch_size) || 1;
         const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
-        setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user.coinBalance} 코인만 있습니다.`);
+        setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user?.coinBalance} 코인만 있습니다.`);
       } else {
         setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
       }
