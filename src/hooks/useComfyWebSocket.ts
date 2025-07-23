@@ -29,7 +29,8 @@ export interface ComfyWebSocketHook {
 export const useComfyWebSocket = (
   user: User | null,
   isAuthLoading: boolean,
-  fetchUserProfile: () => Promise<void> // 추가
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fetchUserProfile: () => Promise<void>
 ): ComfyWebSocketHook => {
   const ws = useRef<WebSocket | null>(null);
   const activePromptIdRef = useRef<string | null>(null);

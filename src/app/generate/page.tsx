@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 
 // 컴포넌트 및 훅, 타입 임포트 (경로는 실제 프로젝트 구조에 맞게 수정)
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +21,6 @@ import OutputGallery from "@/components/common/OutputGallery";
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading, fetchUserProfile, updateCoinBalance } = useAuth();
-  const router = useRouter();
 
   // --- UI 및 폼 관련 상태 ---
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
