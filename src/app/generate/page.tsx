@@ -21,7 +21,7 @@ import type { HistoryItemData } from "@/interfaces/history.interface";
 import OutputGallery from "@/components/common/OutputGallery";
 
 export default function GeneratePage() {
-  const { user, isLoading: isAuthLoading, fetchUserProfile } = useAuth();
+  const { user, isLoading: isAuthLoading, fetchUserProfile, updateCoinBalance } = useAuth();
   const router = useRouter();
 
   // --- UI 및 폼 관련 상태 ---
@@ -48,7 +48,7 @@ export default function GeneratePage() {
     items,
     removeItem,
     addItem,
-  } = useComfyWebSocket(user, isAuthLoading);
+  } = useComfyWebSocket(user, isAuthLoading, fetchUserProfile);
 
   useEffect(() => {
     if (!isAuthLoading && user?.role === "admin") {
@@ -199,6 +199,11 @@ export default function GeneratePage() {
     const { batch_size = 1, ...restParameters } = parameterValues;
     const loopCount = Number(batch_size) || 1;
 
+    // 낙관적 업데이트: 코인 차감
+    if (user && selectedTemplate?.cost) {
+      updateCoinBalance(-selectedTemplate.cost * loopCount);
+    }
+
     const payload: GenerateImagePayload = {
       templateId: selectedTemplate.id,
       parameters: restParameters,
@@ -213,7 +218,7 @@ export default function GeneratePage() {
         });
       }
       // 이미지 생성 성공 후 사용자 프로필을 다시 가져와 코인 잔액 업데이트
-      fetchUserProfile();
+      // fetchUserProfile(); // 낙관적 업데이트 후에는 필요 없음
     } catch (err: any) {
       setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
     } finally {
@@ -242,6 +247,8 @@ export default function GeneratePage() {
   if (user.role !== "admin") {
     return <p className="text-center py-10">접근 제한이 없습니다.</p>;
   }
+
+  console.log("Current user coins:", user?.coinBalance);
 
   return (
     <div className="container mx-auto py-8 px-4">

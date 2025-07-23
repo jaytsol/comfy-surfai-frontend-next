@@ -12,6 +12,7 @@ interface AuthContextType {
   login: (credentials: LoginDTO) => Promise<void>; // 일반 로그인 함수
   logout: () => Promise<void>;
   fetchUserProfile: () => Promise<void>;
+  updateCoinBalance: (amount: number) => void; // 코인 잔액을 직접 업데이트하는 함수
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,6 +32,7 @@ export const AuthProvider = ({ children, initialUser }: AuthProviderProps) => {
     try {
       const userData = await apiClient<User>('/auth/profile');
       setUser(userData);
+      console.log("User profile fetched:", userData);
     } catch (error) {
       console.error('Failed to fetch user profile (not logged in):', error);
       setUser(null);
@@ -72,8 +74,17 @@ export const AuthProvider = ({ children, initialUser }: AuthProviderProps) => {
     }
   }, []);
   
+  const updateCoinBalance = useCallback((amount: number) => {
+    setUser(prevUser => {
+      if (prevUser) {
+        return { ...prevUser, coinBalance: prevUser.coinBalance + amount };
+      }
+      return null;
+    });
+  }, []);
+  
   return (
-    <AuthContext.Provider value={{ user, isLoading, login, logout, fetchUserProfile }}>
+    <AuthContext.Provider value={{ user, isLoading, login, logout, fetchUserProfile, updateCoinBalance }}>
       {children}
     </AuthContext.Provider>
   );
