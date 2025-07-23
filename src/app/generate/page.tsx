@@ -71,15 +71,15 @@ export default function GeneratePage() {
     }
   }, [user, isAuthLoading]);
 
-  useEffect(() => {
-    if (!isAuthLoading) {
-      if (!user) router.replace("/login");
-      else if (user.role !== "admin") {
-        alert("관리자만 접근 가능합니다.");
-        router.replace("/");
-      }
-    }
-  }, [user, isAuthLoading, router]);
+  // useEffect(() => {
+  //   if (!isAuthLoading) {
+  //     if (!user) router.replace("/login");
+  //     else if (user.role !== "admin") {
+  //       alert("관리자만 접근 가능합니다.");
+  //       router.replace("/");
+  //     }
+  //   }
+  // }, [user, isAuthLoading, router]);
 
   useEffect(() => {
     if (selectedTemplateId) {
@@ -259,12 +259,12 @@ export default function GeneratePage() {
     }
   };
 
-  if (isAuthLoading || !user) {
-    return <p className="text-center py-10">권한 확인 중...</p>;
-  }
-  if (user.role !== "admin") {
-    return <p className="text-center py-10">접근 제한이 없습니다.</p>;
-  }
+  // if (isAuthLoading || !user) {
+  //   return <p className="text-center py-10">권한 확인 중...</p>;
+  // }
+  // if (user.role !== "admin") {
+  //   return <p className="text-center py-10">접근 제한이 없습니다.</p>;
+  // }
 
   return (
     <div className="container mx-auto py-8 px-4">
