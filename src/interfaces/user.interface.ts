@@ -49,5 +49,10 @@ export interface User {
    */
   googleId?: string | null;
 
+  /**
+   * 사용자의 현재 코인 잔액입니다.
+   */
+  coinBalance: number;
+
   // 참고: password와 같은 민감한 정보는 절대 이 인터페이스에 포함되지 않습니다.
 }

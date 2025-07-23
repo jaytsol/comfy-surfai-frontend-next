@@ -4,6 +4,7 @@ import React from "react";
 import type { TemplateFormProps } from "../../interfaces/template-form.interface"; // 경로 확인
 import ParameterField from "./ParameterField";
 import InputFileField from "../common/InputFileField";
+import { Coins } from 'lucide-react';
 
 const TemplateForm: React.FC<TemplateFormProps> = ({
   templates,
@@ -17,6 +18,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
   isLoadingTemplates,
   onImageUpload,
   inputImage,
+  user,
 }) => {
   if (isLoadingTemplates) {
     return <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>;
@@ -122,6 +124,10 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           )}
 
           <div className="flex justify-end pt-4">
+            <div className="flex items-center mr-4 text-lg font-semibold text-gray-700">
+              <Coins className="h-6 w-6 text-yellow-500 mr-2" />
+              <span>{user.coinBalance} 코인</span>
+            </div>
             <button
               type="submit"
               disabled={isSubmitting || !selectedTemplateId}

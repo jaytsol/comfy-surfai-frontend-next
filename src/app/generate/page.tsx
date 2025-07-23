@@ -2,7 +2,6 @@
 "use client";
 
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
-import { useRouter } from "next/navigation";
 
 // 컴포넌트 및 훅, 타입 임포트 (경로는 실제 프로젝트 구조에 맞게 수정)
 import { useAuth } from "@/contexts/AuthContext";
@@ -21,8 +20,7 @@ import type { HistoryItemData } from "@/interfaces/history.interface";
 import OutputGallery from "@/components/common/OutputGallery";
 
 export default function GeneratePage() {
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const router = useRouter();
+  const { user, isLoading: isAuthLoading, fetchUserProfile, updateCoinBalance } = useAuth();
 
   // --- UI 및 폼 관련 상태 ---
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
@@ -48,10 +46,10 @@ export default function GeneratePage() {
     items,
     removeItem,
     addItem,
-  } = useComfyWebSocket(user, isAuthLoading);
+  } = useComfyWebSocket(user, isAuthLoading, fetchUserProfile);
 
   useEffect(() => {
-    if (!isAuthLoading && user?.role === "admin") {
+    if (!isAuthLoading) {
       const fetchTemplates = async () => {
         setIsLoadingTemplates(true);
         try {
@@ -71,15 +69,15 @@ export default function GeneratePage() {
     }
   }, [user, isAuthLoading]);
 
-  useEffect(() => {
-    if (!isAuthLoading) {
-      if (!user) router.replace("/login");
-      else if (user.role !== "admin") {
-        alert("관리자만 접근 가능합니다.");
-        router.replace("/");
-      }
-    }
-  }, [user, isAuthLoading, router]);
+  // useEffect(() => {
+  //   if (!isAuthLoading) {
+  //     if (!user) router.replace("/login");
+  //     else if (user.role !== "admin") {
+  //       alert("관리자만 접근 가능합니다.");
+  //       router.replace("/");
+  //     }
+  //   }
+  // }, [user, isAuthLoading, router]);
 
   useEffect(() => {
     if (selectedTemplateId) {
@@ -175,6 +173,15 @@ export default function GeneratePage() {
     }
     setApiError(null);
 
+    const { batch_size = 1, ...restParameters } = parameterValues;
+    const loopCount = Number(batch_size) || 1;
+    const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
+
+    if (user && user.coinBalance < requiredCoins) {
+      setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user.coinBalance} 코인만 있습니다.`);
+      return;
+    }
+
     // --- 유효성 검사 로직 추가 ---
     if (selectedTemplate.parameter_map) {
       for (const [paramName, paramConfig] of Object.entries(selectedTemplate.parameter_map)) {
@@ -196,8 +203,10 @@ export default function GeneratePage() {
     
     setIsSubmitting(true);
 
-    const { batch_size = 1, ...restParameters } = parameterValues;
-    const loopCount = Number(batch_size) || 1;
+    // 낙관적 업데이트: 코인 차감
+    if (user && selectedTemplate?.cost) {
+      updateCoinBalance(-selectedTemplate.cost * loopCount);
+    }
 
     const payload: GenerateImagePayload = {
       templateId: selectedTemplate.id,
@@ -212,8 +221,22 @@ export default function GeneratePage() {
           body: payload,
         });
       }
+      // 이미지 생성 성공 후 사용자 프로필을 다시 가져와 코인 잔액 업데이트
+      // fetchUserProfile(); // 낙관적 업데이트 후에는 필요 없음
     } catch (err: any) {
-      setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
+      // 에러 발생 시 낙관적 업데이트 롤백: 코인 복구
+      if (user && selectedTemplate?.cost) {
+        fetchUserProfile();
+      }
+      // 백엔드에서 '코인이 부족합니다.' 에러가 넘어왔을 경우, 프론트엔드의 메시지로 대체
+      if (err.message === '코인이 부족합니다.') {
+        const { batch_size = 1 } = parameterValues;
+        const loopCount = Number(batch_size) || 1;
+        const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
+        setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user?.coinBalance} 코인만 있습니다.`);
+      } else {
+        setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -234,12 +257,12 @@ export default function GeneratePage() {
     }
   };
 
-  if (isAuthLoading || !user) {
-    return <p className="text-center py-10">권한 확인 중...</p>;
-  }
-  if (user.role !== "admin") {
-    return <p className="text-center py-10">접근 제한이 없습니다.</p>;
-  }
+  // if (isAuthLoading || !user) {
+  //   return <p className="text-center py-10">권한 확인 중...</p>;
+  // }
+  // if (user.role !== "admin") {
+  //   return <p className="text-center py-10">접근 제한이 없습니다.</p>;
+  // }
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -276,6 +299,7 @@ export default function GeneratePage() {
           isLoadingTemplates={isLoadingTemplates}
           onImageUpload={handleImageUpload} // 추가
           inputImage={inputImage} // 추가
+          user={user} // user 객체 전달
         />
 
         <GenerationDisplay

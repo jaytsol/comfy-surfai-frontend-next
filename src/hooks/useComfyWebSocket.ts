@@ -28,7 +28,9 @@ export interface ComfyWebSocketHook {
  */
 export const useComfyWebSocket = (
   user: User | null,
-  isAuthLoading: boolean
+  isAuthLoading: boolean,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  fetchUserProfile: () => Promise<void>
 ): ComfyWebSocketHook => {
   const ws = useRef<WebSocket | null>(null);
   const activePromptIdRef = useRef<string | null>(null);
@@ -73,8 +75,8 @@ export const useComfyWebSocket = (
 
     // 연결 로직을 별도의 함수로 분리하여 재사용
     const connect = () => {
-      // 인증 정보가 없거나, 관리자가 아니면 연결 시도 안 함
-      if (isAuthLoading || !user || user.role !== "admin") {
+      // 인증 정보가 없으면 연결 시도 안 함
+      if (isAuthLoading || !user) {
         return;
       }
 
