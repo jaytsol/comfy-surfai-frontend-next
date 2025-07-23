@@ -4,13 +4,12 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card";
 import { Separator } from '@/components/ui/separator';
-import { User, Shield, Mail, Calendar, LogOut, Coins } from 'lucide-react';
+import { User, Shield, Mail, Calendar, Coins } from 'lucide-react';
 
 export default function ProfilePage() {
-  const { user, isLoading, logout } = useAuth();
+  const { user, isLoading } = useAuth();
   const router = useRouter();
 
   // 인증 상태 확인 및 리디렉션

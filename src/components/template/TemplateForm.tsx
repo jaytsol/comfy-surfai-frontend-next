@@ -126,7 +126,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           <div className="flex justify-end pt-4">
             <div className="flex items-center mr-4 text-lg font-semibold text-gray-700">
               <Coins className="h-6 w-6 text-yellow-500 mr-2" />
-              <span>{user.coinBalance} 코인</span>
+              <span>{user?.coinBalance} 코인</span>
             </div>
             <button
               type="submit"
