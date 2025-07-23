@@ -175,6 +175,15 @@ export default function GeneratePage() {
     }
     setApiError(null);
 
+    const { batch_size = 1, ...restParameters } = parameterValues;
+    const loopCount = Number(batch_size) || 1;
+    const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
+
+    if (user && user.coinBalance < requiredCoins) {
+      setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user.coinBalance} 코인만 있습니다.`);
+      return;
+    }
+
     // --- 유효성 검사 로직 추가 ---
     if (selectedTemplate.parameter_map) {
       for (const [paramName, paramConfig] of Object.entries(selectedTemplate.parameter_map)) {
@@ -195,9 +204,6 @@ export default function GeneratePage() {
     }
     
     setIsSubmitting(true);
-
-    const { batch_size = 1, ...restParameters } = parameterValues;
-    const loopCount = Number(batch_size) || 1;
 
     // 낙관적 업데이트: 코인 차감
     if (user && selectedTemplate?.cost) {
@@ -220,7 +226,15 @@ export default function GeneratePage() {
       // 이미지 생성 성공 후 사용자 프로필을 다시 가져와 코인 잔액 업데이트
       // fetchUserProfile(); // 낙관적 업데이트 후에는 필요 없음
     } catch (err: any) {
-      setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
+      // 백엔드에서 '코인이 부족합니다.' 에러가 넘어왔을 경우, 프론트엔드의 메시지로 대체
+      if (err.message === '코인이 부족합니다.') {
+        const { batch_size = 1 } = parameterValues;
+        const loopCount = Number(batch_size) || 1;
+        const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
+        setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user.coinBalance} 코인만 있습니다.`);
+      } else {
+        setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -247,8 +261,6 @@ export default function GeneratePage() {
   if (user.role !== "admin") {
     return <p className="text-center py-10">접근 제한이 없습니다.</p>;
   }
-
-  console.log("Current user coins:", user?.coinBalance);
 
   return (
     <div className="container mx-auto py-8 px-4">

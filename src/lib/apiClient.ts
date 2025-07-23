@@ -104,8 +104,17 @@ async function apiClient<T>(
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ message: response.statusText }));
-    throw new Error(errorData.message || `API call failed: ${response.status}`);
+    let errorData: any;
+    try {
+      errorData = await response.json();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (e) {
+      // JSON 파싱 실패 시, 응답 텍스트를 그대로 사용
+      errorData = { message: response.statusText || '알 수 없는 오류 발생' };
+    }
+    // 백엔드에서 보낸 에러 메시지를 우선적으로 사용
+    const errorMessage = errorData.message || `API call failed with status ${response.status}`;
+    throw new Error(errorMessage);
   }
 
   if (response.status === 204 || response.headers.get('content-length') === '0') {
