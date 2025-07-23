@@ -15,16 +15,16 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { toast } from "sonner"; // sonner 토스트 알림 라이브러리 사용 가정
+import { toast } from "sonner";
 
 export default function AdminUsersPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
-
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [coinAmount, setCoinAmount] = useState<Record<number, number>>({}); // userId: amount
+  // coinAmount 상태의 초기값을 0으로 설정하고, 타입에 string을 추가하여 빈 문자열도 처리
+  const [coinAmount, setCoinAmount] = useState<Record<number, number | string>>({});
 
   useEffect(() => {
     if (!isAuthLoading && user?.role !== "admin") {
@@ -55,16 +55,18 @@ export default function AdminUsersPage() {
     }
   };
 
-  const handleCoinAmountChange = (userId: number, amount: string) => {
+  const handleCoinAmountChange = (userId: number, value: string) => {
+    // 숫자만 입력되도록 유효성 검사
+    const numericValue = value.replace(/[^0-9]/g, ''); // 숫자 이외의 문자 제거
     setCoinAmount((prev) => ({
       ...prev,
-      [userId]: parseInt(amount, 10) || 0,
+      [userId]: numericValue,
     }));
   };
 
   const handleAdjustCoin = async (userId: number, type: "add" | "deduct") => {
-    const amount = coinAmount[userId];
-    if (!amount || amount <= 0) {
+    const amount = parseInt(coinAmount[userId] as string, 10); // string을 number로 파싱
+    if (isNaN(amount) || amount <= 0) {
       toast.error("유효한 코인 양을 입력해주세요.");
       return;
     }
@@ -76,6 +78,7 @@ export default function AdminUsersPage() {
       });
       toast.success("코인 잔액이 성공적으로 조정되었습니다.");
       fetchUsers(); // 조정 후 사용자 목록 새로고침
+      setCoinAmount((prev) => ({ ...prev, [userId]: 0 })); // 입력 폼 초기화
     } catch (err: any) {
       toast.error(`코인 조정 실패: ${err.message || "알 수 없는 오류"}`);
     }
@@ -119,12 +122,15 @@ export default function AdminUsersPage() {
                 <TableCell>{u.coinBalance}</TableCell>
                 <TableCell className="flex items-center justify-end space-x-2">
                   <Input
-                    type="number"
-                    value={coinAmount[u.id] || ""}
+                    type="number" // type을 text로 변경하여 숫자 이외의 문자 입력을 막음
+                    pattern="[0-9]*" // 숫자 키패드 유도 (모바일)
+                    inputMode="numeric" // 숫자 키패드 유도 (모바일)
+                    value={coinAmount[u.id] ?? 0} // 초기값 0으로 설정
                     onChange={(e) =>
                       handleCoinAmountChange(u.id, e.target.value)
                     }
-                    placeholder="양"n                    className="w-24"
+                    placeholder="양"
+                    className="w-24"
                   />
                   <Button
                     variant="outline"
