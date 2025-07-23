@@ -49,7 +49,7 @@ export default function GeneratePage() {
   } = useComfyWebSocket(user, isAuthLoading, fetchUserProfile);
 
   useEffect(() => {
-    if (!isAuthLoading && user?.role === "admin") {
+    if (!isAuthLoading) {
       const fetchTemplates = async () => {
         setIsLoadingTemplates(true);
         try {
