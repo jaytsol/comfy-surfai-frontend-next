@@ -145,9 +145,6 @@ export const useComfyWebSocket = (
               });
             }
 
-            // 코인 잔액 최종 동기화
-            fetchUserProfile();
-
             setExecutionStatus("최종 결과 수신 완료!");
             if (finalData.prompt_id === activePromptIdRef.current) {
               activePromptIdRef.current = null;
