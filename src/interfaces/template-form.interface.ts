@@ -1,5 +1,6 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import type { WorkflowTemplate } from './workflow.interface';
+import { User } from './user.interface';
 
 export interface TemplateFormProps {
   templates: WorkflowTemplate[];
@@ -15,7 +16,7 @@ export interface TemplateFormProps {
   isLoadingTemplates: boolean;
   onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
   inputImage: string | null;
-  user: User; // User 객체 추가
+  user: User | null; // User 객체 추가
 }
 
 export interface ParameterFieldProps {
