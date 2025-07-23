@@ -226,6 +226,10 @@ export default function GeneratePage() {
       // 이미지 생성 성공 후 사용자 프로필을 다시 가져와 코인 잔액 업데이트
       // fetchUserProfile(); // 낙관적 업데이트 후에는 필요 없음
     } catch (err: any) {
+      // 에러 발생 시 낙관적 업데이트 롤백: 코인 복구
+      if (user && selectedTemplate?.cost) {
+        fetchUserProfile();
+      }
       // 백엔드에서 '코인이 부족합니다.' 에러가 넘어왔을 경우, 프론트엔드의 메시지로 대체
       if (err.message === '코인이 부족합니다.') {
         const { batch_size = 1 } = parameterValues;
