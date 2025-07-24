@@ -77,7 +77,7 @@ export default function GeneratePage() {
       };
       fetchTemplates(currentPage);
     }
-  }, [user, isAuthLoading, currentPage, setTotalItems]);
+  }, [user, isAuthLoading, currentPage, itemsPerPage, setTotalItems]);
 
   // useEffect(() => {
   //   if (!isAuthLoading) {
@@ -117,7 +117,7 @@ export default function GeneratePage() {
       setParameterValues({});
     }
     setApiError(null);
-  }, [selectedTemplateId]);
+  }, [selectedTemplateId, templates]);
 
   const handleImageClick = async (item: HistoryItemData) => {
     if (urlCache[item.id]) {

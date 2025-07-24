@@ -1,6 +1,6 @@
 import { Role } from "@/interfaces/role.enum";
 import { User } from "@/interfaces/user.interface";
-import { LayoutDashboard, Settings, FileText, Users, User as UserIcon, Sparkles, LogOut, LogIn, History as HistoryIcon, ShieldCheck } from "lucide-react";
+import { User as UserIcon, Sparkles, LogOut, LogIn, History as HistoryIcon, ShieldCheck } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type

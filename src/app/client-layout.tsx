@@ -12,7 +12,7 @@ export default function ClientLayout({
 }) {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
-  const { user, isLoading } = useAuth(); // user와 isLoading 상태 가져오기
+  const { user } = useAuth(); // user와 isLoading 상태 가져오기
   const pathname = usePathname(); // 현재 경로 가져오기
 
   // 로그인 페이지인지 확인
