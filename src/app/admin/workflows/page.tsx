@@ -20,9 +20,9 @@ export default function WorkflowAdminPage() {
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
+  const { currentPage, totalPages, goToPage, setTotalItems, itemsPerPage } = usePagination({
     totalItems: 0,
-    itemsPerPage: 9
+    itemsPerPage: 10
   });
 
   useEffect(() => {
@@ -39,7 +39,7 @@ export default function WorkflowAdminPage() {
         setIsLoadingData(true);
         try {
           // 관리자용 API 호출
-          const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(`/workflow-templates?page=${page}&limit=10`);
+          const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(`/workflow-templates?page=${page}&limit=${itemsPerPage}`);
           setTemplates(response.data);
           setTotalItems(response.total);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars

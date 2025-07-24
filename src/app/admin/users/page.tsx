@@ -28,9 +28,9 @@ export default function AdminUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const [coinAmount, setCoinAmount] = useState<Record<number, number | string>>({});
 
-  const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
+  const { currentPage, totalPages, goToPage, setTotalItems, itemsPerPage } = usePagination({
     totalItems: 0,
-    itemsPerPage: 10, // 한 페이지에 10개 항목
+    itemsPerPage: 9
   });
 
   useEffect(() => {
@@ -52,7 +52,7 @@ export default function AdminUsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient<PaginatedResponse<User>>(`/admin/users?page=${page}&limit=10`);
+      const response = await apiClient<PaginatedResponse<User>>(`/admin/users?page=${page}&limit=${itemsPerPage}`);
       setUsers(response.data);
       setTotalItems(response.total);
     } catch (err: any) {
