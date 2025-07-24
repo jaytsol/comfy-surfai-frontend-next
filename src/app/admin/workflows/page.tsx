@@ -8,6 +8,9 @@ import apiClient from '@/lib/apiClient';
 import type { WorkflowTemplate } from '@/interfaces/workflow.interface';
 import { Button } from '@/components/ui/button';
 import { PlusCircle, Edit, Trash2, ShieldCheck } from 'lucide-react';
+import { usePagination } from '@/hooks/usePagination'; // usePagination 훅 임포트
+import { Pagination } from '@/components/common/Pagination'; // Pagination 컴포넌트 임포트
+import { PaginatedResponse } from '@/interfaces/pagination.interface'; // PaginatedResponse 임포트
 
 export default function WorkflowAdminPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -16,6 +19,11 @@ export default function WorkflowAdminPage() {
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
   const [isLoadingData, setIsLoadingData] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
+    totalItems: 0,
+    itemsPerPage: 10, // 한 페이지에 10개 항목
+  });
 
   useEffect(() => {
     // 인증 로딩이 끝나고, 유저 정보가 있을 때만 데이터 요청
@@ -27,12 +35,13 @@ export default function WorkflowAdminPage() {
         return;
       }
 
-      const fetchTemplates = async () => {
+      const fetchTemplates = async (page: number) => {
         setIsLoadingData(true);
         try {
           // 관리자용 API 호출
-          const response = await apiClient<WorkflowTemplate[]>('/workflow-templates');
-          setTemplates(response);
+          const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(`/workflow-templates?page=${page}&limit=10`);
+          setTemplates(response.data);
+          setTotalItems(response.total);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         } catch (err: any) {
           setError('워크플로우 템플릿을 불러오는 데 실패했습니다.');
@@ -40,11 +49,11 @@ export default function WorkflowAdminPage() {
           setIsLoadingData(false);
         }
       };
-      fetchTemplates();
+      fetchTemplates(currentPage);
     } else if (!isAuthLoading && !user) {
         router.replace('/login');
     }
-  }, [user, isAuthLoading, router]);
+  }, [user, isAuthLoading, router, currentPage]); // currentPage 의존성 추가
 
   const handleDelete = async (templateId: number) => {
     if (confirm(`ID: ${templateId} 워크플로우 템플릿을 정말로 삭제하시겠습니까?`)) {
@@ -109,6 +118,12 @@ export default function WorkflowAdminPage() {
           </tbody>
         </table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }
