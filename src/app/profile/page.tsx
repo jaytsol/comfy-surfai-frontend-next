@@ -83,7 +83,7 @@ export default function ProfilePage() {
             <div className="flex items-center">
               <Calendar className="h-5 w-5 text-muted-foreground mr-3" />
               <span className="text-sm font-medium">가입일:</span>
-              <span className="text-sm text-muted-foreground ml-auto">{new Date(user.createdAt).toLocaleDateString()}</span>
+              <span className="text-sm text-muted-foreground ml-auto">{new Date(user.createdAt).toLocaleDateString('ko-KR', { year: 'numeric', month: 'numeric', day: 'numeric' })}</span>
             </div>
           </CardContent>
         </Card>

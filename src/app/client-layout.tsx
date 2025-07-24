@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Sidebar } from '@/components/ui/Sidebar/Sidebar';
+import { useAuth } from '@/contexts/AuthContext'; // useAuth 임포트
+import { usePathname } from 'next/navigation'; // usePathname 임포트
 
 export default function ClientLayout({ 
   children,
@@ -10,6 +12,11 @@ export default function ClientLayout({
 }) {
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const { user, isLoading } = useAuth(); // user와 isLoading 상태 가져오기
+  const pathname = usePathname(); // 현재 경로 가져오기
+
+  // 로그인 페이지인지 확인
+  const isLoginPage = pathname === '/login' || pathname === '/register';
 
   // Handle hydration
   useEffect(() => {
@@ -33,13 +40,15 @@ export default function ClientLayout({
 
   // Hydration-safe rendering
   const mainContentStyle = {
-    marginLeft: isMounted ? (isSidebarExpanded ? '16rem' : '5rem') : '16rem', // 기본값을 확장된 사이드바 너비로
-    width: isMounted ? (isSidebarExpanded ? 'calc(100% - 16rem)' : 'calc(100% - 5rem)') : 'calc(100% - 16rem)',
+    marginLeft: isMounted && user && !isLoginPage ? (isSidebarExpanded ? '16rem' : '5rem') : '0', // 로그인 상태가 아니거나 로그인 페이지일 경우 0
+    width: isMounted && user && !isLoginPage ? (isSidebarExpanded ? 'calc(100% - 16rem)' : 'calc(100% - 5rem)') : '100%', // 로그인 상태가 아니거나 로그인 페이지일 경우 100%
   };
 
   return (
     <div className="flex min-h-screen bg-background">
-      <Sidebar isMounted={isMounted} isExpanded={isSidebarExpanded} onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)} />
+      {isMounted && user && !isLoginPage && (
+        <Sidebar isMounted={isMounted} isExpanded={isSidebarExpanded} onToggle={() => setIsSidebarExpanded(!isSidebarExpanded)} />
+      )}
       <main 
         className="flex-1 transition-all duration-300 ease-in-out"
         style={mainContentStyle}
