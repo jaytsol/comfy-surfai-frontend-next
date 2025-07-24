@@ -340,7 +340,6 @@ export default function GeneratePage() {
         {selectedTemplate && (
           <TemplateForm
             selectedTemplateId={selectedTemplateId}
-            onTemplateChange={() => {}} // 카드 선택 방식이므로 이 핸들러는 더 이상 사용되지 않음
             onParameterChange={handleParameterChange}
             onSubmit={handleSubmit}
             parameterValues={parameterValues}

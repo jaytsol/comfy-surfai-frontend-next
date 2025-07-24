@@ -3,9 +3,7 @@ import type { WorkflowTemplate } from './workflow.interface';
 import { User } from './user.interface';
 
 export interface TemplateFormProps {
-  templates: WorkflowTemplate[];
   selectedTemplateId: string;
-  onTemplateChange: (e: ChangeEvent<HTMLSelectElement>) => void;
   onParameterChange: (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => void;
