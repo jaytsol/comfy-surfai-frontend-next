@@ -27,6 +27,7 @@ export default function NewWorkflowPage() {
   const [isPublic, setIsPublic] = useState(false);
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [cost, setCost] = useState<number>(1); // cost 상태 추가
   
   // 2단계 폼 상태
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
@@ -68,6 +69,7 @@ export default function NewWorkflowPage() {
       tags: tags.split(',').map(tag => tag.trim()).filter(Boolean),
       definition: parsedDefinition,
       isPublicTemplate: isPublic,
+      cost,
     };
     try {
       const newTemplate = await apiClient<WorkflowTemplate>('/workflow-templates', {
@@ -167,6 +169,10 @@ export default function NewWorkflowPage() {
             <option value="">카테고리 선택...</option>
             {categories.map(cat => <option key={cat} value={cat}>{cat}</option>)}
           </select>
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="cost">소모 코인</Label>
+          <Input id="cost" type="number" value={cost} onChange={(e) => setCost(parseInt(e.target.value, 10) || 0)} required />
         </div>
       </div>
       <div className="space-y-2">

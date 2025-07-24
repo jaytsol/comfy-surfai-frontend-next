@@ -32,6 +32,7 @@ export default function EditWorkflowPage() {
   const [isPublic, setIsPublic] = useState(false);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
+  const [cost, setCost] = useState<number>(1);
 
   const fetchTemplate = useCallback(async () => {
     if (!id) return;
@@ -44,6 +45,7 @@ export default function EditWorkflowPage() {
       setDefinition(JSON.stringify(data.definition, null, 2));
       setIsPublic(data.isPublicTemplate);
       setCategory(data.category);
+      setCost(data.cost || 1);
       
       const initialMap = data.parameter_map || {};
       const mapEntries = Object.entries(initialMap).map(([key, value]) => ({
@@ -96,6 +98,7 @@ export default function EditWorkflowPage() {
       definition: parsedDefinition, isPublicTemplate: isPublic,
       parameter_map: finalParameterMap,
       category,
+      cost, // cost 추가
     };
 
     try {
@@ -146,6 +149,10 @@ export default function EditWorkflowPage() {
           <div className="space-y-2">
             <Label htmlFor="category">카테고리</Label>
             <Input id="category" value={category || ''} onChange={(e) => setCategory(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="cost">소모 코인</Label>
+            <Input id="cost" type="number" value={cost} onChange={(e) => setCost(parseInt(e.target.value, 10) || 0)} required />
           </div>
         </div>
         <div className="space-y-2">
