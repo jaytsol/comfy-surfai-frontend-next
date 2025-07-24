@@ -5,12 +5,9 @@ import { useRouter, useParams } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import apiClient from '@/lib/apiClient';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Checkbox } from '@/components/ui/checkbox';
 import { ArrowLeft, Save, Loader2 } from 'lucide-react';
 import { WorkflowTemplate } from '@/interfaces/workflow.interface';
+import { WorkflowForm } from '@/components/admin/workflows/WorkflowForm';
 import { ParameterMappingForm } from '@/components/admin/ParameterMappingForm';
 import { ParameterMapEntry, ParameterMappingItem } from '@/interfaces/form-interfaces';
 
@@ -32,6 +29,8 @@ export default function EditWorkflowPage() {
   const [isPublic, setIsPublic] = useState(false);
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
+  const [cost, setCost] = useState<number>(1);
+  const [categories, setCategories] = useState<string[]>([]);
 
   const fetchTemplate = useCallback(async () => {
     if (!id) return;
@@ -44,6 +43,7 @@ export default function EditWorkflowPage() {
       setDefinition(JSON.stringify(data.definition, null, 2));
       setIsPublic(data.isPublicTemplate);
       setCategory(data.category);
+      setCost(data.cost || 1);
       
       const initialMap = data.parameter_map || {};
       const mapEntries = Object.entries(initialMap).map(([key, value]) => ({
@@ -64,6 +64,7 @@ export default function EditWorkflowPage() {
   useEffect(() => {
     if (!isAuthLoading && user) {
       fetchTemplate();
+      apiClient<string[]>('/workflow-templates/categories').then(setCategories);
     } else if (!isAuthLoading && !user) {
       router.replace('/login');
     }
@@ -96,6 +97,7 @@ export default function EditWorkflowPage() {
       definition: parsedDefinition, isPublicTemplate: isPublic,
       parameter_map: finalParameterMap,
       category,
+      cost, // cost 추가
     };
 
     try {
@@ -136,36 +138,23 @@ export default function EditWorkflowPage() {
 
       {error && <p className="text-red-500 font-medium p-4 bg-red-50 rounded-md">{error}</p>}
 
-      <div className="p-4 border rounded-lg space-y-4 bg-slate-50">
-        <h2 className="text-xl font-semibold">기본 정보</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="space-y-2">
-            <Label htmlFor="name">템플릿 이름</Label>
-            <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="category">카테고리</Label>
-            <Input id="category" value={category || ''} onChange={(e) => setCategory(e.target.value)} />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
-          <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="description">설명</Label>
-          <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} />
-        </div>
-        <div className="flex items-center space-x-2">
-          <Checkbox id="isPublic" checked={isPublic} onCheckedChange={(checked) => setIsPublic(!!checked)} />
-          <Label htmlFor="isPublic">모든 사용자에게 공개</Label>
-        </div>
-      </div>
-
-      <div className="p-4 border rounded-lg space-y-2 bg-slate-50">
-        <h2 className="text-xl font-semibold">Definition (JSON)</h2>
-        <Textarea value={definition} onChange={(e) => setDefinition(e.target.value)} required rows={20} />
-      </div>
+      <WorkflowForm 
+        name={name}
+        setName={setName}
+        description={description}
+        setDescription={setDescription}
+        tags={tags}
+        setTags={setTags}
+        cost={cost}
+        setCost={setCost}
+        isPublic={isPublic}
+        setIsPublic={setIsPublic}
+        definition={definition}
+        setDefinition={setDefinition}
+        categories={categories}
+        selectedCategory={category || ''}
+        setSelectedCategory={setCategory}
+      />
 
       <div className="p-4 border rounded-lg space-y-4 bg-slate-50">
         <h2 className="text-xl font-semibold">파라미터 매핑</h2>
