@@ -107,7 +107,7 @@ export default function GeneratePage() {
       setParameterValues({});
     }
     setApiError(null);
-  }, [selectedTemplateId, templates]);
+  }, [selectedTemplateId]);
 
   const handleImageClick = async (item: HistoryItemData) => {
     if (urlCache[item.id]) {
