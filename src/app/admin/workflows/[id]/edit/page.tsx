@@ -30,6 +30,7 @@ export default function EditWorkflowPage() {
   const [category, setCategory] = useState<string | undefined>(undefined);
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
   const [cost, setCost] = useState<number>(1);
+  const [categories, setCategories] = useState<string[]>([]);
 
   const fetchTemplate = useCallback(async () => {
     if (!id) return;
@@ -63,6 +64,7 @@ export default function EditWorkflowPage() {
   useEffect(() => {
     if (!isAuthLoading && user) {
       fetchTemplate();
+      apiClient<string[]>('/workflow-templates/categories').then(setCategories);
     } else if (!isAuthLoading && !user) {
       router.replace('/login');
     }
@@ -149,7 +151,7 @@ export default function EditWorkflowPage() {
         setIsPublic={setIsPublic}
         definition={definition}
         setDefinition={setDefinition}
-        categories={[]}
+        categories={categories}
         selectedCategory={category || ''}
         setSelectedCategory={setCategory}
       />
