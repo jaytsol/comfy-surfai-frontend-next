@@ -7,9 +7,7 @@ import InputFileField from "../common/InputFileField";
 import { Coins } from 'lucide-react';
 
 const TemplateForm: React.FC<TemplateFormProps> = ({
-  templates,
   selectedTemplateId,
-  onTemplateChange,
   onParameterChange,
   onSubmit,
   parameterValues,
@@ -21,42 +19,20 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
   user,
 }) => {
   if (isLoadingTemplates) {
-    return <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>;
+    return <p className="text-gray-600">템플릿 정보를 불러오는 중입니다...</p>;
   }
 
-  if (!isLoadingTemplates && templates.length === 0) {
+  if (!selectedTemplate) {
     return (
       <p className="text-orange-600">
-        사용 가능한 워크플로우 템플릿이 없습니다. 먼저 템플릿을 생성해주세요.
+        템플릿을 선택해주세요.
       </p>
     );
   }
 
   return (
     <div className="space-y-6">
-      <div>
-        <label
-          htmlFor="template-select"
-          className="block text-sm font-medium text-gray-700 mb-1"
-        >
-          워크플로우 템플릿 선택:
-        </label>
-        <select
-          id="template-select"
-          value={selectedTemplateId}
-          onChange={onTemplateChange}
-          className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md shadow-sm"
-        >
-          <option value="">-- 템플릿을 선택하세요 --</option>
-          {templates.map((template) => (
-            <option key={template.id} value={template.id.toString()}>
-              {template.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {selectedTemplate && selectedTemplate.parameter_map && (
+      {selectedTemplate.parameter_map && (
         <form onSubmit={onSubmit} className="space-y-6">
           <h2 className="text-xl font-semibold text-gray-700">
             {selectedTemplate.name} - 파라미터 수정

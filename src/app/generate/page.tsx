@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 
 // 컴포넌트 및 훅, 타입 임포트 (경로는 실제 프로젝트 구조에 맞게 수정)
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,9 +19,14 @@ import {
 import ItemLightbox from "@/components/common/ItemLightbox";
 import type { HistoryItemData } from "@/interfaces/history.interface";
 import OutputGallery from "@/components/common/OutputGallery";
+import { usePagination } from "@/hooks/usePagination"; // usePagination 훅 임포트
+import { Pagination } from "@/components/common/Pagination"; // Pagination 컴포넌트 임포트
+import { PaginatedResponse } from "@/interfaces/pagination.interface"; // PaginatedResponse 임포트
+import TemplateCard from "@/components/template/TemplateCard"; // TemplateCard 임포트
 
 export default function GeneratePage() {
   const { user, isLoading: isAuthLoading, fetchUserProfile, updateCoinBalance } = useAuth();
+  const router = useRouter();
 
   // --- UI 및 폼 관련 상태 ---
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
@@ -37,6 +43,11 @@ export default function GeneratePage() {
   const [viewingItem, setViewingItem] = useState<HistoryItemData | null>(null);
   const [urlCache, setUrlCache] = useState<Record<number, string>>({});
 
+  const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
+    totalItems: 0,
+    itemsPerPage: 10, // 한 페이지에 10개 항목
+  });
+
   const {
     isWsConnected,
     executionStatus,
@@ -50,13 +61,14 @@ export default function GeneratePage() {
 
   useEffect(() => {
     if (!isAuthLoading) {
-      const fetchTemplates = async () => {
+      const fetchTemplates = async (page: number) => {
         setIsLoadingTemplates(true);
         try {
-          const fetchedTemplates = await apiClient<WorkflowTemplate[]>(
-            "/workflow-templates"
+          const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(
+            `/workflow-templates?page=${page}&limit=10`
           );
-          setTemplates(fetchedTemplates || []);
+          setTemplates(response.data);
+          setTotalItems(response.total);
         } catch (err: any) {
           setApiError(
             "워크플로우 템플릿을 불러오는 데 실패했습니다: " + err.message
@@ -65,9 +77,9 @@ export default function GeneratePage() {
           setIsLoadingTemplates(false);
         }
       };
-      fetchTemplates();
+      fetchTemplates(currentPage);
     }
-  }, [user, isAuthLoading]);
+  }, [user, isAuthLoading, currentPage, setTotalItems]);
 
   // useEffect(() => {
   //   if (!isAuthLoading) {
@@ -300,22 +312,48 @@ export default function GeneratePage() {
 
         <SystemMonitor data={systemMonitorData} />
 
-        <TemplateForm
-          templates={templates}
-          selectedTemplateId={selectedTemplateId}
-          onTemplateChange={(e: ChangeEvent<HTMLSelectElement>) =>
-            setSelectedTemplateId(e.target.value)
-          }
-          onParameterChange={handleParameterChange}
-          onSubmit={handleSubmit}
-          parameterValues={parameterValues}
-          isSubmitting={isSubmitting}
-          selectedTemplate={selectedTemplate}
-          isLoadingTemplates={isLoadingTemplates}
-          onImageUpload={handleImageUpload} // 추가
-          inputImage={inputImage} // 추가
-          user={user} // user 객체 전달
-        />
+        {/* 템플릿 선택 카드 갤러리 */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-gray-700">워크플로우 템플릿 선택:</h2>
+          {isLoadingTemplates ? (
+            <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>
+          ) : templates.length === 0 ? (
+            <p className="text-orange-600">사용 가능한 워크플로우 템플릿이 없습니다. 먼저 템플릿을 생성해주세요.</p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {templates.map((template) => (
+                <TemplateCard
+                  key={template.id}
+                  template={template}
+                  isSelected={selectedTemplateId === template.id.toString()}
+                  onClick={() => setSelectedTemplateId(template.id.toString())}
+                />
+              ))}
+            </div>
+          )}
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={goToPage}
+          />
+        </div>
+
+        {/* 선택된 템플릿의 파라미터 폼 */}
+        {selectedTemplate && (
+          <TemplateForm
+            selectedTemplateId={selectedTemplateId}
+            onTemplateChange={() => {}} // 카드 선택 방식이므로 이 핸들러는 더 이상 사용되지 않음
+            onParameterChange={handleParameterChange}
+            onSubmit={handleSubmit}
+            parameterValues={parameterValues}
+            isSubmitting={isSubmitting}
+            selectedTemplate={selectedTemplate}
+            isLoadingTemplates={isLoadingTemplates}
+            onImageUpload={handleImageUpload}
+            inputImage={inputImage}
+            user={user}
+          />
+        )}
 
         <GenerationDisplay
           isSubmitting={isSubmitting}
