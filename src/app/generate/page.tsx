@@ -135,20 +135,30 @@ export default function GeneratePage() {
   };
 
   const handleParameterChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
   ) => {
     const { name, value, type } = e.target;
-    let parsedValue: string | number | boolean = value;
 
-    if (type === "number") {
-      parsedValue = parseFloat(value);
-      if (isNaN(parsedValue)) {
-        parsedValue = 0; // 또는 다른 기본값
+    // seed 필드는 특별 처리
+    if (name === 'seed') {
+      // 비어있거나, '-' 이거나, 유효한 정수(음수 포함) 형식일 때만 상태 업데이트
+      if (value === '' || value === '-' || /^-?\d*$/.test(value)) {
+        setParameterValues((prev) => ({ ...prev, [name]: value }));
       }
-    } else if (type === "checkbox") {
-      parsedValue = (e.target as HTMLInputElement).checked;
+      return;
     }
 
+    // 일반 숫자 입력 필드 처리
+    if (type === 'number') {
+      // 숫자(0-9)가 아닌 모든 문자를 제거
+      const numericValue = value.replace(/[^0-9]/g, '');
+      setParameterValues((prev) => ({ ...prev, [name]: numericValue }));
+      return;
+    }
+
+    // 체크박스 및 기타 타입 처리
+    const parsedValue =
+      type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
     setParameterValues((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
@@ -189,6 +199,11 @@ export default function GeneratePage() {
         const rules = paramConfig.validation;
 
         if (rules) {
+          // 숫자 타입일 때 빈 문자열 검사 추가
+          if (paramConfig.type === 'number' && value === '') {
+            setApiError(`'${paramConfig.label || paramName}' 파라미터는 비워둘 수 없습니다.`);
+            return;
+          }
           if (rules.min !== undefined && value < rules.min) {
             setApiError(`'${paramConfig.label || paramName}' 파라미터 값(${value})은(는) 최소값 ${rules.min}보다 작을 수 없습니다.`);
             return;
