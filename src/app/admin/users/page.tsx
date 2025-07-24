@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/apiClient";
 import { User } from "@/interfaces/user.interface";
+import { Pagination } from "@/components/common/Pagination"; // Pagination 컴포넌트 임포트
+import { usePagination } from "@/hooks/usePagination"; // usePagination 훅 임포트
+import { PaginatedResponse } from "@/interfaces/pagination.interface"; // PaginatedResponse 임포트
 import {
   Table,
   TableBody,
@@ -23,8 +26,12 @@ export default function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  // coinAmount 상태의 초기값을 0으로 설정하고, 타입에 string을 추가하여 빈 문자열도 처리
   const [coinAmount, setCoinAmount] = useState<Record<number, number | string>>({});
+
+  const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
+    totalItems: 0,
+    itemsPerPage: 10, // 한 페이지에 10개 항목
+  });
 
   useEffect(() => {
     if (!isAuthLoading && user?.role !== "admin") {
@@ -37,16 +44,17 @@ export default function AdminUsersPage() {
 
   useEffect(() => {
     if (user?.role === "admin") {
-      fetchUsers();
+      fetchUsers(currentPage);
     }
-  }, [user]);
+  }, [user, currentPage]); // currentPage가 변경될 때마다 fetchUsers 호출
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (page: number) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await apiClient<User[]>("/admin/users");
-      setUsers(response);
+      const response = await apiClient<PaginatedResponse<User>>(`/admin/users?page=${page}&limit=10`);
+      setUsers(response.data);
+      setTotalItems(response.total);
     } catch (err: any) {
       setError(err.message || "사용자 목록을 불러오는 데 실패했습니다.");
       toast.error("사용자 목록을 불러오는 데 실패했습니다.");
@@ -77,7 +85,7 @@ export default function AdminUsersPage() {
         body: { amount, type },
       });
       toast.success("코인 잔액이 성공적으로 조정되었습니다.");
-      fetchUsers(); // 조정 후 사용자 목록 새로고침
+      fetchUsers(currentPage);
       setCoinAmount((prev) => ({ ...prev, [userId]: 0 })); // 입력 폼 초기화
     } catch (err: any) {
       toast.error(`코인 조정 실패: ${err.message || "알 수 없는 오류"}`);
@@ -152,6 +160,12 @@ export default function AdminUsersPage() {
           </TableBody>
         </Table>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={goToPage}
+      />
     </div>
   );
 }
