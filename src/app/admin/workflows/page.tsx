@@ -22,7 +22,7 @@ export default function WorkflowAdminPage() {
 
   const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
     totalItems: 0,
-    itemsPerPage: 10, // 한 페이지에 10개 항목
+    itemsPerPage: 9
   });
 
   useEffect(() => {

@@ -41,9 +41,9 @@ export default function GeneratePage() {
   const [viewingItem, setViewingItem] = useState<HistoryItemData | null>(null);
   const [urlCache, setUrlCache] = useState<Record<number, string>>({});
 
-  const { currentPage, totalPages, goToPage, setTotalItems } = usePagination({
+  const { currentPage, totalPages, goToPage, setTotalItems, itemsPerPage } = usePagination({
     totalItems: 0,
-    itemsPerPage: 9, // 한 페이지에 10개 항목
+    itemsPerPage: 9,
   });
 
   const {
@@ -63,7 +63,7 @@ export default function GeneratePage() {
         setIsLoadingTemplates(true);
         try {
           const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(
-            `/workflow-templates?page=${page}&limit=10`
+            `/workflow-templates?page=${page}&limit=${itemsPerPage}`
           );
           setTemplates(response.data);
           setTotalItems(response.total);

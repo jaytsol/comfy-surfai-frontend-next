@@ -15,6 +15,7 @@ interface UsePaginationResult {
   nextPage: () => void;
   prevPage: () => void;
   setTotalItems: (total: number) => void;
+  itemsPerPage: number; // 추가
 }
 
 export const usePagination = ({
@@ -66,5 +67,6 @@ export const usePagination = ({
     nextPage,
     prevPage,
     setTotalItems,
+    itemsPerPage,
   };
 };
