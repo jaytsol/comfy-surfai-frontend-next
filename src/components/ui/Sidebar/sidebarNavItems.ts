@@ -18,8 +18,8 @@ export interface NavItem {
 export const sidebarNavItems: NavItem[] = [
   {
     icon: Sparkles,
-    label: "Generate",
-    href: "/generate",
+    label: "Surf",
+    href: "/surf",
     showWhenLoggedIn: true
   },
   {
