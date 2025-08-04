@@ -18,7 +18,7 @@ export default function HomePage() {
           </p>
           <div className="flex justify-center gap-4">
             <Link
-              href="/generate"
+              href="/surf"
               className="bg-primary-color text-primary-color px-8 py-3 rounded-md text-lg font-medium hover:bg-secondary-color transition duration-200"
             >
               Start Creating
