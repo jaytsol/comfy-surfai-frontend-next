@@ -14,20 +14,20 @@ export default function HomePage() {
             SurfAI
           </h1>
           <p className="text-xl text-text-color opacity-80 mb-8">
-            Creative AI that generates amazing images & videos
+            AI 이미지 & 비디오 생성 플랫폼
           </p>
           <div className="flex justify-center gap-4">
             <Link
               href="/surf"
               className="bg-primary-color text-primary-color px-8 py-3 rounded-md text-lg font-medium hover:bg-secondary-color transition duration-200"
             >
-              Start Creating
+              시작
             </Link>
             <Link
               href="/profile"
               className="text-primary-color border-2 border-primary-color px-8 py-3 rounded-md text-lg font-medium hover:bg-primary-color/10 transition duration-200"
             >
-              My Creations
+              프로필
             </Link>
           </div>
         </div>
@@ -37,34 +37,34 @@ export default function HomePage() {
       <div className="py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-text-color text-center mb-12">
-            What can SurfAI do?
+            SurfAI로 무엇을 할 수 있을까요?
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="p-6 bg-white/5 rounded-lg shadow-sm">
               <div className="text-4xl text-primary-color mb-4">🎨</div>
               <h3 className="text-xl font-semibold text-text-color mb-2">
-                Image Generation
+                이미지 생성
               </h3>
               <p className="text-text-color opacity-80">
-                Create stunning images from text prompts using advanced AI technology
+                고급 AI 기술을 사용하여 텍스트 프롬프트로 멋진 이미지를 만들어 보세요
               </p>
             </div>
             <div className="p-6 bg-white/5 rounded-lg shadow-sm">
               <div className="text-4xl text-primary-color mb-4">🎥</div>
               <h3 className="text-xl font-semibold text-text-color mb-2">
-                Video Creation
+                비디오 제작
               </h3>
               <p className="text-text-color opacity-80">
-                Generate amazing videos with AI-powered animation and editing
+                AI 기반 애니메이션과 편집 기술로 놀라운 비디오를 생성하세요
               </p>
             </div>
             <div className="p-6 bg-white/5 rounded-lg shadow-sm">
               <div className="text-4xl text-primary-color mb-4">⚡</div>
               <h3 className="text-xl font-semibold text-text-color mb-2">
-                Fast & Easy
+                빠르고 쉬운 사용법
               </h3>
               <p className="text-text-color opacity-80">
-                Simple interface and quick generation times make it easy to create
+                간단한 인터페이스와 빠른 생성 시간으로 누구나 쉽게 만들 수 있습니다
               </p>
             </div>
           </div>
@@ -76,17 +76,17 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div className="space-y-4">
             <div className="text-3xl font-bold text-text-color">
-              Ready to Create?
+              창작할 준비가 되셨나요?
             </div>
             <div className="text-xl text-text-color opacity-80">
-              Join thousands of creators who are using SurfAI to bring their ideas to life
+              SurfAI와 함께 아이디어를 현실로 만드는 수많은 크리에이터와 함께하세요
             </div>
             <div className="mt-8">
               <Link
                 href="/generate"
                 className="inline-flex items-center justify-center px-10 py-4 text-2xl font-bold text-text-color bg-primary-color rounded-xl shadow-lg hover:bg-secondary-color transition-all duration-300 transform hover:scale-105"
               >
-                Start Creating Now
+                지금 바로 시작하세요
               </Link>
             </div>
           </div>
