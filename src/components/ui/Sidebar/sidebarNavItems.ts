@@ -18,13 +18,13 @@ export interface NavItem {
 export const sidebarNavItems: NavItem[] = [
   {
     icon: Sparkles,
-    label: "Surf",
+    label: "AI",
     href: "/surf",
     showWhenLoggedIn: true
   },
   {
     icon: HistoryIcon,
-    label: "History",
+    label: "기록",
     href: "/history",
     showWhenLoggedIn: true
   },
@@ -49,13 +49,13 @@ export const sidebarNavItems: NavItem[] = [
   // },
   {
     icon: UserIcon,
-    label: "Profile",
+    label: "프로필",
     href: "/profile",
     showWhenLoggedIn: true
   },
   {
     icon: ShieldCheck,
-    label: "Admin",
+    label: "관리자 메뉴",
     href: "/admin",
     showWhenLoggedIn: true,
     requiredRole: Role.Admin
@@ -75,7 +75,7 @@ export const sidebarNavItems: NavItem[] = [
   },
   {
     icon: LogIn,
-    label: "Login",
+    label: "로그인",
     href: "/login",
     isLogin: true,
     showWhenLoggedIn: false,
@@ -83,7 +83,7 @@ export const sidebarNavItems: NavItem[] = [
   },
   {
     icon: LogOut,
-    label: "Logout",
+    label: "로그아웃",
     href: "#",
     isLogout: true,
     showWhenLoggedIn: true
