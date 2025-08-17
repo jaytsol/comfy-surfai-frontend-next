@@ -5,6 +5,12 @@ import type { TemplateFormProps } from "../../interfaces/template-form.interface
 import ParameterField from "./ParameterField";
 import InputFileField from "../common/InputFileField";
 import { Coins } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TemplateForm: React.FC<TemplateFormProps> = ({
   selectedTemplateId,
@@ -17,6 +23,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
   onImageUpload,
   inputImage,
   user,
+  comfyUIStatus,
 }) => {
   if (isLoadingTemplates) {
     return <p className="text-gray-600">템플릿 정보를 불러오는 중입니다...</p>;
@@ -29,6 +36,19 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
       </p>
     );
   }
+
+  const isButtonDisabled =
+    isSubmitting || !selectedTemplateId || comfyUIStatus !== "ONLINE";
+
+  const getTooltipMessage = () => {
+    if (comfyUIStatus !== "ONLINE") {
+      return "연산 서버가 오프라인 상태입니다.";
+    }
+    if (!selectedTemplateId) {
+      return "템플릿을 선택해주세요.";
+    }
+    return "";
+  };
 
   return (
     <div className="space-y-6">
@@ -104,17 +124,28 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
               <Coins className="h-6 w-6 text-yellow-500 mr-2" />
               <span>{user?.coinBalance} 코인</span>
             </div>
-            <button
-              type="submit"
-              disabled={isSubmitting || !selectedTemplateId}
-              className={`px-6 py-2 rounded-md text-white font-semibold transition-colors ${
-                isSubmitting || !selectedTemplateId
-                  ? "bg-gray-400 cursor-not-allowed"
-                  : "bg-indigo-600 hover:bg-indigo-700"
-              } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
-            >
-              {isSubmitting ? "생성 요청 중..." : "이미지 생성"}
-            </button>
+            <TooltipProvider>
+              <Tooltip open={isButtonDisabled ? undefined : false}>
+                <TooltipTrigger asChild>
+                  <div className="inline-block">
+                    <button
+                      type="submit"
+                      disabled={isButtonDisabled}
+                      className={`px-6 py-2 rounded-md text-white font-semibold transition-colors ${
+                        isButtonDisabled
+                          ? "bg-gray-400 cursor-not-allowed"
+                          : "bg-indigo-600 hover:bg-indigo-700"
+                      } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500`}
+                    >
+                      {isSubmitting ? "생성 요청 중..." : "이미지 생성"}
+                    </button>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{getTooltipMessage()}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </form>
       )}

@@ -339,7 +339,7 @@ export default function GeneratePage() {
           </p>
         </div>
 
-        <SystemMonitor data={systemMonitorData} />
+        {comfyUIStatus === 'ONLINE' && <SystemMonitor data={systemMonitorData} />}
 
         <div className="space-y-4">
           <h2 className="text-xl font-semibold text-gray-700">
@@ -383,6 +383,7 @@ export default function GeneratePage() {
             onImageUpload={handleImageUpload}
             inputImage={inputImage}
             user={user}
+            comfyUIStatus={comfyUIStatus}
           />
         )}
 
