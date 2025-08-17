@@ -2,6 +2,8 @@ import type { ChangeEvent, FormEvent } from 'react';
 import type { WorkflowTemplate } from './workflow.interface';
 import { User } from './user.interface';
 
+type ComfyUIStatus = "ONLINE" | "OFFLINE" | "CONNECTING" | "CLOSING" | "CHECKING...";
+
 export interface TemplateFormProps {
   selectedTemplateId: string;
   onParameterChange: (
@@ -15,6 +17,7 @@ export interface TemplateFormProps {
   onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
   inputImage: string | null;
   user: User | null; // User 객체 추가
+  comfyUIStatus: ComfyUIStatus;
 }
 
 export interface ParameterFieldProps {

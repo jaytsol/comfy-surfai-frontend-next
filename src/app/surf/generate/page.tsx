@@ -1,15 +1,18 @@
-// app/generate/page.tsx
+// app/surf/generate/page.tsx
 "use client";
 
 import React, { useState, useEffect, ChangeEvent, FormEvent } from "react";
 
-// 컴포넌트 및 훅, 타입 임포트 (경로는 실제 프로젝트 구조에 맞게 수정)
+// 컴포넌트 및 훅, 타입 임포트
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/apiClient";
 import { useComfyWebSocket } from "@/hooks/useComfyWebSocket";
 import SystemMonitor from "@/components/generate/SystemMonitor";
 import TemplateForm from "@/components/template/TemplateForm";
-import type { WorkflowTemplate, WorkflowParameterMappingItem } from "@/interfaces/workflow.interface";
+import type {
+  WorkflowTemplate,
+  WorkflowParameterMappingItem,
+} from "@/interfaces/workflow.interface";
 import GenerationDisplay from "@/components/generate/GenerationDisplay";
 import {
   GenerateImagePayload,
@@ -18,13 +21,20 @@ import {
 import ItemLightbox from "@/components/common/ItemLightbox";
 import type { HistoryItemData } from "@/interfaces/history.interface";
 import OutputGallery from "@/components/common/OutputGallery";
-import { usePagination } from "@/hooks/usePagination"; // usePagination 훅 임포트
-import { Pagination } from "@/components/common/Pagination"; // Pagination 컴포넌트 임포트
-import { PaginatedResponse } from "@/interfaces/pagination.interface"; // PaginatedResponse 임포트
-import TemplateCard from "@/components/template/TemplateCard"; // TemplateCard 임포트
+import { usePagination } from "@/hooks/usePagination";
+import { Pagination } from "@/components/common/Pagination";
+import { PaginatedResponse } from "@/interfaces/pagination.interface";
+import TemplateCard from "@/components/template/TemplateCard";
+
+type ComfyUIStatus = "ONLINE" | "OFFLINE" | "CONNECTING" | "CLOSING" | "CHECKING...";
 
 export default function GeneratePage() {
-  const { user, isLoading: isAuthLoading, fetchUserProfile, updateCoinBalance } = useAuth();
+  const {
+    user,
+    isLoading: isAuthLoading,
+    fetchUserProfile,
+    updateCoinBalance,
+  } = useAuth();
 
   // --- UI 및 폼 관련 상태 ---
   const [templates, setTemplates] = useState<WorkflowTemplate[]>([]);
@@ -41,13 +51,14 @@ export default function GeneratePage() {
   const [viewingItem, setViewingItem] = useState<HistoryItemData | null>(null);
   const [urlCache, setUrlCache] = useState<Record<number, string>>({});
 
-  const { currentPage, totalPages, goToPage, setTotalItems, itemsPerPage } = usePagination({
-    totalItems: 0,
-    itemsPerPage: 9,
-  });
+  const { currentPage, totalPages, goToPage, setTotalItems, itemsPerPage } =
+    usePagination({
+      totalItems: 0,
+      itemsPerPage: 9,
+    });
 
   const {
-    isWsConnected,
+    comfyUIStatus, // Get status from the hook
     executionStatus,
     progressValue,
     systemMonitorData,
@@ -79,16 +90,6 @@ export default function GeneratePage() {
     }
   }, [user, isAuthLoading, currentPage, itemsPerPage, setTotalItems]);
 
-  // useEffect(() => {
-  //   if (!isAuthLoading) {
-  //     if (!user) router.replace("/login");
-  //     else if (user.role !== "admin") {
-  //       alert("관리자만 접근 가능합니다.");
-  //       router.replace("/");
-  //     }
-  //   }
-  // }, [user, isAuthLoading, router]);
-
   useEffect(() => {
     if (selectedTemplateId) {
       const foundTemplate = templates.find(
@@ -98,13 +99,18 @@ export default function GeneratePage() {
       const initialParams: Record<string, any> = {};
       if (foundTemplate?.parameter_map) {
         for (const key in foundTemplate.parameter_map) {
-          const mappingInfo = foundTemplate.parameter_map[key] as WorkflowParameterMappingItem;
+          const mappingInfo = foundTemplate.parameter_map[
+            key
+          ] as WorkflowParameterMappingItem;
           if (mappingInfo.default_value !== undefined) {
             initialParams[key] = mappingInfo.default_value;
           } else {
             try {
-              const node = (foundTemplate.definition as any)[mappingInfo.node_id];
-              initialParams[key] = node?.inputs?.[mappingInfo.input_name] ?? "";
+              const node = (foundTemplate.definition as any)[
+                mappingInfo.node_id
+              ];
+              initialParams[key] =
+                node?.inputs?.[mappingInfo.input_name] ?? "";
             } catch {
               initialParams[key] = "";
             }
@@ -145,30 +151,25 @@ export default function GeneratePage() {
   };
 
   const handleParameterChange = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     const { name, value, type } = e.target;
 
-    // seed 필드는 특별 처리
-    if (name === 'seed') {
-      // 비어있거나, '-' 이거나, 유효한 정수(음수 포함) 형식일 때만 상태 업데이트
-      if (value === '' || value === '-' || /^-?\d*$/.test(value)) {
+    if (name === "seed") {
+      if (value === "" || value === "-" || /^-?\d*$/.test(value)) {
         setParameterValues((prev) => ({ ...prev, [name]: value }));
       }
       return;
     }
 
-    // 일반 숫자 입력 필드 처리
-    if (type === 'number') {
-      // 숫자(0-9)가 아닌 모든 문자를 제거
-      const numericValue = value.replace(/[^0-9]/g, '');
+    if (type === "number") {
+      const numericValue = value.replace(/[^0-9]/g, "");
       setParameterValues((prev) => ({ ...prev, [name]: numericValue }));
       return;
     }
 
-    // 체크박스 및 기타 타입 처리
     const parsedValue =
-      type === 'checkbox' ? (e.target as HTMLInputElement).checked : value;
+      type === "checkbox" ? (e.target as HTMLInputElement).checked : value;
     setParameterValues((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
@@ -198,37 +199,50 @@ export default function GeneratePage() {
     const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
 
     if (user && user.coinBalance < requiredCoins) {
-      setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user.coinBalance} 코인만 있습니다.`);
+      setApiError(
+        `코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user.coinBalance} 코인만 있습니다.`
+      );
       return;
     }
 
-    // --- 유효성 검사 로직 추가 ---
     if (selectedTemplate.parameter_map) {
-      for (const [paramName, paramConfig] of Object.entries(selectedTemplate.parameter_map)) {
+      for (const [paramName, paramConfig] of Object.entries(
+        selectedTemplate.parameter_map
+      )) {
         const value = parameterValues[paramName];
         const rules = paramConfig.validation;
 
         if (rules) {
-          // 숫자 타입일 때 빈 문자열 검사 추가
-          if (paramConfig.type === 'number' && value === '') {
-            setApiError(`'${paramConfig.label || paramName}' 파라미터는 비워둘 수 없습니다.`);
+          if (paramConfig.type === "number" && value === "") {
+            setApiError(
+              `'${
+                paramConfig.label || paramName
+              }' 파라미터는 비워둘 수 없습니다.`
+            );
             return;
           }
           if (rules.min !== undefined && value < rules.min) {
-            setApiError(`'${paramConfig.label || paramName}' 파라미터 값(${value})은(는) 최소값 ${rules.min}보다 작을 수 없습니다.`);
+            setApiError(
+              `'${
+                paramConfig.label || paramName
+              }' 파라미터 값(${value})은(는) 최소값 ${rules.min}보다 작을 수 없습니다.`
+            );
             return;
           }
           if (rules.max !== undefined && value > rules.max) {
-            setApiError(`'${paramConfig.label || paramName}' 파라미터 값(${value})은(는) 최대값 ${rules.max}보다 클 수 없습니다.`);
+            setApiError(
+              `'${
+                paramConfig.label || paramName
+              }' 파라미터 값(${value})은(는) 최대값 ${rules.max}보다 클 수 없습니다.`
+            );
             return;
           }
         }
       }
     }
-    
+
     setIsSubmitting(true);
 
-    // 낙관적 업데이트: 코인 차감
     if (user && selectedTemplate?.cost) {
       updateCoinBalance(-selectedTemplate.cost * loopCount);
     }
@@ -236,7 +250,7 @@ export default function GeneratePage() {
     const payload: GenerateImagePayload = {
       templateId: selectedTemplate.id,
       parameters: restParameters,
-      inputImage: inputImage || undefined, // inputImage가 null이면 undefined로 전송
+      inputImage: inputImage || undefined,
     };
 
     try {
@@ -246,21 +260,21 @@ export default function GeneratePage() {
           body: payload,
         });
       }
-      // 이미지 생성 성공 후 사용자 프로필을 다시 가져와 코인 잔액 업데이트
-      // fetchUserProfile(); // 낙관적 업데이트 후에는 필요 없음
     } catch (err: any) {
-      // 에러 발생 시 낙관적 업데이트 롤백: 코인 복구
       if (user && selectedTemplate?.cost) {
         fetchUserProfile();
       }
-      // 백엔드에서 '코인이 부족합니다.' 에러가 넘어왔을 경우, 프론트엔드의 메시지로 대체
-      if (err.message === '코인이 부족합니다.') {
+      if (err.message === "코인이 부족합니다.") {
         const { batch_size = 1 } = parameterValues;
         const loopCount = Number(batch_size) || 1;
         const requiredCoins = (selectedTemplate?.cost || 0) * loopCount;
-        setApiError(`코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user?.coinBalance} 코인만 있습니다.`);
+        setApiError(
+          `코인이 부족합니다. ${requiredCoins} 코인이 필요하지만 현재 ${user?.coinBalance} 코인만 있습니다.`
+        );
       } else {
-        setApiError(err.message || "이미지 생성 요청 중 오류가 발생했습니다.");
+        setApiError(
+          err.message || "이미지 생성 요청 중 오류가 발생했습니다."
+        );
       }
     } finally {
       setIsSubmitting(false);
@@ -282,12 +296,30 @@ export default function GeneratePage() {
     }
   };
 
-  // if (isAuthLoading || !user) {
-  //   return <p className="text-center py-10">권한 확인 중...</p>;
-  // }
-  // if (user.role !== "admin") {
-  //   return <p className="text-center py-10">접근 제한이 없습니다.</p>;
-  // }
+  const getStatusIndicator = (status: ComfyUIStatus) => {
+    switch (status) {
+      case "ONLINE":
+        return {
+          text: "온라인",
+          className: "text-green-600",
+          dotClassName: "bg-green-500",
+        };
+      case "OFFLINE":
+        return {
+          text: "오프라인",
+          className: "text-red-600",
+          dotClassName: "bg-red-500",
+        };
+      default:
+        return {
+          text: "확인 중...",
+          className: "text-yellow-600",
+          dotClassName: "bg-yellow-500",
+        };
+    }
+  };
+
+  const statusIndicator = getStatusIndicator(comfyUIStatus);
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -296,27 +328,30 @@ export default function GeneratePage() {
           <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
             이미지 생성
           </h1>
-          <p className="text-sm mt-2">
-            WebSocket:
+          <p className="text-sm mt-2 flex items-center">
             <span
-              className={`font-semibold ${
-                isWsConnected ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {isWsConnected ? "연결됨" : "연결 끊김"}
+              className={`w-2.5 h-2.5 rounded-full mr-2 ${statusIndicator.dotClassName}`}
+            />
+            <span className="mr-1">연산 서버:</span>
+            <span className={`font-semibold ${statusIndicator.className}`}>
+              {statusIndicator.text}
             </span>
           </p>
         </div>
 
-        <SystemMonitor data={systemMonitorData} />
+        {comfyUIStatus === 'ONLINE' && <SystemMonitor data={systemMonitorData} />}
 
-        {/* 템플릿 선택 카드 갤러리 */}
         <div className="space-y-4">
-          <h2 className="text-xl font-semibold text-gray-700">워크플로우 템플릿 선택:</h2>
+          <h2 className="text-xl font-semibold text-gray-700">
+            워크플로우 템플릿 선택:
+          </h2>
           {isLoadingTemplates ? (
             <p className="text-gray-600">템플릿 목록을 불러오는 중입니다...</p>
           ) : templates.length === 0 ? (
-            <p className="text-orange-600">사용 가능한 워크플로우 템플릿이 없습니다. 먼저 템플릿을 생성해주세요.</p>
+            <p className="text-orange-600">
+              사용 가능한 워크플로우 템플릿이 없습니다. 먼저 템플릿을
+              생성해주세요.
+            </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {templates.map((template) => (
@@ -336,7 +371,6 @@ export default function GeneratePage() {
           />
         </div>
 
-        {/* 선택된 템플릿의 파라미터 폼 */}
         {selectedTemplate && (
           <TemplateForm
             selectedTemplateId={selectedTemplateId}
@@ -349,6 +383,7 @@ export default function GeneratePage() {
             onImageUpload={handleImageUpload}
             inputImage={inputImage}
             user={user}
+            comfyUIStatus={comfyUIStatus}
           />
         )}
 
