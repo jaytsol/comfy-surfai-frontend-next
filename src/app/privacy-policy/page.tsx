@@ -1,5 +1,7 @@
 // app/privacy-policy/page.tsx
 
+import { storageDuration } from "@/constants/config";
+
 export default function PrivacyPolicyPage() {
     return (
       <div className="container mx-auto max-w-4xl py-12 px-4">
@@ -42,7 +44,7 @@ export default function PrivacyPolicyPage() {
               <li>각각의 개인정보 처리 및 보유 기간은 다음과 같습니다.
                 <ul>
                   <li><strong>회원 정보:</strong> 회원 탈퇴 시까지. 다만, 관련 법령 위반에 따른 수사·조사 등이 진행 중인 경우에는 해당 수사·조사 종료 시까지 보유 및 이용됩니다.</li>
-                  <li><strong>생성된 이미지/비디오 파일:</strong> 서비스의 스토리지 비용 효율화를 위해 **생성일로부터 2일 후**에 서버에서 자동으로 삭제됩니다. 단, 생성 기록에 대한 메타데이터(사용한 프롬프트, 파라미터 등)는 회원 탈퇴 시까지 보관됩니다.</li>
+                  <li><strong>생성된 이미지/비디오 파일:</strong> 서비스의 스토리지 비용 효율화를 위해 **생성일로부터 {storageDuration / (24 * 60 * 60 * 1000)}일 후**에 서버에서 자동으로 삭제됩니다. 단, 생성 기록에 대한 메타데이터(사용한 프롬프트, 파라미터 등)는 회원 탈퇴 시까지 보관됩니다.</li>
                 </ul>
               </li>
             </ol>
