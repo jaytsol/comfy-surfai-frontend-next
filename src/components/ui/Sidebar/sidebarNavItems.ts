@@ -1,6 +1,6 @@
 import { Role } from "@/interfaces/role.enum";
 import { User } from "@/interfaces/user.interface";
-import { User as UserIcon, Sparkles, LogOut, LogIn, History as HistoryIcon, ShieldCheck } from "lucide-react";
+import { User as UserIcon, Sparkles, LogOut, LogIn, History as HistoryIcon, ShieldCheck, Settings } from "lucide-react";
 
 export interface NavItem {
   icon: any; // Using any for LucideIcon type
@@ -60,12 +60,12 @@ export const sidebarNavItems: NavItem[] = [
     showWhenLoggedIn: true,
     requiredRole: Role.Admin
     },
-  // {
-  //   icon: Settings,
-  //   label: "Settings",
-  //   href: "/settings",
-  //   showWhenLoggedIn: true
-  // },
+  {
+    icon: Settings,
+    label: "설정",
+    href: "/settings",
+    showWhenLoggedIn: true
+  },
   {
     icon: null,
     label: "divider",
