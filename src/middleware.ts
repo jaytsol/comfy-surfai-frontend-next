@@ -29,6 +29,10 @@ export function middleware(request: NextRequest) {
 
   // 3. 사용자가 로그인했고 (토큰 있음), 로그인/회원가입 페이지에 접근하려는 경우
   if (accessToken && (pathname === '/login' || pathname === '/register')) {
+    const redirectTo = request.nextUrl.searchParams.get('redirect_to');
+    if (redirectTo) {
+      return NextResponse.redirect(new URL(redirectTo, request.url));
+    }
     // 대시보드나 히스토리 페이지 등 기본 페이지로 리디렉션합니다.
     return NextResponse.redirect(new URL('/history', request.url));
   }
