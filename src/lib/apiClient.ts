@@ -124,4 +124,14 @@ async function apiClient<T>(
   return await response.json();
 }
 
+export const getConnections = (): Promise<string[]> => {
+  return apiClient<string[]>('/connect/connections');
+};
+
+export const disconnectSocial = (platform: string): Promise<void> => {
+  return apiClient<void>(`/connect/disconnect/${platform.toLowerCase()}`, {
+    method: 'POST',
+  });
+};
+
 export default apiClient;
