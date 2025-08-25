@@ -97,6 +97,9 @@ export default function WorkflowAdminPage() {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Description</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">소모 코인</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">카테고리</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">태그</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">공개 여부</th>
               <th className="relative px-6 py-3"><span className="sr-only">Actions</span></th>
             </tr>
@@ -107,6 +110,19 @@ export default function WorkflowAdminPage() {
                 <td className="px-6 py-4 text-sm text-gray-500">{template.id}</td>
                 <td className="px-6 py-4 text-sm font-medium text-gray-900">{template.name}</td>
                 <td className="px-6 py-4 text-sm text-gray-500 truncate max-w-md">{template.description}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">{template.cost}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">{template.category}</td>
+                <td className="px-6 py-4 text-sm text-gray-500">
+                  {template.tags && template.tags.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {template.tags.map((tag, index) => (
+                        <Badge key={index} variant="outline">{tag}</Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-gray-400">-</span>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-sm text-gray-500">
                   <Badge variant={template.isPublicTemplate ? "default" : "secondary"}>
                     {template.isPublicTemplate ? "공개" : "비공개"}
