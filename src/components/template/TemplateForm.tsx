@@ -60,8 +60,10 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           {selectedTemplate.description && <p className="text-sm text-gray-600 mb-4">{selectedTemplate.description}</p>}
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {Object.entries(selectedTemplate.parameter_map).map(
-              ([paramName, paramConfig]) => {
+            {Object.entries(selectedTemplate.parameter_map)
+              .filter(([_, paramConfig]) => paramConfig.type !== 'image') // 이미지 타입 파라미터 필터링
+              .map(
+                ([paramName, paramConfig]) => {
                 const label = paramConfig.label ?? paramName.replace(/_/g, ' ');
                 const inputType = paramConfig.type === 'boolean' ? 'checkbox' : paramConfig.type;
                 const description = paramConfig.description;
