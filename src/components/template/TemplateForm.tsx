@@ -62,6 +62,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {Object.entries(selectedTemplate.parameter_map)
+              // eslint-disable-next-line @typescript-eslint/no-unused-vars
               .filter(([_, paramConfig]) => paramConfig.type !== 'image') // 이미지 타입 파라미터 필터링
               .map(
                 ([paramName, paramConfig]) => {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import apiClient from "@/lib/apiClient";
@@ -33,22 +33,7 @@ export default function AdminUsersPage() {
     itemsPerPage: 9
   });
 
-  useEffect(() => {
-    if (!isAuthLoading && user?.role !== "admin") {
-      alert("관리자만 접근할 수 있는 페이지입니다.");
-      router.replace("/");
-    } else if (!isAuthLoading && !user) {
-      router.replace("/login");
-    }
-  }, [user, isAuthLoading, router]);
-
-  useEffect(() => {
-    if (user?.role === "admin") {
-      fetchUsers(currentPage);
-    }
-  }, [user, currentPage]); // currentPage가 변경될 때마다 fetchUsers 호출
-
-  const fetchUsers = async (page: number) => {
+  const fetchUsers = useCallback(async (page: number) => {
     setLoading(true);
     setError(null);
     try {
@@ -61,7 +46,16 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [itemsPerPage, setTotalItems]);
+
+  useEffect(() => {
+    if (!isAuthLoading && user?.role !== "admin") {
+      alert("관리자만 접근할 수 있는 페이지입니다.");
+      router.replace("/");
+    } else if (!isAuthLoading && !user) {
+      router.replace("/login");
+    }
+  }, [user, isAuthLoading, router]);
 
   const handleCoinAmountChange = (userId: number, value: string) => {
     // 숫자만 입력되도록 유효성 검사
