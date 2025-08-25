@@ -90,7 +90,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
               <label className="block text-lg font-semibold text-gray-800 mb-4">
                 입력 이미지 (선택 사항):
               </label>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputFileField
                   label="이미지 1"
                   id="input-image-1"
@@ -106,14 +106,6 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
                   onChange={() => { /* 향후 구현 */ }}
                   preview={null}
                   previewAlt="Input Image 2 Preview"
-                />
-                <InputFileField
-                  label="이미지 3"
-                  id="input-image-3"
-                  accept="image/*"
-                  onChange={() => { /* 향후 구현 */ }}
-                  preview={null}
-                  previewAlt="Input Image 3 Preview"
                 />
               </div>
             </div>
