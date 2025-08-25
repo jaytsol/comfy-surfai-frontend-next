@@ -9,6 +9,7 @@ export interface CreateWorkflowTemplateDTO {
   category: string;
   tags?: string[];
   cost: number;
+  requiredImageCount?: number;
   definition: object;
   isPublicTemplate?: boolean;
   previewImageUrl?: string;

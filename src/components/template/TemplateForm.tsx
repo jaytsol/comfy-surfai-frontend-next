@@ -85,13 +85,13 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           </div>
 
           {/* 미디어 파일 입력 필드 (image, video, audio 등) */}
-          {selectedTemplate.requiredImageCount > 0 && (
+          {(selectedTemplate.requiredImageCount || 0) > 0 && (
             <div className="col-span-full mt-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
               <label className="block text-lg font-semibold text-gray-800 mb-4">
                 입력 이미지
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Array.from({ length: selectedTemplate.requiredImageCount }).map((_, index) => {
+                {Array.from({ length: selectedTemplate.requiredImageCount || 0 }).map((_, index) => {
                   const imageId = `input-image-${index + 1}`;
                   const imageLabel = `이미지 ${index + 1}`;
                   const imagePreview = index === 0 ? inputImage : null; // Only first image uses inputImage state

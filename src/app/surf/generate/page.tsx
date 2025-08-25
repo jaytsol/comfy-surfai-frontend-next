@@ -10,6 +10,7 @@ import { useComfyWebSocket } from "@/hooks/useComfyWebSocket";
 import SystemMonitor from "@/components/generate/SystemMonitor";
 import TemplateForm from "@/components/template/TemplateForm";
 import type {
+  WorkflowParameterMappingItem,
   WorkflowTemplate,
 } from "@/interfaces/workflow.interface";
 import GenerationDisplay from "@/components/generate/GenerationDisplay";
@@ -213,12 +214,14 @@ export default function GeneratePage() {
       return;
     }
 
-    if (selectedTemplate.requiredImageCount > 0) {
+    const requiredImageCount = selectedTemplate.requiredImageCount || 0;
+
+    if (requiredImageCount > 0) {
       if (!inputImage) {
         setApiError("첫 번째 입력 이미지가 필요합니다.");
         return;
       }
-      if (selectedTemplate.requiredImageCount > 1 && !secondInputImage) {
+      if (requiredImageCount > 1 && !secondInputImage) {
         setApiError("두 번째 입력 이미지가 필요합니다.");
         return;
       }
