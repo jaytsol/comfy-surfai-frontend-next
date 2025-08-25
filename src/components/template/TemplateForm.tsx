@@ -88,7 +88,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           {selectedTemplate.category && selectedTemplate.category.startsWith("image-to-") && (
             <div className="col-span-full mt-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
               <label className="block text-lg font-semibold text-gray-800 mb-4">
-                입력 이미지 (선택 사항):
+                입력 이미지
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <InputFileField
