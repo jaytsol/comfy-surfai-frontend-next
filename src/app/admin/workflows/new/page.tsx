@@ -25,6 +25,7 @@ export default function NewWorkflowPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [cost, setCost] = useState<number>(1); // cost 상태 추가
+  const [requiredImageCount, setRequiredImageCount] = useState<number>(0);
   
   // 2단계 폼 상태
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
@@ -67,6 +68,7 @@ export default function NewWorkflowPage() {
       definition: parsedDefinition,
       isPublicTemplate: isPublic,
       cost,
+      requiredImageCount,
     };
     try {
       const newTemplate = await apiClient<WorkflowTemplate>('/workflow-templates', {
@@ -171,6 +173,8 @@ export default function NewWorkflowPage() {
         categories={categories}
         selectedCategory={selectedCategory}
         setSelectedCategory={setSelectedCategory}
+        requiredImageCount={requiredImageCount}
+        setRequiredImageCount={setRequiredImageCount}
       />
     </form>
   );

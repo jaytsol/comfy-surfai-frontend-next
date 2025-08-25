@@ -31,6 +31,7 @@ export default function EditWorkflowPage() {
   const [parameterMap, setParameterMap] = useState<ParameterMapEntry[]>([]);
   const [cost, setCost] = useState<number>(1);
   const [categories, setCategories] = useState<string[]>([]);
+  const [requiredImageCount, setRequiredImageCount] = useState<number>(0);
 
   const fetchTemplate = useCallback(async () => {
     if (!id) return;
@@ -44,6 +45,7 @@ export default function EditWorkflowPage() {
       setIsPublic(data.isPublicTemplate);
       setCategory(data.category);
       setCost(data.cost || 1);
+      setRequiredImageCount(data.requiredImageCount || 0);
       
       const initialMap = data.parameter_map || {};
       const mapEntries = Object.entries(initialMap).map(([key, value]) => ({
@@ -98,6 +100,7 @@ export default function EditWorkflowPage() {
       parameter_map: finalParameterMap,
       category,
       cost, // cost 추가
+      requiredImageCount,
     };
 
     try {
@@ -154,6 +157,8 @@ export default function EditWorkflowPage() {
         categories={categories}
         selectedCategory={category || ''}
         setSelectedCategory={setCategory}
+        requiredImageCount={requiredImageCount}
+        setRequiredImageCount={setRequiredImageCount}
       />
 
       <div className="p-4 border rounded-lg space-y-4 bg-slate-50">

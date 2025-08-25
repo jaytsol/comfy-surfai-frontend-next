@@ -21,6 +21,12 @@ export interface GenerateImagePayload {
      * 사용자가 업로드한 이미지가 있을 경우 이 필드에 포함됩니다.
      */
     inputImage?: string;
+
+    /**
+     * Base64 인코딩된 두 번째 입력 이미지 데이터 (선택 사항).
+     * 사용자가 업로드한 두 번째 이미지가 있을 경우 이 필드에 포함됩니다.
+     */
+    secondInputImage?: string;
   }
   
   

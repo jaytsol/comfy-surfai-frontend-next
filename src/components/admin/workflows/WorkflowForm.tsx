@@ -20,6 +20,8 @@ interface WorkflowFormProps {
   categories: string[];
   selectedCategory: string;
   setSelectedCategory: (category: string) => void;
+  requiredImageCount: number;
+  setRequiredImageCount: (count: number) => void;
 }
 
 export function WorkflowForm({ 
@@ -31,7 +33,9 @@ export function WorkflowForm({
   definition, setDefinition,
   categories,
   selectedCategory,
-  setSelectedCategory
+  setSelectedCategory,
+  requiredImageCount,
+  setRequiredImageCount
 }: WorkflowFormProps) {
   return (
     <>
@@ -52,6 +56,10 @@ export function WorkflowForm({
           <div className="space-y-2">
             <Label htmlFor="cost">소모 코인</Label>
             <Input id="cost" type="number" value={cost} onChange={(e) => setCost(parseInt(e.target.value, 10) || 0)} required />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="requiredImageCount">필수 이미지 입력 개수</Label>
+            <Input id="requiredImageCount" type="number" value={requiredImageCount} onChange={(e) => setRequiredImageCount(parseInt(e.target.value, 10) || 0)} min={0} />
           </div>
         </div>
         <div className="space-y-2">

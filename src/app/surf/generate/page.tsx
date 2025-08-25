@@ -10,8 +10,8 @@ import { useComfyWebSocket } from "@/hooks/useComfyWebSocket";
 import SystemMonitor from "@/components/generate/SystemMonitor";
 import TemplateForm from "@/components/template/TemplateForm";
 import type {
-  WorkflowTemplate,
   WorkflowParameterMappingItem,
+  WorkflowTemplate,
 } from "@/interfaces/workflow.interface";
 import GenerationDisplay from "@/components/generate/GenerationDisplay";
 import {
@@ -45,6 +45,7 @@ export default function GeneratePage() {
     {}
   );
   const [inputImage, setInputImage] = useState<string | null>(null);
+  const [secondInputImage, setSecondInputImage] = useState<string | null>(null);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -74,7 +75,7 @@ export default function GeneratePage() {
         setIsLoadingTemplates(true);
         try {
           const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(
-            `/workflow-templates?page=${page}&limit=${itemsPerPage}`
+            `/public-workflow-templates?page=${page}&limit=${itemsPerPage}`
           );
           setTemplates(response.data);
           setTotalItems(response.total);
@@ -173,16 +174,24 @@ export default function GeneratePage() {
     setParameterValues((prev) => ({ ...prev, [name]: parsedValue }));
   };
 
-  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = (e: ChangeEvent<HTMLInputElement>, imageType: 'inputImage' | 'secondInputImage') => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setInputImage(reader.result as string);
+        if (imageType === 'inputImage') {
+          setInputImage(reader.result as string);
+        } else {
+          setSecondInputImage(reader.result as string);
+        }
       };
       reader.readAsDataURL(file);
     } else {
-      setInputImage(null);
+      if (imageType === 'inputImage') {
+        setInputImage(null);
+      } else {
+        setSecondInputImage(null);
+      }
     }
   };
 
@@ -205,39 +214,16 @@ export default function GeneratePage() {
       return;
     }
 
-    if (selectedTemplate.parameter_map) {
-      for (const [paramName, paramConfig] of Object.entries(
-        selectedTemplate.parameter_map
-      )) {
-        const value = parameterValues[paramName];
-        const rules = paramConfig.validation;
+    const requiredImageCount = selectedTemplate.requiredImageCount || 0;
 
-        if (rules) {
-          if (paramConfig.type === "number" && value === "") {
-            setApiError(
-              `'${
-                paramConfig.label || paramName
-              }' 파라미터는 비워둘 수 없습니다.`
-            );
-            return;
-          }
-          if (rules.min !== undefined && value < rules.min) {
-            setApiError(
-              `'${
-                paramConfig.label || paramName
-              }' 파라미터 값(${value})은(는) 최소값 ${rules.min}보다 작을 수 없습니다.`
-            );
-            return;
-          }
-          if (rules.max !== undefined && value > rules.max) {
-            setApiError(
-              `'${
-                paramConfig.label || paramName
-              }' 파라미터 값(${value})은(는) 최대값 ${rules.max}보다 클 수 없습니다.`
-            );
-            return;
-          }
-        }
+    if (requiredImageCount > 0) {
+      if (!inputImage) {
+        setApiError("첫 번째 입력 이미지가 필요합니다.");
+        return;
+      }
+      if (requiredImageCount > 1 && !secondInputImage) {
+        setApiError("두 번째 입력 이미지가 필요합니다.");
+        return;
       }
     }
 
@@ -251,6 +237,7 @@ export default function GeneratePage() {
       templateId: selectedTemplate.id,
       parameters: restParameters,
       inputImage: inputImage || undefined,
+      secondInputImage: secondInputImage || undefined,
     };
 
     try {
@@ -382,6 +369,7 @@ export default function GeneratePage() {
             isLoadingTemplates={isLoadingTemplates}
             onImageUpload={handleImageUpload}
             inputImage={inputImage}
+            secondInputImage={secondInputImage}
             user={user}
             comfyUIStatus={comfyUIStatus}
           />
