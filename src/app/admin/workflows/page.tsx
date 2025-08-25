@@ -54,7 +54,7 @@ export default function WorkflowAdminPage() {
     } else if (!isAuthLoading && !user) {
         router.replace('/login');
     }
-  }, [user, isAuthLoading, router, currentPage]); // currentPage 의존성 추가
+  }, [user, isAuthLoading, router, currentPage, itemsPerPage, setTotalItems]); // currentPage 의존성 추가
 
   const handleDelete = async (templateId: number) => {
     if (confirm(`ID: ${templateId} 워크플로우 템플릿을 정말로 삭제하시겠습니까?`)) {
