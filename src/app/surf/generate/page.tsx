@@ -74,7 +74,7 @@ export default function GeneratePage() {
         setIsLoadingTemplates(true);
         try {
           const response = await apiClient<PaginatedResponse<WorkflowTemplate>>(
-            `/workflow-templates?page=${page}&limit=${itemsPerPage}`
+            `/public-workflow-templates?page=${page}&limit=${itemsPerPage}`
           );
           setTemplates(response.data);
           setTotalItems(response.total);
