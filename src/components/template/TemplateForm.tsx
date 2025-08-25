@@ -22,6 +22,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
   isLoadingTemplates,
   onImageUpload,
   inputImage,
+  secondInputImage,
   user,
   comfyUIStatus,
 }) => {
@@ -96,7 +97,7 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
                 {Array.from({ length: selectedTemplate.requiredImageCount || 0 }).map((_, index) => {
                   const imageId = `input-image-${index + 1}`;
                   const imageLabel = `이미지 ${index + 1}`;
-                  const imagePreview = index === 0 ? inputImage : null; // Only first image uses inputImage state
+                  const imagePreview = index === 0 ? inputImage : (index === 1 ? secondInputImage : null); // Use secondInputImage for the second image
                   const imageType = index === 0 ? 'inputImage' : 'secondInputImage'; // Assuming only two image inputs for now
 
                   return (
