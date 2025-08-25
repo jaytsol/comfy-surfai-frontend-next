@@ -85,28 +85,30 @@ const TemplateForm: React.FC<TemplateFormProps> = ({
           </div>
 
           {/* 미디어 파일 입력 필드 (image, video, audio 등) */}
-          {selectedTemplate.category && selectedTemplate.category.startsWith("image-to-") && (
+          {selectedTemplate.requiredImageCount > 0 && (
             <div className="col-span-full mt-6 p-4 border border-gray-200 rounded-lg shadow-sm bg-gray-50">
               <label className="block text-lg font-semibold text-gray-800 mb-4">
                 입력 이미지
               </label>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <InputFileField
-                  label="이미지 1"
-                  id="input-image-1"
-                  accept="image/*"
-                  onChange={onImageUpload}
-                  preview={inputImage}
-                  previewAlt="Input Image 1 Preview"
-                />
-                <InputFileField
-                  label="이미지 2"
-                  id="input-image-2"
-                  accept="image/*"
-                  onChange={() => { /* 향후 구현 */ }}
-                  preview={null}
-                  previewAlt="Input Image 2 Preview"
-                />
+                {Array.from({ length: selectedTemplate.requiredImageCount }).map((_, index) => {
+                  const imageId = `input-image-${index + 1}`;
+                  const imageLabel = `이미지 ${index + 1}`;
+                  const imagePreview = index === 0 ? inputImage : null; // Only first image uses inputImage state
+                  const imageType = index === 0 ? 'inputImage' : 'secondInputImage'; // Assuming only two image inputs for now
+
+                  return (
+                    <InputFileField
+                      key={imageId}
+                      label={imageLabel}
+                      id={imageId}
+                      accept="image/*"
+                      onChange={(e) => onImageUpload(e, imageType)}
+                      preview={imagePreview}
+                      previewAlt={imageLabel}
+                    />
+                  );
+                })}
               </div>
             </div>
           )}

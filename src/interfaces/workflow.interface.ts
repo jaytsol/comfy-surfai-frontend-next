@@ -37,6 +37,7 @@ export interface WorkflowTemplate {
   parameter_map?: Record<string, WorkflowParameterMappingItem>;
   previewImageUrl?: string;
   tags?: string[];
+  requiredImageCount?: number;
   cost: number;
   isPublicTemplate: boolean;
   createdAt: Date;

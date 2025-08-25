@@ -14,8 +14,12 @@ export interface TemplateFormProps {
   isSubmitting: boolean;
   selectedTemplate: WorkflowTemplate | null;
   isLoadingTemplates: boolean;
-  onImageUpload: (e: ChangeEvent<HTMLInputElement>) => void;
+  onImageUpload: (
+    e: ChangeEvent<HTMLInputElement>,
+    imageType: 'inputImage' | 'secondInputImage'
+  ) => void;
   inputImage: string | null;
+  secondInputImage: string | null;
   user: User | null; // User 객체 추가
   comfyUIStatus: ComfyUIStatus;
 }
