@@ -247,8 +247,7 @@ export const ParameterMappingForm = ({
                 variant="destructive" 
                 size="sm" 
                 onClick={() => handleRemoveParam(entry.id)}
-                disabled={entry.isEssential}
-                title={entry.isEssential ? "필수 파라미터는 삭제할 수 없습니다." : "파라미터 삭제"}
+                title="파라미터 삭제"
               >
                 <Trash2 className="h-4 w-4 mr-2" />삭제
               </Button>
