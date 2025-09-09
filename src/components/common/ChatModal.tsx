@@ -64,7 +64,7 @@ export function ChatModal({ isOpen, onOpenChange }: ChatModalProps) {
           </div>
 
           {(isLoading || response || error) && (
-            <div className="w-full rounded-md border bg-gray-50 p-4 min-h-[100px]">
+            <div className="w-full rounded-md border bg-gray-50 p-4 min-h-[100px] max-h-[400px] overflow-y-auto">
               {isLoading && (
                 <div className="flex items-center space-x-2">
                   <Loader2 className="h-4 w-4 animate-spin" />
