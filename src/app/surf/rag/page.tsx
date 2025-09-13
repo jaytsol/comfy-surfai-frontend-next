@@ -31,7 +31,7 @@ export default function RagPage() {
         pollingIntervalRef.current = null;
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch documents.');
+      setError(err instanceof Error ? err.message : '문서 가져오기 실패.');
     }
   }, []);
 
@@ -75,7 +75,7 @@ export default function RagPage() {
       setDocuments(prev => [newDoc, ...prev]);
       fetchDocuments(); // Refresh list immediately
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Upload failed.');
+      setError(err instanceof Error ? err.message : '업로드 실패.');
     } finally {
       setIsUploading(false);
       setFile(null);
@@ -96,8 +96,8 @@ export default function RagPage() {
       const aiResponse: RagMessage = { sender: 'ai', text: response.response };
       setMessages(prev => [...prev, aiResponse]);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get response.';
-      setMessages(prev => [...prev, { sender: 'ai', text: `Error: ${errorMessage}` }]);
+      const errorMessage = err instanceof Error ? err.message : '응답을 가져오지 못했습니다.';
+      setMessages(prev => [...prev, { sender: 'ai', text: `오류: ${errorMessage}` }]);
     } finally {
       setIsSending(false);
     }
@@ -123,26 +123,26 @@ export default function RagPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Upload className="h-5 w-5" />
-              Upload Document
+              문서 업로드
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {error && (
                 <Alert variant="destructive">
                     <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
+                    <AlertTitle>오류</AlertTitle>
                     <AlertDescription>{error}</AlertDescription>
                 </Alert>
             )}
             <div className="flex items-center gap-2">
                 <Input id="file-upload" type="file" onChange={handleFileChange} accept=".pdf" className="flex-1" />
             </div>
-            {file && <p className="text-sm text-gray-500 truncate">Selected: {file.name}</p>}
+            {file && <p className="text-sm text-gray-500 truncate">선택됨: {file.name}</p>}
             <Button onClick={handleUpload} disabled={!file || isUploading} className="w-full">
               {isUploading ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> 업로드 중...</>
               ) : (
-                'Upload'
+                '업로드'
               )}
             </Button>
           </CardContent>
@@ -152,7 +152,7 @@ export default function RagPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
                 <FileText className="h-5 w-5" />
-                My Documents
+                내 문서
             </CardTitle>
           </CardHeader>
           <CardContent className="flex-1 flex flex-col p-0">
@@ -182,7 +182,7 @@ export default function RagPage() {
       <Card className="lg:col-span-2 flex flex-col h-full">
         <CardHeader>
           <CardTitle>
-            {selectedDocument ? `Chat with: ${selectedDocument.originalFilename}` : 'Select a document to start chatting'}
+            {selectedDocument ? `채팅 중: ${selectedDocument.originalFilename}` : '채팅을 시작하려면 문서를 선택하세요'}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col gap-4 overflow-hidden">
@@ -212,7 +212,7 @@ export default function RagPage() {
               value={inputMessage}
               onChange={e => setInputMessage(e.target.value)}
               onKeyPress={e => e.key === 'Enter' && handleSendMessage()}
-              placeholder={selectedDocument?.status === 'READY' ? 'Type your message...' : 'Select a processed document'}
+              placeholder={selectedDocument?.status === 'READY' ? '메시지를 입력하세요...' : '처리된 문서를 선택하세요'}
               disabled={!selectedDocument || selectedDocument.status !== 'READY' || isSending}
               className="flex-1"
             />
