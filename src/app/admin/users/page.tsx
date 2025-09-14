@@ -22,6 +22,7 @@ import { toast } from "sonner";
 
 export default function AdminUsersPage() {
   const { user, isLoading: isAuthLoading } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
