@@ -49,13 +49,10 @@ export default function AdminUsersPage() {
   }, [itemsPerPage, setTotalItems]);
 
   useEffect(() => {
-    if (!isAuthLoading && user?.role !== "admin") {
-      alert("관리자만 접근할 수 있는 페이지입니다.");
-      router.replace("/");
-    } else if (!isAuthLoading && !user) {
-      router.replace("/login");
+    if (!isAuthLoading && user?.role === "admin") { // Only fetch if auth is done and user is admin
+      fetchUsers(currentPage);
     }
-  }, [user, isAuthLoading, router]);
+  }, [user, isAuthLoading, currentPage, fetchUsers]); // Add user and isAuthLoading as dependencies
 
   const handleCoinAmountChange = (userId: number, value: string) => {
     // 숫자만 입력되도록 유효성 검사
