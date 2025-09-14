@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import apiClient from '@/lib/apiClient';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ChatPage() {

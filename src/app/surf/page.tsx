@@ -1,7 +1,7 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Brain, ImageIcon, MessageSquareText, FileText } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card';
+import { ImageIcon, MessageSquareText, FileText } from 'lucide-react';
 import Link from 'next/link';
 
 interface FeatureCardProps {
